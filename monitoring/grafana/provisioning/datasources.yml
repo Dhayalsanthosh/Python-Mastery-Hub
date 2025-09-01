@@ -1,0 +1,190 @@
+# File: monitoring/grafana/provisioning/datasources.yml
+# Grafana datasources provisioning configuration
+
+apiVersion: 1
+
+datasources:
+  # Primary Prometheus datasource
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: true
+    version: 1
+    editable: true
+    jsonData:
+      httpMethod: POST
+      queryTimeout: 60s
+      timeInterval: 15s
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: jaeger
+    secureJsonData: {}
+
+  # Alertmanager datasource
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    orgId: 1
+    url: http://alertmanager:9093
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    jsonData:
+      implementation: prometheus
+    secureJsonData: {}
+
+  # Loki for logs
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: jaeger
+          matcherRegex: "trace_id=(\\w+)"
+          name: TraceID
+          url: "$${__value.raw}"
+    secureJsonData: {}
+
+  # Jaeger for tracing
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    orgId: 1
+    uid: jaeger
+    url: http://jaeger:16686
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    jsonData:
+      tracesToLogs:
+        datasourceUid: loki
+        tags: ["job", "instance", "pod", "namespace"]
+        mappedTags: [{ key: "service.name", value: "service" }]
+        mapTagNamesEnabled: false
+        spanStartTimeShift: "1h"
+        spanEndTimeShift: "-1h"
+        filterByTraceID: false
+        filterBySpanID: false
+      nodeGraph:
+        enabled: true
+    secureJsonData: {}
+
+  # Elasticsearch for application logs
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    orgId: 1
+    url: http://elasticsearch:9200
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    database: "logstash-*"
+    jsonData:
+      interval: Daily
+      timeField: "@timestamp"
+      esVersion: "7.10.0"
+      maxConcurrentShardRequests: 5
+      logMessageField: message
+      logLevelField: level
+      includeFrozen: false
+    secureJsonData: {}
+
+  # InfluxDB for additional time series data
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    orgId: 1
+    url: http://influxdb:8086
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    database: monitoring
+    user: grafana
+    jsonData:
+      httpMode: GET
+      keepCookies: []
+    secureJsonData:
+      password: "grafana_password"
+
+  # CloudWatch for AWS metrics
+  - name: CloudWatch
+    type: cloudwatch
+    access: proxy
+    orgId: 1
+    isDefault: false
+    version: 1
+    editable: true
+    jsonData:
+      authType: credentials
+      defaultRegion: us-west-2
+      customMetricsNamespaces: "AWS/ApplicationELB,AWS/NetworkELB,AWS/ELB"
+      assumeRoleArn: ""
+    secureJsonData:
+      accessKey: "${AWS_ACCESS_KEY_ID}"
+      secretKey: "${AWS_SECRET_ACCESS_KEY}"
+
+  # PostgreSQL for business analytics
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    orgId: 1
+    url: postgres:5432
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    database: analytics
+    user: grafana_reader
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 100
+      maxIdleConns: 100
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1300
+      timescaledb: false
+    secureJsonData:
+      password: "grafana_reader_password"
+
+  # Redis for caching metrics
+  - name: Redis
+    type: redis-datasource
+    access: proxy
+    orgId: 1
+    url: redis://redis:6379
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: true
+    jsonData:
+      client: standalone
+      poolSize: 5
+      timeout: 10
+      pingInterval: 0
+      pipelineWindow: 0
+    secureJsonData:
+      password: "redis_password"
+
+  # Testdata for development and testing
+  - name: TestData
+    type: testdata
+    access: proxy
+    orgId: 1
+    isDefault: false
+    version: 1
+    editable: true
+    jsonData: {}

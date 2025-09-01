@@ -1,0 +1,733 @@
+<!-- Location: src/python_mastery_hub/web/templates/dashboard/overview.html -->
+
+{% extends "base.html" %} {% block title %}Dashboard - Python Mastery Hub{%
+endblock %} {% block meta_description %}Your personal Python learning dashboard
+with progress tracking, exercises, and achievements{% endblock %} {% block
+extra_css %}
+<style>
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .welcome-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .welcome-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 5l10 20h20l-15 15 5 20-20-10-20 10 5-20-15-15h20z' fill='%23ffffff20'/%3E%3C/svg%3E")
+      no-repeat;
+    background-size: contain;
+    opacity: 0.1;
+  }
+
+  .streak-indicator {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-number {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .stat-change {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .stat-change.positive {
+    color: #10b981;
+  }
+
+  .stat-change.negative {
+    color: #ef4444;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .section-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: between;
+  }
+
+  .progress-ring {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .progress-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .progress-ring-bg {
+    fill: none;
+    stroke: #e5e7eb;
+    stroke-width: 8;
+  }
+
+  .progress-ring-bar {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
+  }
+
+  .progress-percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+  }
+
+  .exercise-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+  }
+
+  .exercise-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .exercise-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    color: white;
+  }
+
+  .exercise-content {
+    flex: 1;
+  }
+
+  .exercise-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .exercise-meta {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .difficulty-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .difficulty-easy {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .difficulty-medium {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .difficulty-hard {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .achievement-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+
+  .achievement-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  .learning-path {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .path-step {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .path-step.completed {
+    border-color: #10b981;
+    background: #f0fdf4;
+  }
+
+  .path-step.current {
+    border-color: #667eea;
+    background: #f0f9ff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
+
+  .path-step::after {
+    content: "";
+    position: absolute;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 1rem;
+    background: #e5e7eb;
+  }
+
+  .path-step:last-child::after {
+    display: none;
+  }
+
+  .path-step.completed::after {
+    background: #10b981;
+  }
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+  }
+
+  .path-step.completed .step-number {
+    background: #10b981;
+    color: white;
+  }
+
+  .path-step.current .step-number {
+    background: #667eea;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-container {
+      padding: 1rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-container">
+  <!-- Welcome Header -->
+  <div class="welcome-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h3 mb-2">Welcome back, {{ user.first_name }}! 👋</h1>
+        <p class="mb-2 opacity-90">
+          Ready to continue your Python journey? You're making great progress!
+        </p>
+        <div class="streak-indicator">
+          <i class="fas fa-fire me-2"></i>
+          <span>{{ user.streak_days }} day streak</span>
+        </div>
+      </div>
+      <div class="col-md-4 text-center text-md-end">
+        <div class="progress-ring">
+          <svg viewBox="0 0 120 120">
+            <circle class="progress-ring-bg" cx="60" cy="60" r="54"></circle>
+            <circle
+              class="progress-ring-bar"
+              cx="60"
+              cy="60"
+              r="54"
+              stroke-dasharray="{{ (user.progress_percentage * 339.29 / 100)|round(2) }} 339.29"
+            ></circle>
+          </svg>
+          <div class="progress-percentage">{{ user.progress_percentage }}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div
+        class="stat-icon"
+        style="background: linear-gradient(135deg, #667eea, #764ba2)"
+      >
+        <i class="fas fa-code"></i>
+      </div>
+      <div class="stat-number">{{ user.exercises_completed }}</div>
+      <div class="stat-label">Exercises Completed</div>
+      <div class="stat-change positive">
+        <i class="fas fa-arrow-up"></i>
+        +{{ user.exercises_this_week }} this week
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div
+        class="stat-icon"
+        style="background: linear-gradient(135deg, #10b981, #059669)"
+      >
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div class="stat-number">{{ user.points }}</div>
+      <div class="stat-label">Total Points</div>
+      <div class="stat-change positive">
+        <i class="fas fa-arrow-up"></i>
+        +{{ user.points_this_week }} this week
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div
+        class="stat-icon"
+        style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+      >
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-number">{{ user.time_spent_hours }}h</div>
+      <div class="stat-label">Time Spent Learning</div>
+      <div class="stat-change positive">
+        <i class="fas fa-arrow-up"></i>
+        +{{ user.time_this_week }}h this week
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div
+        class="stat-icon"
+        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"
+      >
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="stat-number">{{ user.level }}</div>
+      <div class="stat-label">Current Level</div>
+      <div class="stat-change positive">
+        {{ user.xp_to_next_level }} XP to level {{ user.level + 1 }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Left Column -->
+    <div>
+      <!-- Continue Learning -->
+      <div class="section-card mb-2rem">
+        <div class="section-title">
+          <span>
+            <i class="fas fa-play-circle me-2"></i>
+            Continue Learning
+          </span>
+          <a href="/exercises" class="btn btn-sm btn-outline-primary ms-auto"
+            >View All</a
+          >
+        </div>
+
+        {% if recommended_exercises %} {% for exercise in recommended_exercises
+        %}
+        <div class="exercise-item">
+          <div class="exercise-icon" style="background: {{ exercise.color }};">
+            <i class="{{ exercise.icon }}"></i>
+          </div>
+          <div class="exercise-content">
+            <div class="exercise-title">{{ exercise.title }}</div>
+            <div class="exercise-meta">
+              {{ exercise.module }} • {{ exercise.estimated_time }} min
+              <span
+                class="difficulty-badge difficulty-{{ exercise.difficulty }}"
+              >
+                {{ exercise.difficulty }}
+              </span>
+            </div>
+          </div>
+          <a href="/exercises/{{ exercise.id }}" class="btn btn-primary btn-sm"
+            >Start</a
+          >
+        </div>
+        {% endfor %} {% else %}
+        <div class="text-center py-4">
+          <i
+            class="fas fa-check-circle text-success"
+            style="font-size: 3rem"
+          ></i>
+          <h5 class="mt-3">Great job! You're all caught up!</h5>
+          <p class="text-muted">
+            Check back tomorrow for new exercises or explore advanced topics.
+          </p>
+          <a href="/exercises" class="btn btn-primary"
+            >Explore More Exercises</a
+          >
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Learning Path -->
+      <div class="section-card">
+        <div class="section-title">
+          <i class="fas fa-route me-2"></i>
+          Your Learning Path
+        </div>
+
+        <div class="learning-path">
+          {% for step in learning_path %}
+          <div class="path-step {{ step.status }}">
+            <div class="step-number">
+              {% if step.status == 'completed' %}
+              <i class="fas fa-check"></i>
+              {% else %} {{ step.number }} {% endif %}
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ step.title }}</div>
+              <div class="text-muted small">{{ step.description }}</div>
+              {% if step.status == 'current' %}
+              <div class="mt-2">
+                <a href="{{ step.url }}" class="btn btn-primary btn-sm"
+                  >Continue</a
+                >
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+      <!-- Recent Achievements -->
+      <div class="section-card mb-2rem">
+        <div class="section-title">
+          <i class="fas fa-medal me-2"></i>
+          Recent Achievements
+        </div>
+
+        {% if recent_achievements %} {% for achievement in recent_achievements
+        %}
+        <div class="achievement-item">
+          <div class="achievement-icon">
+            <i class="{{ achievement.icon }}"></i>
+          </div>
+          <div>
+            <div class="fw-semibold">{{ achievement.name }}</div>
+            <div class="text-muted small">{{ achievement.description }}</div>
+            <div class="text-muted small">
+              {{ achievement.earned_at|timeago }}
+            </div>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-trophy text-muted" style="font-size: 2rem"></i>
+          <p class="text-muted mt-2">
+            Complete exercises to earn achievements!
+          </p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-card mb-2rem">
+        <div class="section-title">
+          <i class="fas fa-zap me-2"></i>
+          Quick Actions
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="/exercises/random" class="btn btn-primary">
+            <i class="fas fa-random me-2"></i>
+            Random Exercise
+          </a>
+          <a href="/practice" class="btn btn-outline-primary">
+            <i class="fas fa-play me-2"></i>
+            Practice Mode
+          </a>
+          <a href="/challenges" class="btn btn-outline-primary">
+            <i class="fas fa-fire me-2"></i>
+            Daily Challenge
+          </a>
+          <a href="/community" class="btn btn-outline-primary">
+            <i class="fas fa-users me-2"></i>
+            Join Community
+          </a>
+        </div>
+      </div>
+
+      <!-- Weekly Goals -->
+      <div class="section-card">
+        <div class="section-title">
+          <i class="fas fa-target me-2"></i>
+          This Week's Goals
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span>Complete 5 exercises</span>
+            <span>{{ user.weekly_exercises }}/5</span>
+          </div>
+          <div class="progress">
+            <div
+              class="progress-bar"
+              style="width: {{ (user.weekly_exercises * 100 / 5)|round }}%"
+            ></div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span>Study 3 hours</span>
+            <span>{{ user.weekly_hours }}/3h</span>
+          </div>
+          <div class="progress">
+            <div
+              class="progress-bar"
+              style="width: {{ (user.weekly_hours * 100 / 3)|round }}%"
+            ></div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span>Maintain streak</span>
+            <span>{{ user.streak_days }} days</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar bg-success" style="width: 100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Animate progress ring on load
+      animateProgressRing();
+
+      // Load dashboard data
+      loadDashboardData();
+
+      // Set up auto-refresh for real-time updates
+      setInterval(loadDashboardData, 60000); // Refresh every minute
+  });
+
+  function animateProgressRing() {
+      const progressBar = document.querySelector('.progress-ring-bar');
+      if (progressBar) {
+          const percentage = {{ user.progress_percentage }};
+          const circumference = 2 * Math.PI * 54; // radius = 54
+          const offset = circumference - (percentage / 100 * circumference);
+
+          progressBar.style.strokeDasharray = `${circumference} ${circumference}`;
+          progressBar.style.strokeDashoffset = circumference;
+
+          setTimeout(() => {
+              progressBar.style.strokeDashoffset = offset;
+          }, 500);
+      }
+  }
+
+  async function loadDashboardData() {
+      try {
+          const response = await fetch('/api/dashboard/stats', {
+              headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+          });
+
+          if (response.ok) {
+              const data = await response.json();
+              updateDashboardStats(data);
+          }
+      } catch (error) {
+          console.error('Failed to load dashboard data:', error);
+      }
+  }
+
+  function updateDashboardStats(data) {
+      // Update stat numbers if they've changed
+      const statElements = {
+          exercises: document.querySelector('.stat-card:nth-child(1) .stat-number'),
+          points: document.querySelector('.stat-card:nth-child(2) .stat-number'),
+          timeSpent: document.querySelector('.stat-card:nth-child(3) .stat-number'),
+          level: document.querySelector('.stat-card:nth-child(4) .stat-number')
+      };
+
+      if (statElements.exercises && data.exercises_completed) {
+          statElements.exercises.textContent = data.exercises_completed;
+      }
+      if (statElements.points && data.points) {
+          statElements.points.textContent = data.points;
+      }
+      if (statElements.timeSpent && data.time_spent_hours) {
+          statElements.timeSpent.textContent = data.time_spent_hours + 'h';
+      }
+      if (statElements.level && data.level) {
+          statElements.level.textContent = data.level;
+      }
+  }
+
+  // Add click tracking for exercises
+  document.querySelectorAll('.exercise-item a').forEach(link => {
+      link.addEventListener('click', function(e) {
+          const exerciseTitle = this.closest('.exercise-item').querySelector('.exercise-title').textContent;
+
+          // Track exercise click
+          fetch('/api/analytics/track', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              },
+              body: JSON.stringify({
+                  event: 'exercise_clicked',
+                  exercise_title: exerciseTitle,
+                  source: 'dashboard'
+              })
+          }).catch(console.error);
+      });
+  });
+</script>
+{% endblock %}

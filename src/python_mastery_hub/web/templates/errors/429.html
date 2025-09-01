@@ -1,0 +1,429 @@
+<!-- Location: src/python_mastery_hub/web/templates/errors/429.html -->
+
+{% extends "base.html" %} {% block title %}Too Many Requests - Python Mastery
+Hub{% endblock %} {% block content %}
+<div class="error-page">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-illustration">
+        <div class="error-code">429</div>
+        <div class="speed-icon">🚦</div>
+      </div>
+
+      <div class="error-message">
+        <h1>Slow Down There!</h1>
+        <p class="error-description">
+          You're making requests too quickly. Please wait a moment before trying
+          again.
+        </p>
+
+        <div class="cooldown-timer">
+          <div class="timer-icon">⏱️</div>
+          <div class="timer-text">
+            Please wait <span id="countdown">60</span> seconds before continuing
+          </div>
+        </div>
+
+        <div class="rate-limit-info">
+          <h3>Why am I seeing this?</h3>
+          <p>We implement rate limiting to:</p>
+          <ul>
+            <li>Protect our servers from overload</li>
+            <li>Ensure fair access for all users</li>
+            <li>Prevent automated abuse</li>
+            <li>Maintain optimal performance</li>
+          </ul>
+        </div>
+
+        <div class="error-actions">
+          <button
+            onclick="location.reload()"
+            class="btn btn-primary"
+            id="retryBtn"
+            disabled
+          >
+            <span class="btn-icon">🔄</span>
+            <span id="retryText">Try Again (60s)</span>
+          </button>
+          <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span>
+            Go Home
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-section">
+      <h3>While You Wait</h3>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">📚</div>
+          <div class="tip-title">Review Your Progress</div>
+          <div class="tip-description">
+            Check your dashboard to see completed exercises and learning
+            achievements.
+          </div>
+          <a href="{{ url_for('dashboard.overview') }}" class="tip-link"
+            >View Dashboard</a
+          >
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">💡</div>
+          <div class="tip-title">Explore Learning Paths</div>
+          <div class="tip-description">
+            Browse our structured learning paths to plan your Python journey.
+          </div>
+          <a href="{{ url_for('modules.list_modules') }}" class="tip-link"
+            >View Modules</a
+          >
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">🎯</div>
+          <div class="tip-title">Set Learning Goals</div>
+          <div class="tip-description">
+            Define your learning objectives and track your progress effectively.
+          </div>
+          <a href="{{ url_for('dashboard.goals') }}" class="tip-link"
+            >Manage Goals</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let countdown = 60;
+  const countdownElement = document.getElementById("countdown");
+  const retryBtn = document.getElementById("retryBtn");
+  const retryText = document.getElementById("retryText");
+
+  const timer = setInterval(() => {
+    countdown--;
+    countdownElement.textContent = countdown;
+    retryText.textContent = `Try Again (${countdown}s)`;
+
+    if (countdown <= 0) {
+      clearInterval(timer);
+      retryBtn.disabled = false;
+      retryBtn.classList.remove("btn-disabled");
+      retryText.textContent = "Try Again";
+
+      // Auto-reload after countdown
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
+    }
+  }, 1000);
+
+  // Add visual countdown animation
+  const speedIcon = document.querySelector(".speed-icon");
+  speedIcon.style.animation = "blink 1s infinite";
+</script>
+
+<style>
+  .error-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  }
+
+  .error-content {
+    text-align: center;
+    max-width: 600px;
+    margin-bottom: 3rem;
+  }
+
+  .error-illustration {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #fef3c7;
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .speed-icon {
+    font-size: 4rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0.5;
+    }
+  }
+
+  .error-message h1 {
+    font-size: 2.5rem;
+    color: #a16207;
+    margin-bottom: 1rem;
+  }
+
+  .error-description {
+    font-size: 1.2rem;
+    color: #ca8a04;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .cooldown-timer {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    border-left: 4px solid #f59e0b;
+  }
+
+  .timer-icon {
+    font-size: 1.5rem;
+  }
+
+  .timer-text {
+    font-size: 1.1rem;
+    color: #a16207;
+    font-weight: 600;
+  }
+
+  #countdown {
+    color: #dc2626;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .rate-limit-info {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    text-align: left;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .rate-limit-info h3 {
+    margin-bottom: 1rem;
+    color: #a16207;
+    font-size: 1.1rem;
+  }
+
+  .rate-limit-info p {
+    color: #ca8a04;
+    margin-bottom: 1rem;
+  }
+
+  .rate-limit-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .rate-limit-info li {
+    padding: 0.5rem 0;
+    color: #ca8a04;
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .rate-limit-info li::before {
+    content: "•";
+    color: #f59e0b;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+  }
+
+  .error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .tips-section {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .tips-section h3 {
+    margin-bottom: 1.5rem;
+    color: #a16207;
+    font-size: 1.3rem;
+  }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .tip-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+  }
+
+  .tip-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .tip-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .tip-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .tip-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .tip-link {
+    color: #f59e0b;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    display: inline-block;
+    transition: all 0.2s ease;
+  }
+
+  .tip-link:hover {
+    background: #f59e0b;
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    background: #f59e0b;
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #d97706;
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+  }
+
+  .btn-primary:disabled {
+    background: #fbbf24;
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+  }
+
+  .btn-icon {
+    font-size: 1.1rem;
+  }
+
+  @media (max-width: 768px) {
+    .error-code {
+      font-size: 6rem;
+    }
+
+    .speed-icon {
+      font-size: 3rem;
+    }
+
+    .error-message h1 {
+      font-size: 2rem;
+    }
+
+    .error-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tips-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cooldown-timer {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .rate-limit-info,
+    .cooldown-timer {
+      padding: 1rem;
+    }
+
+    .tip-card {
+      padding: 1rem;
+    }
+
+    .timer-text {
+      font-size: 1rem;
+    }
+  }
+</style>
+{% endblock %}

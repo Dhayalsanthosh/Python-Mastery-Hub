@@ -1,0 +1,839 @@
+<!-- Location: src/python_mastery_hub/web/templates/components/progress_bar.html -->
+
+<!-- Progress Bar Component -->
+<div
+  class="progress-component {{ 'progress-' + (style or 'default') }}"
+  id="progress-{{ component_id or 'default' }}"
+  data-value="{{ value or 0 }}"
+  data-max="{{ max_value or 100 }}"
+>
+  {% if show_label %}
+  <div class="progress-label">
+    <span class="progress-title">{{ title or 'Progress' }}</span>
+    {% if show_percentage %}
+    <span class="progress-percentage"
+      >{{ ((value or 0) * 100 / (max_value or 100))|round }}%</span
+    >
+    {% endif %} {% if show_fraction %}
+    <span class="progress-fraction"
+      >{{ value or 0 }}/{{ max_value or 100 }}</span
+    >
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="progress-bar-container">
+    <div class="progress-bar-background"></div>
+    <div
+      class="progress-bar-fill"
+      style="width: {{ ((value or 0) * 100 / (max_value or 100))|round }}%"
+      data-animate="{{ 'true' if animate else 'false' }}"
+    >
+      {% if show_inner_text %}
+      <span class="progress-inner-text"
+        >{{ inner_text or ((value or 0)|string + '/' + (max_value or
+        100)|string) }}</span
+      >
+      {% endif %}
+    </div>
+
+    {% if segments %}
+    <div class="progress-segments">
+      {% for segment in segments %}
+      <div
+        class="progress-segment"
+        style="left: {{ (segment.position * 100 / (max_value or 100))|round }}%"
+        title="{{ segment.label or '' }}"
+      >
+        <div class="segment-marker"></div>
+        {% if segment.label %}
+        <div class="segment-label">{{ segment.label }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% if milestones %}
+    <div class="progress-milestones">
+      {% for milestone in milestones %}
+      <div
+        class="progress-milestone {{ 'completed' if (value or 0) >= milestone.value else 'pending' }}"
+        style="left: {{ (milestone.value * 100 / (max_value or 100))|round }}%"
+        title="{{ milestone.description or milestone.label }}"
+      >
+        <div class="milestone-marker">
+          {% if milestone.icon %}
+          <i class="{{ milestone.icon }}"></i>
+          {% else %}
+          <span class="milestone-dot"></span>
+          {% endif %}
+        </div>
+        {% if milestone.label and show_milestone_labels %}
+        <div class="milestone-label">{{ milestone.label }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if show_description %}
+  <div class="progress-description">{{ description or '' }}</div>
+  {% endif %} {% if show_details %}
+  <div class="progress-details">
+    {% if estimated_time %}
+    <span class="detail-item">
+      <i class="fas fa-clock"></i>
+      {{ estimated_time }}
+    </span>
+    {% endif %} {% if remaining_items %}
+    <span class="detail-item">
+      <i class="fas fa-list"></i>
+      {{ remaining_items }} remaining
+    </span>
+    {% endif %} {% if points_earned %}
+    <span class="detail-item">
+      <i class="fas fa-star"></i>
+      {{ points_earned }} XP earned
+    </span>
+    {% endif %} {% if custom_details %} {% for detail in custom_details %}
+    <span class="detail-item">
+      {% if detail.icon %}<i class="{{ detail.icon }}"></i>{% endif %} {{
+      detail.text }}
+    </span>
+    {% endfor %} {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  /* Base Progress Bar Styles */
+  .progress-component {
+      width: 100%;
+      margin: {{ margin or '1rem 0' }};
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .progress-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: {{ label_font_size or '0.9rem' }};
+      color: {{ label_color or '#374151' }};
+  }
+
+  .progress-title {
+      font-weight: 600;
+      color: {{ title_color or '#1f2937' }};
+  }
+
+  .progress-percentage,
+  .progress-fraction {
+      font-weight: 500;
+      color: {{ percentage_color or '#6b7280' }};
+  }
+
+  .progress-bar-container {
+      position: relative;
+      width: 100%;
+      height: {{ height or '8px' }};
+      border-radius: {{ border_radius or '4px' }};
+      overflow: visible;
+  }
+
+  .progress-bar-background {
+      width: 100%;
+      height: 100%;
+      background: {{ background_color or '#e5e7eb' }};
+      border-radius: inherit;
+      position: absolute;
+      top: 0;
+      left: 0;
+  }
+
+  .progress-bar-fill {
+      height: 100%;
+      background: {{ fill_color or 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' }};
+      border-radius: inherit;
+      position: relative;
+      transition: width {{ animation_duration or '0.6s' }} {{ animation_easing or 'cubic-bezier(0.4, 0, 0.2, 1)' }};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: {{ min_fill_width or '0' }};
+      overflow: hidden;
+  }
+
+  .progress-bar-fill[data-animate="true"] {
+      animation: progressAnimation {{ animation_duration or '0.6s' }} {{ animation_easing or 'cubic-bezier(0.4, 0, 0.2, 1)' }};
+  }
+
+  @keyframes progressAnimation {
+      from {
+          width: 0%;
+      }
+  }
+
+  .progress-inner-text {
+      color: {{ inner_text_color or 'white' }};
+      font-size: {{ inner_text_size or '0.75rem' }};
+      font-weight: 600;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .progress-segments {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+  }
+
+  .progress-segment {
+      position: absolute;
+      top: -2px;
+      transform: translateX(-50%);
+  }
+
+  .segment-marker {
+      width: 2px;
+      height: calc(100% + 4px);
+      background: {{ segment_color or '#ffffff' }};
+      border-radius: 1px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .segment-label {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: #6b7280;
+      white-space: nowrap;
+      font-weight: 500;
+  }
+
+  .progress-milestones {
+      position: absolute;
+      top: -6px;
+      left: 0;
+      right: 0;
+      bottom: -6px;
+      pointer-events: none;
+  }
+
+  .progress-milestone {
+      position: absolute;
+      transform: translateX(-50%);
+  }
+
+  .milestone-marker {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      border: 2px solid #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+  }
+
+  .milestone-marker i {
+      font-size: 0.7rem;
+      color: #6b7280;
+  }
+
+  .milestone-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #9ca3af;
+  }
+
+  .progress-milestone.completed .milestone-marker {
+      background: {{ milestone_completed_color or '#10b981' }};
+      border-color: {{ milestone_completed_border or '#059669' }};
+  }
+
+  .progress-milestone.completed .milestone-marker i,
+  .progress-milestone.completed .milestone-dot {
+      color: white;
+      background: white;
+  }
+
+  .milestone-label {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: #6b7280;
+      white-space: nowrap;
+      font-weight: 500;
+  }
+
+  .progress-milestone.completed .milestone-label {
+      color: {{ milestone_completed_color or '#10b981' }};
+      font-weight: 600;
+  }
+
+  .progress-description {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+      line-height: 1.4;
+  }
+
+  .progress-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #6b7280;
+  }
+
+  .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+  }
+
+  .detail-item i {
+      font-size: 0.75rem;
+      opacity: 0.7;
+  }
+
+  /* Style Variants */
+  .progress-thin .progress-bar-container {
+      height: 4px;
+  }
+
+  .progress-thick .progress-bar-container {
+      height: 16px;
+  }
+
+  .progress-rounded .progress-bar-container,
+  .progress-rounded .progress-bar-background,
+  .progress-rounded .progress-bar-fill {
+      border-radius: 20px;
+  }
+
+  .progress-square .progress-bar-container,
+  .progress-square .progress-bar-background,
+  .progress-square .progress-bar-fill {
+      border-radius: 0;
+  }
+
+  .progress-striped .progress-bar-fill {
+      background-image: linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.15) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.15) 50%,
+          rgba(255, 255, 255, 0.15) 75%,
+          transparent 75%,
+          transparent
+      );
+      background-size: 1rem 1rem;
+  }
+
+  .progress-animated-stripes .progress-bar-fill {
+      animation: progressStripes 1s linear infinite;
+  }
+
+  @keyframes progressStripes {
+      0% {
+          background-position: 1rem 0;
+      }
+      100% {
+          background-position: 0 0;
+      }
+  }
+
+  /* Color Variants */
+  .progress-success .progress-bar-fill {
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  }
+
+  .progress-warning .progress-bar-fill {
+      background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+  }
+
+  .progress-danger .progress-bar-fill {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+  }
+
+  .progress-info .progress-bar-fill {
+      background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  }
+
+  .progress-purple .progress-bar-fill {
+      background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+  }
+
+  .progress-pink .progress-bar-fill {
+      background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
+  }
+
+  .progress-gradient-rainbow .progress-bar-fill {
+      background: linear-gradient(90deg,
+          #ef4444 0%,
+          #f59e0b 16.66%,
+          #eab308 33.33%,
+          #22c55e 50%,
+          #3b82f6 66.66%,
+          #8b5cf6 83.33%,
+          #ec4899 100%
+      );
+  }
+
+  /* Size Variants */
+  .progress-xs .progress-bar-container {
+      height: 2px;
+  }
+
+  .progress-sm .progress-bar-container {
+      height: 6px;
+  }
+
+  .progress-lg .progress-bar-container {
+      height: 12px;
+  }
+
+  .progress-xl .progress-bar-container {
+      height: 20px;
+  }
+
+  /* Interactive Variants */
+  .progress-hoverable:hover .progress-bar-fill {
+      filter: brightness(1.1);
+      transform: scaleY(1.1);
+      transition: all 0.2s ease;
+  }
+
+  .progress-glow .progress-bar-fill {
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .progress-pulsing .progress-bar-fill {
+      animation: progressPulse 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes progressPulse {
+      0% {
+          opacity: 0.8;
+      }
+      100% {
+          opacity: 1;
+      }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 640px) {
+      .progress-details {
+          flex-direction: column;
+          gap: 0.5rem;
+      }
+
+      .segment-label,
+      .milestone-label {
+          font-size: 0.6rem;
+      }
+
+      .progress-milestone {
+          display: none;
+      }
+
+      .progress-segments {
+          display: none;
+      }
+  }
+
+  /* Dark Mode Support */
+  @media (prefers-color-scheme: dark) {
+      .progress-component {
+          color: #e5e7eb;
+      }
+
+      .progress-title {
+          color: #f9fafb;
+      }
+
+      .progress-percentage,
+      .progress-fraction {
+          color: #9ca3af;
+      }
+
+      .progress-bar-background {
+          background: #374151;
+      }
+
+      .progress-description,
+      .progress-details {
+          color: #9ca3af;
+      }
+
+      .segment-label,
+      .milestone-label {
+          color: #9ca3af;
+      }
+
+      .milestone-marker {
+          background: #4b5563;
+          border-color: #1f2937;
+      }
+  }
+
+  /* Print Styles */
+  @media print {
+      .progress-component {
+          break-inside: avoid;
+      }
+
+      .progress-bar-fill {
+          background: #000 !important;
+      }
+
+      .progress-milestones,
+      .progress-segments {
+          display: none;
+      }
+  }
+</style>
+
+<script>
+  // Progress Bar Component JavaScript
+  class ProgressBar {
+    constructor(elementId, options = {}) {
+      this.element = document.getElementById(elementId);
+      this.options = {
+        animate: true,
+        duration: 600,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        onComplete: null,
+        onUpdate: null,
+        ...options,
+      };
+
+      this.currentValue = 0;
+      this.maxValue = 100;
+      this.targetValue = 0;
+
+      if (this.element) {
+        this.init();
+      }
+    }
+
+    init() {
+      this.currentValue = parseFloat(this.element.dataset.value) || 0;
+      this.maxValue = parseFloat(this.element.dataset.max) || 100;
+      this.targetValue = this.currentValue;
+
+      this.fillElement = this.element.querySelector(".progress-bar-fill");
+      this.percentageElement = this.element.querySelector(
+        ".progress-percentage"
+      );
+      this.fractionElement = this.element.querySelector(".progress-fraction");
+      this.innerTextElement = this.element.querySelector(
+        ".progress-inner-text"
+      );
+
+      // Set initial width without animation
+      if (this.fillElement) {
+        this.fillElement.style.transition = "none";
+        this.fillElement.style.width = "0%";
+
+        // Force reflow
+        this.fillElement.offsetHeight;
+
+        // Re-enable transitions
+        this.fillElement.style.transition = "";
+
+        // Animate to current value if animate is enabled
+        if (this.options.animate) {
+          setTimeout(() => this.updateDisplay(), 50);
+        } else {
+          this.updateDisplay();
+        }
+      }
+    }
+
+    setValue(value, animate = true) {
+      this.targetValue = Math.max(0, Math.min(value, this.maxValue));
+
+      if (animate && this.options.animate) {
+        this.animateToValue(this.targetValue);
+      } else {
+        this.currentValue = this.targetValue;
+        this.updateDisplay();
+      }
+
+      // Update data attribute
+      this.element.dataset.value = this.targetValue;
+    }
+
+    getValue() {
+      return this.currentValue;
+    }
+
+    setMaxValue(maxValue) {
+      this.maxValue = maxValue;
+      this.element.dataset.max = maxValue;
+      this.updateDisplay();
+    }
+
+    getMaxValue() {
+      return this.maxValue;
+    }
+
+    getPercentage() {
+      return (this.currentValue / this.maxValue) * 100;
+    }
+
+    increment(amount = 1) {
+      this.setValue(this.currentValue + amount);
+    }
+
+    decrement(amount = 1) {
+      this.setValue(this.currentValue - amount);
+    }
+
+    reset() {
+      this.setValue(0);
+    }
+
+    complete() {
+      this.setValue(this.maxValue);
+    }
+
+    animateToValue(targetValue) {
+      const startValue = this.currentValue;
+      const difference = targetValue - startValue;
+      const duration = this.options.duration;
+      const startTime = performance.now();
+
+      const animate = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Apply easing function
+        const easedProgress = this.easeInOutCubic(progress);
+
+        this.currentValue = startValue + difference * easedProgress;
+        this.updateDisplay();
+
+        if (this.options.onUpdate) {
+          this.options.onUpdate(this.currentValue, this.getPercentage());
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          this.currentValue = targetValue;
+          this.updateDisplay();
+
+          if (this.options.onComplete) {
+            this.options.onComplete(this.currentValue, this.getPercentage());
+          }
+
+          // Trigger custom event
+          this.element.dispatchEvent(
+            new CustomEvent("progressComplete", {
+              detail: {
+                value: this.currentValue,
+                percentage: this.getPercentage(),
+              },
+            })
+          );
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+
+    easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+    }
+
+    updateDisplay() {
+      const percentage = this.getPercentage();
+
+      // Update fill width
+      if (this.fillElement) {
+        this.fillElement.style.width = `${percentage}%`;
+      }
+
+      // Update percentage text
+      if (this.percentageElement) {
+        this.percentageElement.textContent = `${Math.round(percentage)}%`;
+      }
+
+      // Update fraction text
+      if (this.fractionElement) {
+        this.fractionElement.textContent = `${Math.round(this.currentValue)}/${
+          this.maxValue
+        }`;
+      }
+
+      // Update inner text
+      if (this.innerTextElement) {
+        this.innerTextElement.textContent = `${Math.round(this.currentValue)}/${
+          this.maxValue
+        }`;
+      }
+
+      // Update milestones
+      this.updateMilestones();
+    }
+
+    updateMilestones() {
+      const milestones = this.element.querySelectorAll(".progress-milestone");
+      milestones.forEach((milestone) => {
+        const position = parseFloat(milestone.style.left);
+        const milestoneValue = (position / 100) * this.maxValue;
+
+        if (this.currentValue >= milestoneValue) {
+          milestone.classList.add("completed");
+          milestone.classList.remove("pending");
+        } else {
+          milestone.classList.remove("completed");
+          milestone.classList.add("pending");
+        }
+      });
+    }
+
+    addMilestone(value, label, icon = null) {
+      const milestonesContainer = this.element.querySelector(
+        ".progress-milestones"
+      );
+      if (!milestonesContainer) return;
+
+      const milestone = document.createElement("div");
+      milestone.className = `progress-milestone ${
+        this.currentValue >= value ? "completed" : "pending"
+      }`;
+      milestone.style.left = `${(value / this.maxValue) * 100}%`;
+      milestone.title = label;
+
+      const marker = document.createElement("div");
+      marker.className = "milestone-marker";
+
+      if (icon) {
+        marker.innerHTML = `<i class="${icon}"></i>`;
+      } else {
+        marker.innerHTML = '<span class="milestone-dot"></span>';
+      }
+
+      milestone.appendChild(marker);
+
+      if (label) {
+        const labelElement = document.createElement("div");
+        labelElement.className = "milestone-label";
+        labelElement.textContent = label;
+        milestone.appendChild(labelElement);
+      }
+
+      milestonesContainer.appendChild(milestone);
+    }
+
+    removeMilestone(value) {
+      const milestones = this.element.querySelectorAll(".progress-milestone");
+      milestones.forEach((milestone) => {
+        const position = parseFloat(milestone.style.left);
+        const milestoneValue = (position / 100) * this.maxValue;
+
+        if (Math.abs(milestoneValue - value) < 0.01) {
+          milestone.remove();
+        }
+      });
+    }
+
+    setTheme(theme) {
+      // Remove existing theme classes
+      const themeClasses = [
+        "progress-success",
+        "progress-warning",
+        "progress-danger",
+        "progress-info",
+        "progress-purple",
+        "progress-pink",
+      ];
+      this.element.classList.remove(...themeClasses);
+
+      // Add new theme class
+      if (theme && theme !== "default") {
+        this.element.classList.add(`progress-${theme}`);
+      }
+    }
+
+    setStyle(style) {
+      // Remove existing style classes
+      const styleClasses = [
+        "progress-thin",
+        "progress-thick",
+        "progress-rounded",
+        "progress-square",
+        "progress-striped",
+        "progress-animated-stripes",
+      ];
+      this.element.classList.remove(...styleClasses);
+
+      // Add new style class
+      if (style && style !== "default") {
+        this.element.classList.add(`progress-${style}`);
+      }
+    }
+
+    destroy() {
+      // Clean up event listeners and references
+      this.element = null;
+      this.fillElement = null;
+      this.percentageElement = null;
+      this.fractionElement = null;
+      this.innerTextElement = null;
+    }
+  }
+
+  // Auto-initialize progress bars
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".progress-component").forEach((element) => {
+      const progressId = element.id;
+      if (
+        progressId &&
+        !window[`progress_${progressId.replace("progress-", "")}`]
+      ) {
+        window[`progress_${progressId.replace("progress-", "")}`] =
+          new ProgressBar(progressId);
+      }
+    });
+  });
+
+  // Utility functions for easy access
+  window.updateProgress = function (id, value, animate = true) {
+    const progressInstance = window[`progress_${id}`];
+    if (progressInstance) {
+      progressInstance.setValue(value, animate);
+    }
+  };
+
+  window.completeProgress = function (id) {
+    const progressInstance = window[`progress_${id}`];
+    if (progressInstance) {
+      progressInstance.complete();
+    }
+  };
+
+  window.resetProgress = function (id) {
+    const progressInstance = window[`progress_${id}`];
+    if (progressInstance) {
+      progressInstance.reset();
+    }
+  };
+</script>

@@ -1,0 +1,997 @@
+<!-- Location: src/python_mastery_hub/web/templates/exercises/submission.html -->
+
+{% extends "base.html" %} {% block title %}Submission Review - {{ exercise.title
+}} - Python Mastery Hub{% endblock %} {% block meta_description %}Review your
+Python exercise submission with detailed feedback and suggestions for
+improvement{% endblock %} {% block extra_css %}
+<style>
+  .submission-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .submission-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .submission-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .score-display {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    text-align: center;
+  }
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    position: relative;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+  }
+
+  .score-excellent {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .score-good {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  }
+
+  .score-fair {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .score-needs-improvement {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  .score-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .metric-item {
+    text-align: center;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+  }
+
+  .metric-label {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .submission-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .content-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .panel-content {
+    padding: 1.5rem;
+  }
+
+  .code-display {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .code-display .line-number {
+    color: #64748b;
+    margin-right: 1rem;
+    user-select: none;
+  }
+
+  .test-results {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .test-case {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid;
+  }
+
+  .test-case.passed {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+  }
+
+  .test-case.failed {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+  }
+
+  .test-icon {
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+  }
+
+  .test-icon.passed {
+    color: #10b981;
+  }
+
+  .test-icon.failed {
+    color: #ef4444;
+  }
+
+  .test-content {
+    flex: 1;
+  }
+
+  .test-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .test-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .test-details {
+    font-family: monospace;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .feedback-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+  }
+
+  .feedback-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid;
+  }
+
+  .feedback-item.strength {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+  }
+
+  .feedback-item.improvement {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+  }
+
+  .feedback-item.issue {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+  }
+
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .feedback-header.strength {
+    color: #059669;
+  }
+
+  .feedback-header.improvement {
+    color: #d97706;
+  }
+
+  .feedback-header.issue {
+    color: #dc2626;
+  }
+
+  .feedback-text {
+    color: #374151;
+    line-height: 1.5;
+  }
+
+  .suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .suggestion-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .suggestion-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .suggestion-text {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+  }
+
+  .btn-outline:hover {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #4b5563;
+    color: white;
+    text-decoration: none;
+  }
+
+  .share-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .share-modal.show {
+    display: flex;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 1rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #1f2937;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+  }
+
+  .share-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #6b7280;
+  }
+
+  .share-option:hover {
+    border-color: #667eea;
+    color: #667eea;
+    text-decoration: none;
+  }
+
+  .share-url {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .submission-content {
+      grid-template-columns: 1fr;
+    }
+
+    .score-metrics {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .suggestions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .share-options {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="submission-container">
+  <!-- Submission Header -->
+  <div class="submission-header">
+    <h1 class="h3 mb-2">Submission Review</h1>
+    <p class="mb-0 opacity-90">{{ exercise.title }}</p>
+
+    <div class="submission-meta">
+      <div class="meta-item">
+        <i class="fas fa-calendar"></i>
+        <span>{{ submission.submitted_at|date_format }}</span>
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-clock"></i>
+        <span>{{ submission.time_taken|duration_format }}</span>
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-redo"></i>
+        <span
+          >{{ submission.attempts }} attempt{{ submission.attempts|pluralize
+          }}</span
+        >
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-star"></i>
+        <span>{{ submission.points_earned }} XP earned</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Display -->
+  <div class="score-display">
+    <div class="score-circle score-{{ submission.grade_category }}">
+      {{ submission.score }}%
+    </div>
+    <h3>{{ submission.grade_text }}</h3>
+    <p class="text-muted">{{ submission.grade_description }}</p>
+
+    <div class="score-metrics">
+      <div class="metric-item">
+        <div class="metric-value">{{ submission.correctness_score }}%</div>
+        <div class="metric-label">Correctness</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-value">{{ submission.efficiency_score }}%</div>
+        <div class="metric-label">Efficiency</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-value">{{ submission.style_score }}%</div>
+        <div class="metric-label">Code Style</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-value">{{ submission.test_coverage }}%</div>
+        <div class="metric-label">Test Coverage</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submission Content -->
+  <div class="submission-content">
+    <!-- Your Code -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-code"></i>
+          Your Solution
+        </h3>
+        <button class="btn btn-outline btn-sm" onclick="copyCode()">
+          <i class="fas fa-copy"></i>
+          Copy
+        </button>
+      </div>
+      <div class="panel-content">
+        <div class="code-display" id="submittedCode">
+          {% for line_num, line in submission.code_lines %}
+          <div>
+            <span class="line-number">{{ line_num }}</span>{{ line|escape }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Results -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-vial"></i>
+          Test Results
+        </h3>
+        <span
+          class="badge bg-{{ 'success' if submission.all_tests_passed else 'danger' }}"
+        >
+          {{ submission.tests_passed }}/{{ submission.total_tests }} passed
+        </span>
+      </div>
+      <div class="panel-content">
+        <div class="test-results">
+          {% for test in submission.test_results %}
+          <div class="test-case {{ 'passed' if test.passed else 'failed' }}">
+            <div class="test-icon {{ 'passed' if test.passed else 'failed' }}">
+              <i
+                class="fas {{ 'fa-check' if test.passed else 'fa-times' }}"
+              ></i>
+            </div>
+            <div class="test-content">
+              <div class="test-title">{{ test.name }}</div>
+              <div class="test-description">{{ test.description }}</div>
+              {% if not test.passed %}
+              <div class="test-details">
+                <strong>Expected:</strong> {{ test.expected }}<br />
+                <strong>Got:</strong> {{ test.actual }} {% if test.error %}
+                <br /><strong>Error:</strong> {{ test.error }} {% endif %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Feedback -->
+  <div class="feedback-section">
+    <h3 class="mb-3">
+      <i class="fas fa-comments"></i>
+      Detailed Feedback
+    </h3>
+
+    <!-- Strengths -->
+    {% if submission.strengths %}
+    <div class="feedback-item strength">
+      <div class="feedback-header strength">
+        <i class="fas fa-thumbs-up"></i>
+        Strengths
+      </div>
+      <div class="feedback-text">
+        <ul>
+          {% for strength in submission.strengths %}
+          <li>{{ strength }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Areas for Improvement -->
+    {% if submission.improvements %}
+    <div class="feedback-item improvement">
+      <div class="feedback-header improvement">
+        <i class="fas fa-lightbulb"></i>
+        Areas for Improvement
+      </div>
+      <div class="feedback-text">
+        <ul>
+          {% for improvement in submission.improvements %}
+          <li>{{ improvement }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Issues Found -->
+    {% if submission.issues %}
+    <div class="feedback-item issue">
+      <div class="feedback-header issue">
+        <i class="fas fa-exclamation-triangle"></i>
+        Issues Found
+      </div>
+      <div class="feedback-text">
+        <ul>
+          {% for issue in submission.issues %}
+          <li>{{ issue }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Suggestions -->
+    {% if submission.suggestions %}
+    <h4 class="mt-3 mb-2">Suggestions for Next Steps</h4>
+    <div class="suggestions-grid">
+      {% for suggestion in submission.suggestions %}
+      <div class="suggestion-card">
+        <div class="suggestion-title">{{ suggestion.title }}</div>
+        <div class="suggestion-text">{{ suggestion.description }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    {% if not submission.all_tests_passed %}
+    <a href="/exercises/{{ exercise.id }}" class="btn btn-primary">
+      <i class="fas fa-redo"></i>
+      Try Again
+    </a>
+    {% endif %} {% if exercise.solution_available %}
+    <button class="btn btn-outline" onclick="viewSolution()">
+      <i class="fas fa-eye"></i>
+      View Solution
+    </button>
+    {% endif %}
+
+    <button class="btn btn-secondary" onclick="shareSubmission()">
+      <i class="fas fa-share"></i>
+      Share
+    </button>
+
+    {% if exercise.next_exercise_id %}
+    <a
+      href="/exercises/{{ exercise.next_exercise_id }}"
+      class="btn btn-success"
+    >
+      <i class="fas fa-arrow-right"></i>
+      Next Exercise
+    </a>
+    {% endif %}
+
+    <a href="/exercises" class="btn btn-outline">
+      <i class="fas fa-list"></i>
+      More Exercises
+    </a>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="share-modal" id="shareModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Share Your Solution</h3>
+      <button class="close-btn" onclick="closeShareModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="share-options">
+      <a href="#" class="share-option" onclick="shareToTwitter()">
+        <i class="fab fa-twitter" style="color: #1da1f2; font-size: 1.5rem"></i>
+        <span>Twitter</span>
+      </a>
+      <a href="#" class="share-option" onclick="shareToLinkedIn()">
+        <i
+          class="fab fa-linkedin"
+          style="color: #0077b5; font-size: 1.5rem"
+        ></i>
+        <span>LinkedIn</span>
+      </a>
+      <a href="#" class="share-option" onclick="shareToGitHub()">
+        <i class="fab fa-github" style="color: #333; font-size: 1.5rem"></i>
+        <span>GitHub</span>
+      </a>
+      <a href="#" class="share-option" onclick="copyShareLink()">
+        <i class="fas fa-link" style="color: #6b7280; font-size: 1.5rem"></i>
+        <span>Copy Link</span>
+      </a>
+    </div>
+
+    <input
+      type="text"
+      class="share-url"
+      id="shareUrl"
+      readonly
+      value="{{ request.url_root }}submissions/{{ submission.id }}"
+    />
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary flex-fill" onclick="copyShareLink()">
+        <i class="fas fa-copy"></i>
+        Copy Link
+      </button>
+      <button class="btn btn-outline flex-fill" onclick="closeShareModal()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Solution Modal -->
+<div class="share-modal" id="solutionModal">
+  <div class="modal-content" style="max-width: 800px">
+    <div class="modal-header">
+      <h3 class="modal-title">Official Solution</h3>
+      <button class="close-btn" onclick="closeSolutionModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="code-display" id="solutionCode">
+      <!-- Solution will be loaded here -->
+    </div>
+
+    <div class="mt-3">
+      <h4>Explanation</h4>
+      <div id="solutionExplanation">
+        <!-- Explanation will be loaded here -->
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-primary" onclick="copySolution()">
+        <i class="fas fa-copy"></i>
+        Copy Solution
+      </button>
+      <button class="btn btn-outline" onclick="closeSolutionModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Track submission view
+      trackEvent('submission_viewed', {
+          exercise_id: {{ exercise.id }},
+          submission_id: {{ submission.id }},
+          score: {{ submission.score }}
+      });
+  });
+
+  function copyCode() {
+      const codeElement = document.getElementById('submittedCode');
+      const codeText = codeElement.textContent;
+
+      navigator.clipboard.writeText(codeText).then(() => {
+          showToast('Code copied to clipboard!');
+      }).catch(err => {
+          console.error('Failed to copy code:', err);
+          showToast('Failed to copy code', 'error');
+      });
+  }
+
+  function shareSubmission() {
+      document.getElementById('shareModal').classList.add('show');
+  }
+
+  function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('show');
+  }
+
+  function shareToTwitter() {
+      const text = `I just completed the "${exercise.title}" exercise on Python Mastery Hub and scored ${submission.score}%! 🐍✨`;
+      const url = document.getElementById('shareUrl').value;
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      window.open(twitterUrl, '_blank');
+  }
+
+  function shareToLinkedIn() {
+      const url = document.getElementById('shareUrl').value;
+      const title = `Python Exercise Completed: ${exercise.title}`;
+      const summary = `I scored ${submission.score}% on this Python programming exercise!`;
+      const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(summary)}`;
+      window.open(linkedInUrl, '_blank');
+  }
+
+  function shareToGitHub() {
+      // This would typically create a gist or link to a GitHub repository
+      const gistData = {
+          description: `Python Mastery Hub - ${exercise.title} Solution`,
+          public: true,
+          files: {
+              [`${exercise.title.replace(/\s+/g, '_').toLowerCase()}.py`]: {
+                  content: document.getElementById('submittedCode').textContent
+              }
+          }
+      };
+
+      // For demo purposes, just copy the code
+      copyCode();
+      showToast('Code copied! You can now create a gist on GitHub.');
+  }
+
+  function copyShareLink() {
+      const shareUrl = document.getElementById('shareUrl');
+      shareUrl.select();
+      document.execCommand('copy');
+      showToast('Share link copied to clipboard!');
+  }
+
+  async function viewSolution() {
+      try {
+          const response = await fetch(`/api/exercises/${exercise.id}/solution`, {
+              headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+          });
+
+          if (response.ok) {
+              const solution = await response.json();
+              displaySolution(solution);
+          } else {
+              showToast('Failed to load solution', 'error');
+          }
+      } catch (error) {
+          console.error('Error loading solution:', error);
+          showToast('Failed to load solution', 'error');
+      }
+  }
+
+  function displaySolution(solution) {
+      const solutionCode = document.getElementById('solutionCode');
+      const solutionExplanation = document.getElementById('solutionExplanation');
+
+      // Format solution code with line numbers
+      const lines = solution.code.split('\n');
+      solutionCode.innerHTML = lines.map((line, index) =>
+          `<div><span class="line-number">${index + 1}</span>${escapeHtml(line)}</div>`
+      ).join('');
+
+      solutionExplanation.innerHTML = solution.explanation;
+
+      document.getElementById('solutionModal').classList.add('show');
+
+      trackEvent('solution_viewed', {
+          exercise_id: {{ exercise.id }},
+          submission_id: {{ submission.id }}
+      });
+  }
+
+  function closeSolutionModal() {
+      document.getElementById('solutionModal').classList.remove('show');
+  }
+
+  function copySolution() {
+      const solutionElement = document.getElementById('solutionCode');
+      const solutionText = solutionElement.textContent;
+
+      navigator.clipboard.writeText(solutionText).then(() => {
+          showToast('Solution copied to clipboard!');
+      }).catch(err => {
+          console.error('Failed to copy solution:', err);
+          showToast('Failed to copy solution', 'error');
+      });
+  }
+
+  function showToast(message, type = 'success') {
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.style.cssText = `
+          position: fixed;
+          top: 2rem;
+          right: 2rem;
+          background: ${type === 'success' ? '#10b981' : '#ef4444'};
+          color: white;
+          padding: 1rem 1.5rem;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 1001;
+          opacity: 0;
+          transform: translateX(100%);
+          transition: all 0.3s ease;
+      `;
+      toast.textContent = message;
+
+      document.body.appendChild(toast);
+
+      // Animate in
+      setTimeout(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateX(0)';
+      }, 100);
+
+      // Remove after 3 seconds
+      setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(100%)';
+          setTimeout(() => {
+              document.body.removeChild(toast);
+          }, 300);
+      }, 3000);
+  }
+
+  function trackEvent(eventName, data) {
+      fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({
+              event: eventName,
+              ...data
+          })
+      }).catch(console.error);
+  }
+
+  function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+  }
+
+  // Close modals when clicking outside
+  document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('share-modal')) {
+          closeShareModal();
+          closeSolutionModal();
+      }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+          closeShareModal();
+          closeSolutionModal();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          copyCode();
+      }
+  });
+</script>
+{% endblock %}

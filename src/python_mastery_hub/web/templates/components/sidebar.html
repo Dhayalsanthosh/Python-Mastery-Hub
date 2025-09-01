@@ -1,0 +1,522 @@
+<!-- Location: src/python_mastery_hub/web/templates/components/sidebar.html -->
+
+<!-- Sidebar Navigation (for authenticated users) -->
+<aside class="sidebar bg-white border-end" id="sidebar">
+  <!-- Sidebar Header -->
+  <div class="sidebar-header p-3 border-bottom">
+    <div class="d-flex align-items-center">
+      <img
+        src="{{ user.profile.avatar_url | default('/static/images/default-avatar.png') }}"
+        alt="Profile"
+        class="rounded-circle me-3"
+        style="width: 40px; height: 40px"
+      />
+      <div class="flex-grow-1">
+        <div class="fw-semibold text-truncate">{{ user.full_name }}</div>
+        <div class="text-muted small">
+          Level {{ user.stats.current_level | default(1) }}
+        </div>
+      </div>
+      <button
+        class="btn btn-sm btn-outline-secondary d-md-none"
+        id="sidebar-close"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mt-3 text-center">
+      <div class="col-4">
+        <div class="text-primary fw-bold">
+          {{ user.stats.exercises_completed | default(0) }}
+        </div>
+        <div class="text-muted small">Exercises</div>
+      </div>
+      <div class="col-4">
+        <div class="text-success fw-bold">
+          {{ user.stats.streak_days | default(0) }}
+        </div>
+        <div class="text-muted small">Day Streak</div>
+      </div>
+      <div class="col-4">
+        <div class="text-warning fw-bold">
+          {{ user.stats.badges_earned | default(0) }}
+        </div>
+        <div class="text-muted small">Badges</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <nav class="sidebar-nav">
+    <ul class="nav flex-column">
+      <!-- Dashboard -->
+      <li class="nav-item">
+        <a class="nav-link" href="/dashboard" data-page="dashboard">
+          <i class="fas fa-home sidebar-icon"></i>
+          <span class="sidebar-text">Dashboard</span>
+        </a>
+      </li>
+
+      <!-- Learning Section -->
+      <li class="nav-section">
+        <div class="nav-section-header">
+          <span class="text-muted small fw-semibold">LEARNING</span>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/modules" data-page="modules">
+          <i class="fas fa-book sidebar-icon"></i>
+          <span class="sidebar-text">Modules</span>
+          {% if user.stats.modules_in_progress > 0 %}
+          <span class="badge bg-primary ms-auto"
+            >{{ user.stats.modules_in_progress }}</span
+          >
+          {% endif %}
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/exercises" data-page="exercises">
+          <i class="fas fa-code sidebar-icon"></i>
+          <span class="sidebar-text">Exercises</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/practice" data-page="practice">
+          <i class="fas fa-dumbbell sidebar-icon"></i>
+          <span class="sidebar-text">Practice</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/projects" data-page="projects">
+          <i class="fas fa-folder-open sidebar-icon"></i>
+          <span class="sidebar-text">Projects</span>
+        </a>
+      </li>
+
+      <!-- Progress Section -->
+      <li class="nav-section">
+        <div class="nav-section-header">
+          <span class="text-muted small fw-semibold">PROGRESS</span>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/progress" data-page="progress">
+          <i class="fas fa-chart-line sidebar-icon"></i>
+          <span class="sidebar-text">Progress</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/achievements" data-page="achievements">
+          <i class="fas fa-trophy sidebar-icon"></i>
+          <span class="sidebar-text">Achievements</span>
+          {% if user.stats.recent_achievements > 0 %}
+          <span class="badge bg-warning ms-auto"
+            >{{ user.stats.recent_achievements }}</span
+          >
+          {% endif %}
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/leaderboard" data-page="leaderboard">
+          <i class="fas fa-crown sidebar-icon"></i>
+          <span class="sidebar-text">Leaderboard</span>
+        </a>
+      </li>
+
+      <!-- Community Section -->
+      <li class="nav-section">
+        <div class="nav-section-header">
+          <span class="text-muted small fw-semibold">COMMUNITY</span>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/discussions" data-page="discussions">
+          <i class="fas fa-comments sidebar-icon"></i>
+          <span class="sidebar-text">Discussions</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/help" data-page="help">
+          <i class="fas fa-question-circle sidebar-icon"></i>
+          <span class="sidebar-text">Help & Support</span>
+        </a>
+      </li>
+
+      <!-- Admin Section (if admin user) -->
+      {% if user.role == 'admin' %}
+      <li class="nav-section">
+        <div class="nav-section-header">
+          <span class="text-muted small fw-semibold">ADMINISTRATION</span>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/admin" data-page="admin">
+          <i class="fas fa-shield-alt sidebar-icon"></i>
+          <span class="sidebar-text">Admin Panel</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/users" data-page="admin-users">
+          <i class="fas fa-users sidebar-icon"></i>
+          <span class="sidebar-text">User Management</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/analytics" data-page="admin-analytics">
+          <i class="fas fa-chart-bar sidebar-icon"></i>
+          <span class="sidebar-text">Analytics</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer p-3 border-top mt-auto">
+    <!-- Current Goal Progress -->
+    {% if user.current_goal %}
+    <div class="mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="small text-muted">Weekly Goal</span>
+        <span class="small fw-semibold">{{ user.current_goal.progress }}%</span>
+      </div>
+      <div class="progress" style="height: 4px">
+        <div
+          class="progress-bar bg-success"
+          style="width: {{ user.current_goal.progress }}%"
+        ></div>
+      </div>
+      <div class="small text-muted mt-1">
+        {{ user.current_goal.current_value }}/{{ user.current_goal.target_value
+        }} {{ user.current_goal.metric }}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="d-grid gap-2">
+      <button class="btn btn-primary btn-sm" onclick="startPracticeSession()">
+        <i class="fas fa-play me-1"></i>
+        Quick Practice
+      </button>
+      <div class="row g-1">
+        <div class="col-6">
+          <button
+            class="btn btn-outline-secondary btn-sm w-100"
+            onclick="toggleTheme()"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+        <div class="col-6">
+          <button
+            class="btn btn-outline-secondary btn-sm w-100"
+            href="/settings"
+          >
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Sidebar Overlay (for mobile) -->
+<div class="sidebar-overlay d-md-none" id="sidebar-overlay"></div>
+
+<style>
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    z-index: 1025;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav {
+    flex-grow: 1;
+    padding: 1rem 0;
+  }
+
+  .sidebar-footer {
+    flex-shrink: 0;
+  }
+
+  .nav-section {
+    margin: 1rem 0 0.5rem 0;
+  }
+
+  .nav-section-header {
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .nav-link:hover {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+  }
+
+  .nav-link.active {
+    background-color: rgba(var(--primary-color), 0.1);
+    color: var(--primary-color);
+    border-right: 3px solid var(--primary-color);
+  }
+
+  .sidebar-icon {
+    width: 20px;
+    text-align: center;
+    margin-right: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .sidebar-text {
+    flex-grow: 1;
+  }
+
+  /* Mobile Sidebar */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1024;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  /* Collapsed Sidebar (future feature) */
+  .sidebar.collapsed {
+    width: 70px;
+  }
+
+  .sidebar.collapsed .sidebar-text,
+  .sidebar.collapsed .sidebar-header > div > div,
+  .sidebar.collapsed .nav-section-header,
+  .sidebar.collapsed .sidebar-footer > div:not(:last-child) {
+    display: none;
+  }
+
+  .sidebar.collapsed .sidebar-header {
+    text-align: center;
+  }
+
+  .sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .sidebar.collapsed .sidebar-icon {
+    margin-right: 0;
+  }
+
+  /* Custom Scrollbar */
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  /* Badge positioning */
+  .nav-link .badge {
+    font-size: 0.7em;
+  }
+
+  /* Progress bar in footer */
+  .sidebar-footer .progress {
+    background-color: rgba(var(--success-color), 0.2);
+  }
+</style>
+
+<script>
+  // Sidebar functionality
+  document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const sidebarClose = document.getElementById("sidebar-close");
+
+    // Toggle sidebar on mobile
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener("click", function () {
+        sidebar.classList.add("show");
+        sidebarOverlay.classList.add("show");
+      });
+    }
+
+    // Close sidebar
+    function closeSidebar() {
+      sidebar.classList.remove("show");
+      sidebarOverlay.classList.remove("show");
+    }
+
+    if (sidebarClose) {
+      sidebarClose.addEventListener("click", closeSidebar);
+    }
+
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener("click", closeSidebar);
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener("click", function (event) {
+      if (
+        window.innerWidth <= 768 &&
+        !sidebar.contains(event.target) &&
+        !sidebarToggle?.contains(event.target) &&
+        sidebar.classList.contains("show")
+      ) {
+        closeSidebar();
+      }
+    });
+
+    // Set active navigation item
+    const currentPage = getCurrentPage();
+    const navLinks = document.querySelectorAll(".sidebar .nav-link[data-page]");
+
+    navLinks.forEach((link) => {
+      if (link.getAttribute("data-page") === currentPage) {
+        link.classList.add("active");
+      }
+    });
+
+    // Update sidebar stats periodically
+    updateSidebarStats();
+    setInterval(updateSidebarStats, 60000); // Update every minute
+  });
+
+  function getCurrentPage() {
+    const path = window.location.pathname;
+
+    if (path === "/" || path === "/dashboard") return "dashboard";
+    if (path.startsWith("/modules")) return "modules";
+    if (path.startsWith("/exercises")) return "exercises";
+    if (path.startsWith("/practice")) return "practice";
+    if (path.startsWith("/projects")) return "projects";
+    if (path.startsWith("/progress")) return "progress";
+    if (path.startsWith("/achievements")) return "achievements";
+    if (path.startsWith("/leaderboard")) return "leaderboard";
+    if (path.startsWith("/discussions")) return "discussions";
+    if (path.startsWith("/help")) return "help";
+    if (path.startsWith("/admin")) {
+      if (path.includes("/users")) return "admin-users";
+      if (path.includes("/analytics")) return "admin-analytics";
+      return "admin";
+    }
+
+    return null;
+  }
+
+  function updateSidebarStats() {
+    // Update user stats in sidebar
+    fetch("/api/progress/")
+      .then((response) => response.json())
+      .then((data) => {
+        // Update stats display
+        const statsElements = document.querySelectorAll(
+          ".sidebar-header .text-primary, .sidebar-header .text-success, .sidebar-header .text-warning"
+        );
+        if (statsElements.length >= 3) {
+          statsElements[0].textContent = data.exercises_completed || 0;
+          statsElements[1].textContent = data.streak?.current_streak || 0;
+          statsElements[2].textContent = data.achievements_earned?.length || 0;
+        }
+      })
+      .catch((error) => console.error("Error updating sidebar stats:", error));
+  }
+
+  function startPracticeSession() {
+    // Redirect to a random exercise or start practice mode
+    window.location.href = "/exercises?mode=practice";
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", function (event) {
+    // Alt + D for Dashboard
+    if (event.altKey && event.key === "d") {
+      event.preventDefault();
+      window.location.href = "/dashboard";
+    }
+
+    // Alt + E for Exercises
+    if (event.altKey && event.key === "e") {
+      event.preventDefault();
+      window.location.href = "/exercises";
+    }
+
+    // Alt + M for Modules
+    if (event.altKey && event.key === "m") {
+      event.preventDefault();
+      window.location.href = "/modules";
+    }
+
+    // Alt + P for Progress
+    if (event.altKey && event.key === "p") {
+      event.preventDefault();
+      window.location.href = "/progress";
+    }
+  });
+</script>

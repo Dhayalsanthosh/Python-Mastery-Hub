@@ -1,0 +1,390 @@
+# File: deployment/ansible/playbook.yml
+# Main Ansible playbook for application deployment and configuration
+
+---
+- name: Deploy and Configure MyApp Infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    # Default variables - can be overridden via extra-vars
+    environment: "{{ env | default('staging') }}"
+    region: "{{ aws_region | default('us-west-2') }}"
+    project_name: "{{ project | default('myapp') }}"
+
+    # Application configuration
+    app_version: "{{ version | default('latest') }}"
+    namespace: "{{ project_name }}-{{ environment }}"
+
+    # Infrastructure configuration
+    cluster_name: "{{ project_name }}-{{ environment }}"
+
+    # Deployment configuration
+    deployment_timeout: 600
+    health_check_retries: 30
+    health_check_delay: 10
+
+  pre_tasks:
+    - name: Validate required variables
+      assert:
+        that:
+          - environment in ['development', 'staging', 'production']
+          - project_name is defined
+          - app_version is defined
+        fail_msg: "Required variables are missing or invalid"
+        success_msg: "Variable validation passed"
+
+    - name: Display deployment information
+      debug:
+        msg:
+          - "Deploying {{ project_name }} version {{ app_version }}"
+          - "Environment: {{ environment }}"
+          - "Region: {{ region }}"
+          - "Namespace: {{ namespace }}"
+          - "Cluster: {{ cluster_name }}"
+
+  roles:
+    - role: common
+      tags: ["common", "always"]
+
+    - role: aws-infrastructure
+      tags: ["infrastructure", "aws"]
+      when: deploy_infrastructure | default(false) | bool
+
+    - role: kubernetes-setup
+      tags: ["kubernetes", "k8s"]
+
+    - role: application-deployment
+      tags: ["application", "app", "deploy"]
+
+    - role: monitoring-setup
+      tags: ["monitoring", "observability"]
+      when: enable_monitoring | default(true) | bool
+
+    - role: backup-configuration
+      tags: ["backup", "disaster-recovery"]
+      when: enable_backup | default(true) | bool
+
+  post_tasks:
+    - name: Verify deployment health
+      uri:
+        url: "{{ health_check_url }}"
+        method: GET
+        status_code: 200
+        timeout: 10
+      register: health_check
+      retries: "{{ health_check_retries }}"
+      delay: "{{ health_check_delay }}"
+      when: health_check_url is defined
+
+    - name: Display deployment summary
+      debug:
+        msg:
+          - "Deployment completed successfully!"
+          - "Application URL: {{ app_url | default('Not configured') }}"
+          - "Monitoring URL: {{ monitoring_url | default('Not configured') }}"
+          - "Health Status: {{ health_check.status | default('Not checked') }}"
+
+  handlers:
+    - name: restart application
+      k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: "{{ project_name }}-web"
+            namespace: "{{ namespace }}"
+            annotations:
+              deployment.kubernetes.io/revision: "{{ ansible_date_time.epoch }}"
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deployment.restart: "{{ ansible_date_time.epoch }}"
+
+---
+- name: Configure Database Servers
+  hosts: database_servers
+  become: yes
+  gather_facts: true
+  vars:
+    postgres_version: "15"
+    postgres_data_dir: "/var/lib/postgresql/{{ postgres_version }}/main"
+    postgres_config_dir: "/etc/postgresql/{{ postgres_version }}/main"
+
+  pre_tasks:
+    - name: Update system packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update system packages (RHEL/CentOS)
+      yum:
+        name: "*"
+        state: latest
+      when: ansible_os_family == "RedHat"
+
+  roles:
+    - role: common
+      tags: ["common"]
+
+    - role: database-server
+      tags: ["database", "postgres"]
+
+    - role: backup-agent
+      tags: ["backup"]
+
+    - role: monitoring-agent
+      tags: ["monitoring"]
+
+  post_tasks:
+    - name: Verify PostgreSQL service
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Test database connectivity
+      postgresql_ping:
+        host: localhost
+        port: 5432
+        user: postgres
+      become_user: postgres
+
+---
+- name: Configure Application Servers
+  hosts: app_servers
+  become: yes
+  gather_facts: true
+  vars:
+    python_version: "3.11"
+    app_user: "myapp"
+    app_group: "myapp"
+    app_home: "/opt/myapp"
+
+  pre_tasks:
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        group: "{{ app_group }}"
+        home: "{{ app_home }}"
+        shell: /bin/bash
+        system: yes
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+      loop:
+        - "{{ app_home }}"
+        - "{{ app_home }}/logs"
+        - "{{ app_home }}/uploads"
+        - "{{ app_home }}/backups"
+        - "/etc/myapp"
+
+  roles:
+    - role: common
+      tags: ["common"]
+
+    - role: python-environment
+      tags: ["python", "runtime"]
+
+    - role: application-server
+      tags: ["application", "app"]
+
+    - role: web-server
+      tags: ["nginx", "web"]
+
+    - role: monitoring-agent
+      tags: ["monitoring"]
+
+  post_tasks:
+    - name: Verify application service
+      service:
+        name: myapp
+        state: started
+        enabled: yes
+
+    - name: Test application health
+      uri:
+        url: "http://localhost:5000/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+
+---
+- name: Configure Load Balancers
+  hosts: load_balancers
+  become: yes
+  gather_facts: true
+  vars:
+    nginx_worker_processes: "{{ ansible_processor_vcpus }}"
+    nginx_worker_connections: 1024
+    ssl_certificate_path: "/etc/ssl/certs/myapp.crt"
+    ssl_private_key_path: "/etc/ssl/private/myapp.key"
+
+  roles:
+    - role: common
+      tags: ["common"]
+
+    - role: nginx-loadbalancer
+      tags: ["nginx", "loadbalancer"]
+
+    - role: ssl-certificates
+      tags: ["ssl", "certificates"]
+
+    - role: monitoring-agent
+      tags: ["monitoring"]
+
+  post_tasks:
+    - name: Verify Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Test load balancer health
+      uri:
+        url: "http://localhost/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+
+---
+- name: Security Hardening
+  hosts: all
+  become: yes
+  gather_facts: true
+
+  roles:
+    - role: security-hardening
+      tags: ["security", "hardening"]
+
+    - role: firewall-configuration
+      tags: ["firewall", "security"]
+
+    - role: fail2ban-setup
+      tags: ["fail2ban", "security"]
+
+    - role: audit-logging
+      tags: ["audit", "logging", "security"]
+
+  post_tasks:
+    - name: Verify security services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - ufw
+        - fail2ban
+        - auditd
+
+---
+- name: Monitoring and Logging Setup
+  hosts: monitoring_servers
+  become: yes
+  gather_facts: true
+  vars:
+    prometheus_retention_time: "30d"
+    grafana_admin_password: "{{ vault_grafana_admin_password }}"
+    elasticsearch_heap_size: "1g"
+
+  roles:
+    - role: common
+      tags: ["common"]
+
+    - role: prometheus-server
+      tags: ["prometheus", "monitoring"]
+
+    - role: grafana-server
+      tags: ["grafana", "monitoring", "visualization"]
+
+    - role: elasticsearch
+      tags: ["elasticsearch", "logging"]
+
+    - role: kibana
+      tags: ["kibana", "logging", "visualization"]
+
+    - role: alertmanager
+      tags: ["alertmanager", "monitoring", "alerts"]
+
+  post_tasks:
+    - name: Verify monitoring services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - prometheus
+        - grafana-server
+        - elasticsearch
+        - kibana
+        - alertmanager
+
+---
+- name: Backup and Disaster Recovery
+  hosts: backup_servers
+  become: yes
+  gather_facts: true
+  vars:
+    backup_retention_days: 30
+    backup_schedule: "0 2 * * *" # Daily at 2 AM
+    s3_backup_bucket: "{{ project_name }}-{{ environment }}-backups"
+
+  roles:
+    - role: common
+      tags: ["common"]
+
+    - role: backup-server
+      tags: ["backup", "disaster-recovery"]
+
+    - role: s3-backup-sync
+      tags: ["s3", "backup", "sync"]
+
+  post_tasks:
+    - name: Test backup functionality
+      command: /opt/backup/test-backup.sh
+      register: backup_test
+
+    - name: Display backup test results
+      debug:
+        var: backup_test.stdout_lines
+
+---
+- name: Development Environment Setup
+  hosts: development_servers
+  become: yes
+  gather_facts: true
+  vars:
+    development_mode: true
+    debug_enabled: true
+
+  roles:
+    - role: common
+      tags: ["common"]
+
+    - role: development-tools
+      tags: ["development", "tools"]
+
+    - role: testing-environment
+      tags: ["testing", "development"]
+
+  post_tasks:
+    - name: Create development database
+      postgresql_db:
+        name: "{{ project_name }}_dev"
+        owner: "{{ app_user }}"
+      become_user: postgres
+
+    - name: Install development dependencies
+      pip:
+        requirements: "/opt/myapp/requirements/development.txt"
+        virtualenv: "/opt/myapp/venv"
+      become_user: "{{ app_user }}"

@@ -1,0 +1,462 @@
+{
+  "_comment": "File: security/scanning/safety_config.json",
+  "_description": "Safety dependency vulnerability scanning configuration for Python packages",
+
+  "scan_settings": {
+    "auto_update_db": true,
+    "database_path": "~/.safety/database.json",
+    "cache_timeout": 3600,
+    "check_unpinned": true,
+    "check_installed": true,
+    "check_requirements": true,
+    "recursive_requirements": true,
+    "ignore_unpinned": false,
+    "full_report": true,
+    "short_report": false,
+    "bare_output": false,
+    "cache": true,
+    "stdin": false,
+    "continue_on_error": false,
+    "save_json": true,
+    "json_output_file": "reports/safety_vulnerability_report.json",
+    "output_text": true,
+    "output_file": "reports/safety_vulnerability_report.txt"
+  },
+
+  "input_sources": {
+    "requirements_files": [
+      "requirements.txt",
+      "requirements-dev.txt",
+      "requirements-test.txt",
+      "requirements-prod.txt",
+      "dev-requirements.txt",
+      "test-requirements.txt",
+      "production-requirements.txt"
+    ],
+    "pipfile": "Pipfile",
+    "pipfile_lock": "Pipfile.lock",
+    "poetry_lock": "poetry.lock",
+    "pyproject_toml": "pyproject.toml",
+    "conda_environment": "environment.yml",
+    "setup_py": "setup.py",
+    "setup_cfg": "setup.cfg"
+  },
+
+  "severity_levels": {
+    "minimum_severity": "medium",
+    "severity_mapping": {
+      "critical": {
+        "action": "fail_build",
+        "notify": true,
+        "priority": 1
+      },
+      "high": {
+        "action": "fail_build",
+        "notify": true,
+        "priority": 2
+      },
+      "medium": {
+        "action": "warn",
+        "notify": true,
+        "priority": 3
+      },
+      "low": {
+        "action": "report",
+        "notify": false,
+        "priority": 4
+      },
+      "info": {
+        "action": "report",
+        "notify": false,
+        "priority": 5
+      }
+    }
+  },
+
+  "vulnerability_filters": {
+    "ignore_vulnerabilities": [],
+    "ignore_packages": [],
+    "ignore_cvss_severity_below": 4.0,
+    "ignore_cvss_unknown": false,
+    "ignore_unpinned_requirements": false,
+    "ignore_python_vulnerabilities": false,
+    "whitelist_files": ["security/scanning/safety_whitelist.txt"],
+    "temporary_ignores": {
+      "25853": {
+        "reason": "Waiting for upstream fix, low risk in our environment",
+        "expires": "2024-12-31",
+        "reviewer": "security-team@company.com"
+      }
+    }
+  },
+
+  "scanning_modes": {
+    "default": {
+      "name": "standard_scan",
+      "description": "Standard vulnerability scanning",
+      "check_installed": true,
+      "check_requirements": true,
+      "check_unpinned": true,
+      "full_report": true
+    },
+    "ci_cd": {
+      "name": "ci_pipeline",
+      "description": "CI/CD pipeline scanning",
+      "check_installed": false,
+      "check_requirements": true,
+      "check_unpinned": true,
+      "full_report": false,
+      "continue_on_error": false,
+      "exit_code_on_vulnerability": true
+    },
+    "development": {
+      "name": "dev_environment",
+      "description": "Development environment scanning",
+      "check_installed": true,
+      "check_requirements": true,
+      "check_unpinned": false,
+      "full_report": true,
+      "continue_on_error": true
+    },
+    "production": {
+      "name": "prod_audit",
+      "description": "Production environment audit",
+      "check_installed": true,
+      "check_requirements": true,
+      "check_unpinned": false,
+      "full_report": true,
+      "continue_on_error": false,
+      "minimum_severity": "high"
+    }
+  },
+
+  "reporting": {
+    "formats": ["json", "text", "html", "xml"],
+    "output_directory": "reports/safety/",
+    "file_naming": {
+      "timestamp": true,
+      "include_git_hash": true,
+      "include_environment": true,
+      "pattern": "safety_report_{environment}_{timestamp}_{git_hash}.{format}"
+    },
+    "include_metadata": {
+      "scan_date": true,
+      "safety_version": true,
+      "database_version": true,
+      "python_version": true,
+      "platform": true,
+      "scanned_packages_count": true,
+      "total_vulnerabilities": true,
+      "severity_breakdown": true
+    },
+    "detailed_reporting": {
+      "include_package_details": true,
+      "include_vulnerability_details": true,
+      "include_remediation_advice": true,
+      "include_references": true,
+      "include_cvss_scores": true,
+      "include_exploit_maturity": true
+    }
+  },
+
+  "database_configuration": {
+    "update_frequency": "daily",
+    "auto_update": true,
+    "fallback_sources": [
+      "https://pyup.io/safety/",
+      "https://github.com/pyupio/safety-db"
+    ],
+    "custom_sources": [],
+    "local_database": {
+      "enabled": false,
+      "path": "security/databases/custom_vulns.json",
+      "format": "safety_db"
+    },
+    "cache_settings": {
+      "enabled": true,
+      "max_age_hours": 24,
+      "cache_directory": "~/.safety/cache/"
+    }
+  },
+
+  "ci_cd_integration": {
+    "enabled": true,
+    "platforms": {
+      "github_actions": {
+        "enabled": true,
+        "workflow_file": ".github/workflows/security-scan.yml",
+        "fail_on_vulnerability": true,
+        "upload_sarif": true,
+        "create_issue": true
+      },
+      "gitlab_ci": {
+        "enabled": true,
+        "pipeline_file": ".gitlab-ci.yml",
+        "artifacts": true,
+        "security_reports": true
+      },
+      "jenkins": {
+        "enabled": true,
+        "pipeline_script": "Jenkinsfile",
+        "archive_reports": true,
+        "fail_build": true
+      },
+      "azure_devops": {
+        "enabled": false,
+        "pipeline_file": "azure-pipelines.yml"
+      }
+    },
+    "build_policies": {
+      "fail_on_critical": true,
+      "fail_on_high": true,
+      "fail_on_medium": false,
+      "fail_on_low": false,
+      "max_vulnerabilities": {
+        "critical": 0,
+        "high": 0,
+        "medium": 5,
+        "low": 10
+      }
+    }
+  },
+
+  "notifications": {
+    "email": {
+      "enabled": false,
+      "smtp_settings": {
+        "server": "smtp.company.com",
+        "port": 587,
+        "use_tls": true,
+        "username": "security-scanner@company.com",
+        "password_env_var": "SMTP_PASSWORD"
+      },
+      "recipients": ["security-team@company.com", "devops-team@company.com"],
+      "triggers": {
+        "new_vulnerabilities": true,
+        "critical_vulnerabilities": true,
+        "scan_failures": true,
+        "database_updates": false
+      },
+      "template": {
+        "subject": "[SECURITY] Safety Scan Alert - {severity} vulnerabilities found",
+        "body_template": "templates/safety_email_template.html"
+      }
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url_env_var": "SLACK_WEBHOOK_URL",
+      "channel": "#security-alerts",
+      "username": "SafetyBot",
+      "icon_emoji": ":warning:",
+      "triggers": {
+        "critical_vulnerabilities": true,
+        "high_vulnerabilities": true,
+        "scan_failures": true,
+        "summary_reports": false
+      },
+      "message_template": {
+        "critical": "🚨 *CRITICAL* vulnerabilities found in dependencies!",
+        "high": "⚠️ *HIGH* severity vulnerabilities detected",
+        "medium": "📋 Medium severity vulnerabilities found",
+        "summary": "📊 Safety scan completed"
+      }
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "https://api.company.com/security/webhooks/safety",
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer ${WEBHOOK_TOKEN}",
+        "Content-Type": "application/json",
+        "X-Scanner": "Safety"
+      },
+      "payload_template": {
+        "scanner": "safety",
+        "timestamp": "{timestamp}",
+        "vulnerabilities": "{vulnerabilities}",
+        "summary": "{summary}"
+      }
+    },
+    "jira": {
+      "enabled": false,
+      "server": "https://company.atlassian.net",
+      "project": "SEC",
+      "issue_type": "Security Vulnerability",
+      "auth": {
+        "username_env_var": "JIRA_USERNAME",
+        "token_env_var": "JIRA_TOKEN"
+      },
+      "create_issues_for": ["critical", "high"],
+      "issue_template": {
+        "summary": "Security Vulnerability: {package} {version}",
+        "description": "templates/jira_vulnerability_template.md",
+        "priority": "High",
+        "labels": ["security", "vulnerability", "safety"]
+      }
+    }
+  },
+
+  "environment_specific": {
+    "development": {
+      "ignore_unpinned": true,
+      "continue_on_error": true,
+      "notification_level": "high",
+      "scan_frequency": "on_commit"
+    },
+    "staging": {
+      "ignore_unpinned": false,
+      "continue_on_error": false,
+      "notification_level": "medium",
+      "scan_frequency": "daily"
+    },
+    "production": {
+      "ignore_unpinned": false,
+      "continue_on_error": false,
+      "notification_level": "low",
+      "scan_frequency": "daily",
+      "additional_checks": {
+        "verify_signatures": true,
+        "check_licenses": true
+      }
+    }
+  },
+
+  "remediation": {
+    "auto_update": {
+      "enabled": false,
+      "safe_updates_only": true,
+      "patch_level_only": true,
+      "create_pull_request": true,
+      "pr_settings": {
+        "title_template": "Security: Update {package} to fix vulnerabilities",
+        "body_template": "templates/security_pr_template.md",
+        "reviewers": ["security-team"],
+        "labels": ["security", "dependency-update"]
+      }
+    },
+    "manual_remediation": {
+      "generate_upgrade_guide": true,
+      "prioritize_by_severity": true,
+      "include_alternatives": true,
+      "output_file": "reports/remediation_guide.md"
+    },
+    "exemption_process": {
+      "require_approval": true,
+      "approvers": ["security-lead@company.com"],
+      "max_exemption_duration": "90 days",
+      "review_frequency": "monthly"
+    }
+  },
+
+  "license_checking": {
+    "enabled": true,
+    "allowed_licenses": [
+      "MIT",
+      "BSD",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "Apache-2.0",
+      "ISC",
+      "LGPL-2.1",
+      "LGPL-3.0",
+      "MPL-2.0"
+    ],
+    "prohibited_licenses": [
+      "GPL-2.0",
+      "GPL-3.0",
+      "AGPL-1.0",
+      "AGPL-3.0",
+      "CPAL-1.0",
+      "EUPL-1.1",
+      "EUPL-1.2"
+    ],
+    "unknown_license_action": "warn",
+    "license_compatibility_check": true
+  },
+
+  "package_verification": {
+    "verify_checksums": true,
+    "verify_signatures": false,
+    "trusted_publishers": ["pypi.org"],
+    "suspicious_package_patterns": [
+      ".*[0-9]{4,}.*",
+      ".*[lI1][oO0].*",
+      "^[a-z]{1,2}$"
+    ]
+  },
+
+  "performance_settings": {
+    "parallel_scanning": true,
+    "max_workers": 4,
+    "timeout_seconds": 300,
+    "retry_attempts": 3,
+    "retry_delay": 5,
+    "batch_size": 100
+  },
+
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "logs/safety.log",
+    "max_size_mb": 100,
+    "backup_count": 5,
+    "console_output": true,
+    "debug_mode": false
+  },
+
+  "plugins": {
+    "enabled_plugins": [],
+    "plugin_config": {},
+    "custom_checkers": []
+  },
+
+  "compliance": {
+    "frameworks": {
+      "soc2": {
+        "enabled": true,
+        "requirements": ["CC6.1", "CC6.7"]
+      },
+      "pci_dss": {
+        "enabled": false,
+        "requirements": ["6.5.1", "6.5.6"]
+      },
+      "iso27001": {
+        "enabled": true,
+        "controls": ["A.12.6.1", "A.14.2.1"]
+      }
+    },
+    "evidence_collection": {
+      "generate_compliance_report": true,
+      "include_scan_evidence": true,
+      "retention_period_days": 2555
+    }
+  },
+
+  "api_configuration": {
+    "safety_api": {
+      "enabled": true,
+      "api_key_env_var": "SAFETY_API_KEY",
+      "base_url": "https://pyup.io/api/v1/",
+      "timeout": 30,
+      "rate_limit": {
+        "requests_per_minute": 60,
+        "burst_limit": 10
+      }
+    },
+    "custom_api": {
+      "enabled": false,
+      "url": "https://vuln-db.company.com/api/",
+      "auth_header": "X-API-Key",
+      "auth_token_env_var": "CUSTOM_VULN_API_KEY"
+    }
+  },
+
+  "metadata": {
+    "config_version": "2.0.0",
+    "last_updated": "2024-08-20",
+    "created_by": "Security Team",
+    "description": "Comprehensive Safety configuration for dependency vulnerability scanning",
+    "documentation_url": "https://wiki.company.com/security/dependency-scanning",
+    "contact": "security-team@company.com"
+  }
+}

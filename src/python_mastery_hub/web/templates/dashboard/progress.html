@@ -1,0 +1,886 @@
+<!-- Location: src/python_mastery_hub/web/templates/dashboard/progress.html -->
+
+{% extends "base.html" %} {% block title %}Progress Tracking - Python Mastery
+Hub{% endblock %} {% block meta_description %}Track your Python learning
+progress with detailed analytics, skill assessments, and learning insights{%
+endblock %} {% block extra_css %}
+<style>
+  .progress-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .progress-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .level-indicator {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+  }
+
+  .progress-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .metric-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    text-align: center;
+  }
+
+  .metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem;
+    color: white;
+  }
+
+  .metric-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .metric-label {
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .metric-progress {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .metric-progress-bar {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .content-tabs {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  .tab-nav {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .tab-button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .tab-button.active {
+    color: #667eea;
+    background: #f8fafc;
+    border-bottom: 2px solid #667eea;
+  }
+
+  .tab-content {
+    padding: 2rem;
+    min-height: 400px;
+  }
+
+  .tab-pane {
+    display: none;
+  }
+
+  .tab-pane.active {
+    display: block;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .skill-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .skill-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .skill-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .skill-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .skill-title {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .skill-level {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .skill-progress {
+    margin-bottom: 1rem;
+  }
+
+  .skill-progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .skill-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .skill-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .timeline-container {
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .timeline-line {
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #667eea;
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px #e5e7eb;
+  }
+
+  .timeline-content {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  .timeline-date {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-description {
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .timeline-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .timeline-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #6b7280;
+  }
+
+  .analytics-chart {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .chart-title {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .chart-period {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .period-btn {
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .period-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .achievement-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .achievement-card.earned {
+    border-color: #10b981;
+    background: #f0fdf4;
+  }
+
+  .achievement-card.locked {
+    opacity: 0.6;
+  }
+
+  .achievement-card:hover:not(.locked) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .achievement-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  .achievement-icon.earned {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .achievement-icon.locked {
+    background: #9ca3af;
+  }
+
+  .achievement-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .achievement-description {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .achievement-progress {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  @media (max-width: 768px) {
+    .progress-metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .achievements-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .tab-nav {
+      flex-direction: column;
+    }
+
+    .timeline-container {
+      padding-left: 1rem;
+    }
+
+    .timeline-item {
+      padding-left: 1rem;
+    }
+
+    .timeline-dot {
+      left: -1rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="progress-container">
+  <!-- Progress Header -->
+  <div class="progress-header">
+    <h1 class="h3 mb-2">Your Learning Progress</h1>
+    <p class="mb-2 opacity-90">
+      Track your Python mastery journey with detailed insights and analytics
+    </p>
+    <div class="level-indicator">
+      <i class="fas fa-trophy me-2"></i>
+      <span
+        >Level {{ user.level }} • {{ user.xp_current }}/{{ user.xp_required }}
+        XP</span
+      >
+    </div>
+  </div>
+
+  <!-- Progress Metrics -->
+  <div class="progress-metrics">
+    <div class="metric-card">
+      <div
+        class="metric-icon"
+        style="background: linear-gradient(135deg, #667eea, #764ba2)"
+      >
+        <i class="fas fa-code"></i>
+      </div>
+      <div class="metric-number">{{ user.exercises_completed }}</div>
+      <div class="metric-label">Exercises Completed</div>
+      <div class="metric-progress">
+        <div
+          class="metric-progress-bar"
+          style="width: {{ (user.exercises_completed * 100 / user.total_exercises)|round }}%"
+        ></div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div
+        class="metric-icon"
+        style="background: linear-gradient(135deg, #10b981, #059669)"
+      >
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="metric-number">{{ user.study_time_hours }}h</div>
+      <div class="metric-label">Study Time</div>
+      <div class="metric-progress">
+        <div
+          class="metric-progress-bar"
+          style="width: {{ (user.study_time_hours * 100 / user.target_hours)|round }}%"
+        ></div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div
+        class="metric-icon"
+        style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+      >
+        <i class="fas fa-fire"></i>
+      </div>
+      <div class="metric-number">{{ user.streak_days }}</div>
+      <div class="metric-label">Day Streak</div>
+      <div class="metric-progress">
+        <div
+          class="metric-progress-bar"
+          style="width: {{ (user.streak_days * 100 / 30)|round }}%"
+        ></div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div
+        class="metric-icon"
+        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"
+      >
+        <i class="fas fa-percentage"></i>
+      </div>
+      <div class="metric-number">{{ user.accuracy_percentage }}%</div>
+      <div class="metric-label">Accuracy Rate</div>
+      <div class="metric-progress">
+        <div
+          class="metric-progress-bar"
+          style="width: {{ user.accuracy_percentage }}%"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabbed Content -->
+  <div class="content-tabs">
+    <div class="tab-nav">
+      <button class="tab-button active" data-tab="skills">
+        Skill Breakdown
+      </button>
+      <button class="tab-button" data-tab="timeline">Learning Timeline</button>
+      <button class="tab-button" data-tab="analytics">Analytics</button>
+      <button class="tab-button" data-tab="achievements">Achievements</button>
+    </div>
+
+    <!-- Skills Tab -->
+    <div class="tab-content">
+      <div class="tab-pane active" id="skills">
+        <div class="skills-grid">
+          {% for skill in user.skills %}
+          <div class="skill-card">
+            <div class="skill-header">
+              <div class="skill-icon" style="background: {{ skill.color }};">
+                <i class="{{ skill.icon }}"></i>
+              </div>
+              <div>
+                <div class="skill-title">{{ skill.name }}</div>
+                <div class="skill-level">
+                  {{ skill.level_name }} ({{ skill.progress }}%)
+                </div>
+              </div>
+            </div>
+            <div class="skill-progress">
+              <div class="skill-progress-bar">
+                <div
+                  class="skill-progress-fill"
+                  style="width: {{ skill.progress }}%; background: {{ skill.color }};"
+                ></div>
+              </div>
+            </div>
+            <div class="skill-stats">
+              <span>{{ skill.exercises_completed }} exercises</span>
+              <span>{{ skill.time_spent }}h spent</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Timeline Tab -->
+      <div class="tab-pane" id="timeline">
+        <div class="timeline-container">
+          <div class="timeline-line"></div>
+          {% for activity in user.recent_activity %}
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">{{ activity.date|date_format }}</div>
+              <div class="timeline-title">{{ activity.title }}</div>
+              <div class="timeline-description">{{ activity.description }}</div>
+              <div class="timeline-stats">
+                <div class="timeline-stat">
+                  <i class="fas fa-clock"></i>
+                  <span>{{ activity.duration }} min</span>
+                </div>
+                <div class="timeline-stat">
+                  <i class="fas fa-star"></i>
+                  <span>+{{ activity.points }} XP</span>
+                </div>
+                {% if activity.accuracy %}
+                <div class="timeline-stat">
+                  <i class="fas fa-percentage"></i>
+                  <span>{{ activity.accuracy }}% accuracy</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div class="tab-pane" id="analytics">
+        <!-- Study Time Chart -->
+        <div class="analytics-chart">
+          <div class="chart-header">
+            <h5 class="chart-title">Study Time Trends</h5>
+            <div class="chart-period">
+              <button class="period-btn active" data-period="7">7D</button>
+              <button class="period-btn" data-period="30">30D</button>
+              <button class="period-btn" data-period="90">90D</button>
+            </div>
+          </div>
+          <canvas id="studyTimeChart" height="100"></canvas>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="analytics-chart">
+          <div class="chart-header">
+            <h5 class="chart-title">Performance by Topic</h5>
+          </div>
+          <canvas id="performanceChart" height="100"></canvas>
+        </div>
+
+        <!-- Weekly Summary -->
+        <div class="analytics-chart">
+          <h5 class="chart-title">This Week's Summary</h5>
+          <div class="row">
+            <div class="col-md-3 text-center">
+              <div class="h4 text-primary">{{ user.weekly_exercises }}</div>
+              <div class="text-muted">Exercises</div>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="h4 text-success">{{ user.weekly_hours }}h</div>
+              <div class="text-muted">Study Time</div>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="h4 text-warning">{{ user.weekly_points }}</div>
+              <div class="text-muted">Points Earned</div>
+            </div>
+            <div class="col-md-3 text-center">
+              <div class="h4 text-info">{{ user.weekly_accuracy }}%</div>
+              <div class="text-muted">Accuracy</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements Tab -->
+      <div class="tab-pane" id="achievements">
+        <div class="achievements-grid">
+          {% for achievement in all_achievements %}
+          <div
+            class="achievement-card {{ 'earned' if achievement.earned else 'locked' }}"
+          >
+            <div
+              class="achievement-icon {{ 'earned' if achievement.earned else 'locked' }}"
+            >
+              <i class="{{ achievement.icon }}"></i>
+            </div>
+            <div class="achievement-title">{{ achievement.name }}</div>
+            <div class="achievement-description">
+              {{ achievement.description }}
+            </div>
+            {% if achievement.earned %}
+            <div class="achievement-progress text-success">
+              <i class="fas fa-check me-1"></i>
+              Earned on {{ achievement.earned_date|date_format }}
+            </div>
+            {% else %}
+            <div class="achievement-progress">
+              {{ achievement.progress }}/{{ achievement.target }} {{
+              achievement.unit }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+  let studyTimeChart, performanceChart;
+
+  document.addEventListener('DOMContentLoaded', function() {
+      // Initialize tabs
+      initializeTabs();
+
+      // Initialize charts
+      initializeCharts();
+
+      // Animate skill progress bars
+      animateSkillBars();
+
+      // Set up period buttons
+      initializePeriodButtons();
+  });
+
+  function initializeTabs() {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+
+      tabButtons.forEach(button => {
+          button.addEventListener('click', () => {
+              const targetTab = button.dataset.tab;
+
+              // Remove active class from all buttons and panes
+              tabButtons.forEach(btn => btn.classList.remove('active'));
+              tabPanes.forEach(pane => pane.classList.remove('active'));
+
+              // Add active class to clicked button and corresponding pane
+              button.classList.add('active');
+              document.getElementById(targetTab).classList.add('active');
+
+              // Refresh charts if analytics tab is opened
+              if (targetTab === 'analytics') {
+                  setTimeout(() => {
+                      if (studyTimeChart) studyTimeChart.resize();
+                      if (performanceChart) performanceChart.resize();
+                  }, 100);
+              }
+          });
+      });
+  }
+
+  function initializeCharts() {
+      // Study Time Chart
+      const studyTimeCtx = document.getElementById('studyTimeChart');
+      if (studyTimeCtx) {
+          studyTimeChart = new Chart(studyTimeCtx, {
+              type: 'line',
+              data: {
+                  labels: {{ study_time_labels|safe }},
+                  datasets: [{
+                      label: 'Study Time (minutes)',
+                      data: {{ study_time_data|safe }},
+                      borderColor: '#667eea',
+                      backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                      tension: 0.4,
+                      fill: true
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          grid: {
+                              color: '#f3f4f6'
+                          }
+                      },
+                      x: {
+                          grid: {
+                              color: '#f3f4f6'
+                          }
+                      }
+                  }
+              }
+          });
+      }
+
+      // Performance Chart
+      const performanceCtx = document.getElementById('performanceChart');
+      if (performanceCtx) {
+          performanceChart = new Chart(performanceCtx, {
+              type: 'radar',
+              data: {
+                  labels: {{ performance_labels|safe }},
+                  datasets: [{
+                      label: 'Your Performance',
+                      data: {{ performance_data|safe }},
+                      borderColor: '#667eea',
+                      backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                      pointBackgroundColor: '#667eea',
+                      pointBorderColor: '#fff',
+                      pointHoverBackgroundColor: '#fff',
+                      pointHoverBorderColor: '#667eea'
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      r: {
+                          beginAtZero: true,
+                          max: 100,
+                          ticks: {
+                              stepSize: 20
+                          },
+                          grid: {
+                              color: '#f3f4f6'
+                          }
+                      }
+                  }
+              }
+          });
+      }
+  }
+
+  function animateSkillBars() {
+      const skillBars = document.querySelectorAll('.skill-progress-fill');
+      const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                  const bar = entry.target;
+                  const width = bar.style.width;
+                  bar.style.width = '0%';
+                  setTimeout(() => {
+                      bar.style.width = width;
+                  }, 100);
+              }
+          });
+      });
+
+      skillBars.forEach(bar => observer.observe(bar));
+  }
+
+  function initializePeriodButtons() {
+      const periodButtons = document.querySelectorAll('.period-btn');
+
+      periodButtons.forEach(button => {
+          button.addEventListener('click', () => {
+              periodButtons.forEach(btn => btn.classList.remove('active'));
+              button.classList.add('active');
+
+              const period = button.dataset.period;
+              updateStudyTimeChart(period);
+          });
+      });
+  }
+
+  async function updateStudyTimeChart(period) {
+      try {
+          const response = await fetch(`/api/analytics/study-time?period=${period}`, {
+              headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+          });
+
+          if (response.ok) {
+              const data = await response.json();
+              studyTimeChart.data.labels = data.labels;
+              studyTimeChart.data.datasets[0].data = data.values;
+              studyTimeChart.update();
+          }
+      } catch (error) {
+          console.error('Failed to update chart:', error);
+      }
+  }
+
+  // Animate metric cards on scroll
+  const metricCards = document.querySelectorAll('.metric-card');
+  const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+          if (entry.isIntersecting) {
+              entry.target.style.opacity = '0';
+              entry.target.style.transform = 'translateY(20px)';
+              entry.target.style.transition = 'all 0.6s ease';
+
+              setTimeout(() => {
+                  entry.target.style.opacity = '1';
+                  entry.target.style.transform = 'translateY(0)';
+              }, 100);
+          }
+      });
+  });
+
+  metricCards.forEach(card => cardObserver.observe(card));
+
+  // Export progress data
+  function exportProgress() {
+      const data = {
+          user: {
+              level: {{ user.level }},
+              exercises_completed: {{ user.exercises_completed }},
+              study_time_hours: {{ user.study_time_hours }},
+              streak_days: {{ user.streak_days }},
+              accuracy_percentage: {{ user.accuracy_percentage }}
+          },
+          skills: {{ user.skills|tojson }},
+          achievements: {{ all_achievements|tojson }},
+          recent_activity: {{ user.recent_activity|tojson }}
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'progress-report.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+  }
+
+  // Add export button functionality
+  document.addEventListener('click', function(e) {
+      if (e.target.matches('[data-action="export"]')) {
+          exportProgress();
+      }
+  });
+</script>
+{% endblock %}

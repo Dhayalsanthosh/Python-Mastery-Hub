@@ -1,0 +1,1151 @@
+<!-- Location: src/python_mastery_hub/web/templates/exercises/results.html -->
+
+{% extends "base.html" %} {% block title %}Exercise Results - Python Mastery
+Hub{% endblock %} {% block meta_description %}View comprehensive results and
+analytics for Python programming exercises{% endblock %} {% block extra_css %}
+<style>
+  .results-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .results-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .results-filters {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .filter-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+  }
+
+  .filter-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.25rem;
+  }
+
+  .filter-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
+  .view-btn {
+    background: #f3f4f6;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6b7280;
+  }
+
+  .view-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .view-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .view-btn.active:hover {
+    background: #5a67d8;
+  }
+
+  .results-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .overview-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    text-align: center;
+  }
+
+  .overview-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem;
+    color: white;
+  }
+
+  .overview-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .overview-label {
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .overview-change {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .overview-change.positive {
+    color: #10b981;
+  }
+
+  .overview-change.negative {
+    color: #ef4444;
+  }
+
+  .overview-change.neutral {
+    color: #6b7280;
+  }
+
+  .results-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .content-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .panel-content {
+    padding: 1.5rem;
+  }
+
+  .exercises-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .exercises-list {
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .exercises-list.active {
+    display: flex;
+  }
+
+  .exercises-grid.active {
+    display: grid;
+  }
+
+  .exercise-result {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .exercise-result:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .exercise-result.completed {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  }
+
+  .exercise-result.failed {
+    border-left: 4px solid #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  }
+
+  .exercise-result.in-progress {
+    border-left: 4px solid #f59e0b;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  }
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .exercise-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .exercise-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .exercise-details {
+    flex: 1;
+  }
+
+  .exercise-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .exercise-meta {
+    font-size: 0.85rem;
+    color: #6b7280;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .status-completed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .status-failed {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .status-in-progress {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .exercise-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #1f2937;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+  }
+
+  .exercise-list-item {
+    display: grid;
+    grid-template-columns: auto 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .exercise-list-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .leaderboard {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .leaderboard-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+  }
+
+  .leaderboard-item:hover {
+    background: #f9fafb;
+  }
+
+  .leaderboard-item:last-child {
+    border-bottom: none;
+  }
+
+  .rank-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: white;
+  }
+
+  .rank-1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  }
+
+  .rank-2 {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+  }
+
+  .rank-3 {
+    background: linear-gradient(135deg, #d97706, #b45309);
+  }
+
+  .rank-other {
+    background: #e5e7eb;
+    color: #6b7280;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .user-info {
+    flex: 1;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .user-stats {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .score-display {
+    text-align: right;
+  }
+
+  .score-value {
+    font-weight: bold;
+    color: #1f2937;
+  }
+
+  .score-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .chart-container {
+    margin-bottom: 2rem;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .chart-title {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .chart-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .chart-btn {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6b7280;
+  }
+
+  .chart-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+
+  .pagination-btn {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6b7280;
+  }
+
+  .pagination-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .pagination-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 1024px) {
+    .results-content {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .results-overview {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .view-toggle {
+      margin-left: 0;
+      justify-content: center;
+    }
+
+    .exercise-list-item {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      text-align: center;
+    }
+
+    .exercise-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="results-container">
+  <!-- Results Header -->
+  <div class="results-header">
+    <h1 class="h3 mb-2">Exercise Results</h1>
+    <p class="mb-0 opacity-90">
+      Track your progress and performance across all Python exercises
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="results-filters">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-label">Time Period</label>
+        <select class="filter-select" id="timePeriodFilter">
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Difficulty</label>
+        <select class="filter-select" id="difficultyFilter">
+          <option value="all">All Levels</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Topic</label>
+        <select class="filter-select" id="topicFilter">
+          <option value="all">All Topics</option>
+          <option value="basics">Python Basics</option>
+          <option value="data-structures">Data Structures</option>
+          <option value="algorithms">Algorithms</option>
+          <option value="oop">Object-Oriented Programming</option>
+          <option value="web">Web Development</option>
+          <option value="data-science">Data Science</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Status</label>
+        <select class="filter-select" id="statusFilter">
+          <option value="all">All Statuses</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+          <option value="in-progress">In Progress</option>
+        </select>
+      </div>
+
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="grid">
+          <i class="fas fa-th"></i>
+        </button>
+        <button class="view-btn" data-view="list">
+          <i class="fas fa-list"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Overview -->
+  <div class="results-overview">
+    <div class="overview-card">
+      <div
+        class="overview-icon"
+        style="background: linear-gradient(135deg, #10b981, #059669)"
+      >
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="overview-number">{{ stats.exercises_completed }}</div>
+      <div class="overview-label">Exercises Completed</div>
+      <div class="overview-change positive">
+        <i class="fas fa-arrow-up"></i>
+        <span>+{{ stats.completed_this_week }} this week</span>
+      </div>
+    </div>
+
+    <div class="overview-card">
+      <div
+        class="overview-icon"
+        style="background: linear-gradient(135deg, #667eea, #764ba2)"
+      >
+        <i class="fas fa-percentage"></i>
+      </div>
+      <div class="overview-number">{{ stats.average_score }}%</div>
+      <div class="overview-label">Average Score</div>
+      <div
+        class="overview-change {{ 'positive' if stats.score_trend > 0 else 'negative' if stats.score_trend < 0 else 'neutral' }}"
+      >
+        <i
+          class="fas fa-arrow-{{ 'up' if stats.score_trend > 0 else 'down' if stats.score_trend < 0 else 'right' }}"
+        ></i>
+        <span>{{ stats.score_trend|abs }}% from last week</span>
+      </div>
+    </div>
+
+    <div class="overview-card">
+      <div
+        class="overview-icon"
+        style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+      >
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="overview-number">{{ stats.total_time_spent }}h</div>
+      <div class="overview-label">Time Spent</div>
+      <div class="overview-change positive">
+        <i class="fas fa-arrow-up"></i>
+        <span>+{{ stats.time_this_week }}h this week</span>
+      </div>
+    </div>
+
+    <div class="overview-card">
+      <div
+        class="overview-icon"
+        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"
+      >
+        <i class="fas fa-fire"></i>
+      </div>
+      <div class="overview-number">{{ stats.current_streak }}</div>
+      <div class="overview-label">Day Streak</div>
+      <div
+        class="overview-change {{ 'positive' if stats.streak_trend >= 0 else 'negative' }}"
+      >
+        <i
+          class="fas fa-arrow-{{ 'up' if stats.streak_trend > 0 else 'right' if stats.streak_trend == 0 else 'down' }}"
+        ></i>
+        <span
+          >{{ 'Best: ' + stats.best_streak|string if stats.streak_trend >= 0
+          else 'Lost streak' }}</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="results-content">
+    <!-- Exercise Results -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-list-alt"></i>
+          Your Results
+        </h3>
+        <div class="d-flex gap-2">
+          <select class="filter-select" id="sortFilter">
+            <option value="date">Sort by Date</option>
+            <option value="score">Sort by Score</option>
+            <option value="time">Sort by Time</option>
+            <option value="difficulty">Sort by Difficulty</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel-content">
+        <!-- Grid View -->
+        <div class="exercises-grid active" id="exercisesGrid">
+          {% for result in exercise_results %}
+          <div
+            class="exercise-result {{ result.status }}"
+            data-difficulty="{{ result.difficulty }}"
+            data-topic="{{ result.topic }}"
+            data-status="{{ result.status }}"
+            onclick="viewResult({{ result.id }})"
+          >
+            <div class="exercise-header">
+              <div class="exercise-info">
+                <div
+                  class="exercise-icon"
+                  style="background: {{ result.color }};"
+                >
+                  <i class="{{ result.icon }}"></i>
+                </div>
+                <div class="exercise-details">
+                  <div class="exercise-title">{{ result.exercise_title }}</div>
+                  <div class="exercise-meta">
+                    <span>{{ result.topic|title }}</span>
+                    <span>{{ result.submitted_at|timeago }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="status-badge status-{{ result.status }}">
+                {{ result.status|replace('-', ' ')|title }}
+              </div>
+            </div>
+
+            <div class="exercise-stats">
+              <div class="stat-item">
+                <div class="stat-value">{{ result.score }}%</div>
+                <div class="stat-label">Score</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">
+                  {{ result.time_taken|duration_format }}
+                </div>
+                <div class="stat-label">Time</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ result.attempts }}</div>
+                <div class="stat-label">Attempts</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ result.points_earned }}</div>
+                <div class="stat-label">XP</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- List View -->
+        <div class="exercises-list" id="exercisesList">
+          {% for result in exercise_results %}
+          <div
+            class="exercise-list-item"
+            data-difficulty="{{ result.difficulty }}"
+            data-topic="{{ result.topic }}"
+            data-status="{{ result.status }}"
+            onclick="viewResult({{ result.id }})"
+          >
+            <div class="exercise-icon" style="background: {{ result.color }};">
+              <i class="{{ result.icon }}"></i>
+            </div>
+            <div>
+              <div class="exercise-title">{{ result.exercise_title }}</div>
+              <div class="exercise-meta">
+                {{ result.topic|title }} • {{ result.submitted_at|timeago }}
+              </div>
+            </div>
+            <div class="status-badge status-{{ result.status }}">
+              {{ result.status|replace('-', ' ')|title }}
+            </div>
+            <div class="text-center">
+              <div class="stat-value">{{ result.score }}%</div>
+              <div class="stat-label">Score</div>
+            </div>
+            <div class="text-center">
+              <div class="stat-value">
+                {{ result.time_taken|duration_format }}
+              </div>
+              <div class="stat-label">Time</div>
+            </div>
+            <div class="text-center">
+              <div class="stat-value">{{ result.points_earned }}</div>
+              <div class="stat-label">XP</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+          <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div id="pageNumbers"></div>
+          <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <!-- Performance Chart -->
+      <div class="content-panel chart-container">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <i class="fas fa-chart-line"></i>
+            Performance Trends
+          </h3>
+          <div class="chart-controls">
+            <button class="chart-btn active" data-period="7">7D</button>
+            <button class="chart-btn" data-period="30">30D</button>
+            <button class="chart-btn" data-period="90">90D</button>
+          </div>
+        </div>
+        <div class="panel-content">
+          <canvas id="performanceChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="content-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <i class="fas fa-trophy"></i>
+            Leaderboard
+          </h3>
+          <select class="filter-select" id="leaderboardFilter">
+            <option value="overall">Overall</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+        </div>
+        <div class="panel-content">
+          <div class="leaderboard">
+            {% for user in leaderboard %}
+            <div
+              class="leaderboard-item {{ 'bg-primary bg-opacity-10' if user.is_current_user }}"
+            >
+              <div
+                class="rank-badge rank-{{ '1' if user.rank == 1 else '2' if user.rank == 2 else '3' if user.rank == 3 else 'other' }}"
+              >
+                {{ user.rank }}
+              </div>
+              <img
+                src="{{ user.avatar_url or '/static/images/default-avatar.png' }}"
+                alt="{{ user.username }}"
+                class="user-avatar"
+              />
+              <div class="user-info">
+                <div class="user-name">{{ user.display_name }}</div>
+                <div class="user-stats">
+                  {{ user.exercises_completed }} exercises
+                </div>
+              </div>
+              <div class="score-display">
+                <div class="score-value">{{ user.total_points }}</div>
+                <div class="score-label">points</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+  let currentPage = 1;
+  const resultsPerPage = 12;
+  let filteredResults = [];
+  let allResults = [];
+  let performanceChart;
+
+  document.addEventListener('DOMContentLoaded', function() {
+      // Initialize data
+      allResults = Array.from(document.querySelectorAll('.exercise-result, .exercise-list-item'));
+      filteredResults = [...allResults];
+
+      // Initialize event listeners
+      initializeFilters();
+      initializeViewControls();
+      initializeChart();
+
+      // Initial pagination setup
+      updatePagination();
+  });
+
+  function initializeFilters() {
+      const filters = ['timePeriodFilter', 'difficultyFilter', 'topicFilter', 'statusFilter', 'sortFilter'];
+
+      filters.forEach(filterId => {
+          const filter = document.getElementById(filterId);
+          if (filter) {
+              filter.addEventListener('change', applyFilters);
+          }
+      });
+
+      // Leaderboard filter
+      const leaderboardFilter = document.getElementById('leaderboardFilter');
+      if (leaderboardFilter) {
+          leaderboardFilter.addEventListener('change', updateLeaderboard);
+      }
+  }
+
+  function initializeViewControls() {
+      const viewButtons = document.querySelectorAll('.view-btn');
+      const gridView = document.getElementById('exercisesGrid');
+      const listView = document.getElementById('exercisesList');
+
+      viewButtons.forEach(button => {
+          button.addEventListener('click', () => {
+              const view = button.dataset.view;
+
+              // Update button states
+              viewButtons.forEach(btn => btn.classList.remove('active'));
+              button.classList.add('active');
+
+              // Toggle views
+              if (view === 'grid') {
+                  gridView.classList.add('active');
+                  listView.classList.remove('active');
+              } else {
+                  gridView.classList.remove('active');
+                  listView.classList.add('active');
+              }
+          });
+      });
+  }
+
+  function initializeChart() {
+      const ctx = document.getElementById('performanceChart');
+      if (!ctx) return;
+
+      performanceChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: {{ performance_chart.labels|tojson }},
+              datasets: [{
+                  label: 'Average Score',
+                  data: {{ performance_chart.scores|tojson }},
+                  borderColor: '#667eea',
+                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                  tension: 0.4,
+                  fill: true
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: {
+                      display: false
+                  }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      max: 100,
+                      grid: {
+                          color: '#f3f4f6'
+                      }
+                  },
+                  x: {
+                      grid: {
+                          color: '#f3f4f6'
+                      }
+                  }
+              }
+          }
+      });
+
+      // Chart period controls
+      const chartButtons = document.querySelectorAll('.chart-btn');
+      chartButtons.forEach(button => {
+          button.addEventListener('click', () => {
+              chartButtons.forEach(btn => btn.classList.remove('active'));
+              button.classList.add('active');
+
+              const period = button.dataset.period;
+              updateChart(period);
+          });
+      });
+  }
+
+  function applyFilters() {
+      const timePeriod = document.getElementById('timePeriodFilter').value;
+      const difficulty = document.getElementById('difficultyFilter').value;
+      const topic = document.getElementById('topicFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+
+      filteredResults = allResults.filter(result => {
+          // Apply filters
+          if (difficulty !== 'all' && result.dataset.difficulty !== difficulty) return false;
+          if (topic !== 'all' && result.dataset.topic !== topic) return false;
+          if (status !== 'all' && result.dataset.status !== status) return false;
+
+          // Time period filter would require additional data attributes
+          // This is a simplified implementation
+
+          return true;
+      });
+
+      // Sort results
+      sortResults(sort);
+
+      currentPage = 1;
+      updateDisplay();
+      updatePagination();
+  }
+
+  function sortResults(sortBy) {
+      // This would implement sorting based on the sort option
+      // For demo purposes, we'll keep the current order
+  }
+
+  function updateDisplay() {
+      // Hide all results
+      allResults.forEach(result => {
+          result.style.display = 'none';
+      });
+
+      // Show filtered results for current page
+      const startIndex = (currentPage - 1) * resultsPerPage;
+      const endIndex = startIndex + resultsPerPage;
+      const pageResults = filteredResults.slice(startIndex, endIndex);
+
+      pageResults.forEach(result => {
+          result.style.display = '';
+      });
+  }
+
+  function updatePagination() {
+      const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+      const pageNumbers = document.getElementById('pageNumbers');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      // Update navigation buttons
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+
+      // Generate page numbers
+      pageNumbers.innerHTML = '';
+
+      for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+          const button = document.createElement('button');
+          button.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+          button.textContent = i;
+          button.onclick = () => goToPage(i);
+          pageNumbers.appendChild(button);
+      }
+
+      updateDisplay();
+  }
+
+  function changePage(direction) {
+      const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+      const newPage = currentPage + direction;
+
+      if (newPage >= 1 && newPage <= totalPages) {
+          goToPage(newPage);
+      }
+  }
+
+  function goToPage(page) {
+      currentPage = page;
+      updatePagination();
+  }
+
+  function viewResult(resultId) {
+      window.location.href = `/exercises/submissions/${resultId}`;
+  }
+
+  async function updateChart(period) {
+      try {
+          const response = await fetch(`/api/analytics/performance?period=${period}`, {
+              headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+          });
+
+          if (response.ok) {
+              const data = await response.json();
+              performanceChart.data.labels = data.labels;
+              performanceChart.data.datasets[0].data = data.scores;
+              performanceChart.update();
+          }
+      } catch (error) {
+          console.error('Failed to update chart:', error);
+      }
+  }
+
+  async function updateLeaderboard() {
+      const filter = document.getElementById('leaderboardFilter').value;
+
+      try {
+          const response = await fetch(`/api/leaderboard?period=${filter}`, {
+              headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+          });
+
+          if (response.ok) {
+              const data = await response.json();
+              // Update leaderboard content
+              // This would typically re-render the leaderboard section
+          }
+      } catch (error) {
+          console.error('Failed to update leaderboard:', error);
+      }
+  }
+
+  // Track analytics
+  function trackEvent(eventName, data) {
+      fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({
+              event: eventName,
+              ...data
+          })
+      }).catch(console.error);
+  }
+
+  // Track page view
+  trackEvent('results_viewed', {
+      total_results: {{ exercise_results|length }},
+      filters_applied: false
+  });
+</script>
+{% endblock %}

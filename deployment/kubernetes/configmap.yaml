@@ -1,0 +1,387 @@
+# File: deployment/kubernetes/configmap.yaml
+# Kubernetes ConfigMap configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-config
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: config
+data:
+  # Application configuration
+  FLASK_ENV: "production"
+  FLASK_DEBUG: "False"
+  FLASK_HOST: "0.0.0.0"
+  FLASK_PORT: "5000"
+
+  # Logging configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  # CORS configuration
+  CORS_ORIGINS: "https://myapp.com,https://www.myapp.com,https://api.myapp.com"
+
+  # API configuration
+  API_TITLE: "MyApp API"
+  API_VERSION: "v1.0.0"
+  API_DESCRIPTION: "MyApp Production API"
+
+  # Rate limiting
+  RATELIMIT_DEFAULT: "1000/hour"
+  RATELIMIT_STORAGE_URL: "redis://redis-service:6379/1"
+
+  # Cache configuration
+  CACHE_TYPE: "redis"
+  CACHE_DEFAULT_TIMEOUT: "3600"
+  CACHE_KEY_PREFIX: "myapp_cache:"
+
+  # Session configuration
+  SESSION_COOKIE_SECURE: "True"
+  SESSION_COOKIE_HTTPONLY: "True"
+  SESSION_COOKIE_SAMESITE: "Lax"
+  PERMANENT_SESSION_LIFETIME: "3600"
+
+  # File upload configuration
+  UPLOAD_FOLDER: "/app/uploads"
+  MAX_CONTENT_LENGTH: "16777216" # 16MB
+  ALLOWED_EXTENSIONS: "txt,pdf,png,jpg,jpeg,gif,doc,docx"
+
+  # Email configuration (non-sensitive)
+  MAIL_SERVER: "smtp.sendgrid.net"
+  MAIL_PORT: "587"
+  MAIL_USE_TLS: "True"
+  MAIL_USE_SSL: "False"
+  MAIL_DEFAULT_SENDER: "noreply@myapp.com"
+
+  # External API configuration
+  EXTERNAL_API_TIMEOUT: "10"
+  EXTERNAL_API_RETRIES: "3"
+
+  # Celery configuration
+  CELERY_TASK_SERIALIZER: "json"
+  CELERY_RESULT_SERIALIZER: "json"
+  CELERY_ACCEPT_CONTENT: "json"
+  CELERY_TIMEZONE: "UTC"
+  CELERY_ENABLE_UTC: "True"
+  CELERY_TASK_TRACK_STARTED: "True"
+  CELERY_TASK_TIME_LIMIT: "300"
+  CELERY_TASK_SOFT_TIME_LIMIT: "240"
+  CELERY_WORKER_PREFETCH_MULTIPLIER: "1"
+  CELERY_WORKER_MAX_TASKS_PER_CHILD: "1000"
+
+  # Database configuration (non-sensitive)
+  SQLALCHEMY_TRACK_MODIFICATIONS: "False"
+  SQLALCHEMY_ECHO: "False"
+  SQLALCHEMY_POOL_SIZE: "20"
+  SQLALCHEMY_POOL_TIMEOUT: "20"
+  SQLALCHEMY_POOL_RECYCLE: "3600"
+  SQLALCHEMY_MAX_OVERFLOW: "30"
+  SQLALCHEMY_POOL_PRE_PING: "True"
+
+  # Security configuration
+  PREFERRED_URL_SCHEME: "https"
+  WTF_CSRF_TIME_LIMIT: "3600"
+
+  # Monitoring configuration
+  PROMETHEUS_METRICS_ENABLED: "True"
+  HEALTH_CHECK_INTERVAL: "30"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-nginx-config
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: nginx-config
+data:
+  nginx.conf: |
+    upstream app_backend {
+        least_conn;
+        server myapp-web-service:80 max_fails=3 fail_timeout=30s;
+        keepalive 32;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+        
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "no-referrer-when-downgrade" always;
+        
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+        
+        # Client settings
+        client_max_body_size 16M;
+        client_body_timeout 60s;
+        client_header_timeout 60s;
+        
+        # Proxy settings
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+        proxy_buffering on;
+        proxy_buffer_size 4k;
+        proxy_buffers 8 4k;
+        
+        location / {
+            proxy_pass http://app_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+        
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+        
+        location /static/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            access_log off;
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-redis-config
+  namespace: myapp-production
+  labels:
+    app: redis
+    component: config
+data:
+  redis.conf: |
+    # Redis production configuration
+    bind 0.0.0.0
+    port 6379
+
+    # Memory management
+    maxmemory 1gb
+    maxmemory-policy allkeys-lru
+
+    # Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+
+    # Security
+    requirepass ${REDIS_PASSWORD}
+
+    # Logging
+    loglevel notice
+
+    # Performance
+    tcp-keepalive 300
+    timeout 300
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-postgres-config
+  namespace: myapp-production
+  labels:
+    app: postgresql
+    component: config
+data:
+  postgresql.conf: |
+    # PostgreSQL production configuration
+    listen_addresses = '*'
+    port = 5432
+
+    # Memory settings
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    maintenance_work_mem = 64MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+
+    # Connection settings
+    max_connections = 100
+
+    # Logging
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_statement = 'all'
+    log_min_duration_statement = 1000
+
+    # Replication (if needed)
+    wal_level = replica
+    max_wal_senders = 3
+    max_replication_slots = 3
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-monitoring-config
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: monitoring-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    rule_files:
+      - "alert_rules.yml"
+
+    scrape_configs:
+      - job_name: 'myapp'
+        static_configs:
+          - targets: ['myapp-web-service:8080']
+        metrics_path: /metrics
+        scrape_interval: 30s
+      
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['redis-service:6379']
+      
+      - job_name: 'postgresql'
+        static_configs:
+          - targets: ['postgresql-service:5432']
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+
+  alert_rules.yml: |
+    groups:
+    - name: myapp.rules
+      rules:
+      - alert: HighErrorRate
+        expr: rate(flask_http_request_exceptions_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High error rate detected
+          description: "Error rate is {{ $value }} errors per second"
+      
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High memory usage
+          description: "Memory usage is {{ $value }}%"
+      
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage
+          description: "CPU usage is {{ $value }}%"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-fluent-bit-config
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: logging-config
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush         5
+        Log_Level     info
+        Daemon        off
+        Parsers_File  parsers.conf
+        HTTP_Server   On
+        HTTP_Listen   0.0.0.0
+        HTTP_Port     2020
+
+    [INPUT]
+        Name              tail
+        Path              /var/log/app/*.log
+        Parser            json
+        Tag               myapp.*
+        Refresh_Interval  5
+        Mem_Buf_Limit     50MB
+
+    [FILTER]
+        Name                kubernetes
+        Match               myapp.*
+        Kube_URL            https://kubernetes.default.svc:443
+        Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+        Merge_Log           On
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+
+    [OUTPUT]
+        Name  es
+        Match myapp.*
+        Host  elasticsearch.logging.svc.cluster.local
+        Port  9200
+        Index myapp-logs
+        Type  _doc
+
+  parsers.conf: |
+    [PARSER]
+        Name        json
+        Format      json
+        Time_Key    timestamp
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep   On
+
+---
+# Secrets configuration (stored separately for security)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-secrets
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: secrets
+type: Opaque
+stringData:
+  # Database connection string
+  database-url: "postgresql://username:password@postgresql-service:5432/myapp_prod"
+
+  # Redis connection string
+  redis-url: "redis://:password@redis-service:6379/0"
+
+  # Application secrets
+  secret-key: "your-secret-key-here"
+  jwt-secret-key: "your-jwt-secret-key-here"
+
+  # Email configuration
+  mail-username: "your-smtp-username"
+  mail-password: "your-smtp-password"
+
+  # External API keys
+  external-api-key: "your-external-api-key"
+
+  # Monitoring credentials
+  sentry-dsn: "https://your-sentry-dsn"

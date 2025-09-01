@@ -1,0 +1,164 @@
+# File: deployment/kubernetes/namespace.yaml
+# Kubernetes namespace configuration
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: myapp-production
+  labels:
+    name: myapp-production
+    environment: production
+    app: myapp
+  annotations:
+    description: "Production namespace for MyApp application"
+    contact: "devops@mycompany.com"
+    cost-center: "engineering"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: myapp-staging
+  labels:
+    name: myapp-staging
+    environment: staging
+    app: myapp
+  annotations:
+    description: "Staging namespace for MyApp application"
+    contact: "devops@mycompany.com"
+    cost-center: "engineering"
+
+---
+# Network policies for production namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: myapp-production-netpol
+  namespace: myapp-production
+spec:
+  podSelector:
+    matchLabels:
+      app: myapp
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 5000
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 5432 # PostgreSQL
+        - protocol: TCP
+          port: 6379 # Redis
+        - protocol: TCP
+          port: 443 # HTTPS
+        - protocol: TCP
+          port: 80 # HTTP
+        - protocol: UDP
+          port: 53 # DNS
+
+---
+# Resource quotas for production namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: myapp-production-quota
+  namespace: myapp-production
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "10"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# Resource quotas for staging namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: myapp-staging-quota
+  namespace: myapp-staging
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    persistentvolumeclaims: "5"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# Limit ranges for production namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: myapp-production-limits
+  namespace: myapp-production
+spec:
+  limits:
+    - default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "2"
+        memory: "4Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      type: Container
+    - max:
+        storage: "10Gi"
+      min:
+        storage: "1Gi"
+      type: PersistentVolumeClaim
+
+---
+# Limit ranges for staging namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: myapp-staging-limits
+  namespace: myapp-staging
+spec:
+  limits:
+    - default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "1"
+        memory: "2Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      type: Container
+    - max:
+        storage: "5Gi"
+      min:
+        storage: "1Gi"
+      type: PersistentVolumeClaim

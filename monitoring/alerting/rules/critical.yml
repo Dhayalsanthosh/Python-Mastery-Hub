@@ -1,0 +1,327 @@
+# File: monitoring/alerting/rules/critical.yml
+# Critical alerting rules that require immediate attention
+
+groups:
+  - name: critical.service
+    interval: 15s
+    rules:
+      # Service completely down
+      - alert: ServiceDown
+        expr: |
+          up{job=~".*api.*|.*app.*|.*web.*"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: application
+          priority: P1
+        annotations:
+          summary: "Service {{ $labels.job }} is completely down"
+          description: "Service {{ $labels.job }} on instance {{ $labels.instance }} has been down for more than 30 seconds"
+          impact: "Service unavailable to users"
+          runbook_url: "https://runbooks.example.com/service-down"
+          action_required: "Immediate investigation and restoration required"
+
+      # Very high error rate
+      - alert: CriticalErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[2m])) by (service) /
+            sum(rate(http_requests_total[2m])) by (service)
+          ) * 100 > 10
+        for: 2m
+        labels:
+          severity: critical
+          category: application
+          priority: P1
+        annotations:
+          summary: "Critical error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} on service {{ $labels.service }}"
+          impact: "Significant user experience degradation"
+          runbook_url: "https://runbooks.example.com/high-error-rate"
+          action_required: "Immediate investigation of application errors"
+
+      # Extremely slow response times
+      - alert: CriticalResponseTime
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le, service)) > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: application
+          priority: P1
+        annotations:
+          summary: "Critical response time on {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value | humanizeDuration }} on service {{ $labels.service }}"
+          impact: "Severe user experience degradation"
+          runbook_url: "https://runbooks.example.com/slow-response"
+          action_required: "Immediate performance investigation required"
+
+  - name: critical.infrastructure
+    interval: 15s
+    rules:
+      # Node completely down
+      - alert: NodeDown
+        expr: |
+          up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+          priority: P1
+        annotations:
+          summary: "Node {{ $labels.instance }} is down"
+          description: "Node {{ $labels.instance }} has been unreachable for more than 1 minute"
+          impact: "Potential service disruption and reduced capacity"
+          runbook_url: "https://runbooks.example.com/node-down"
+          action_required: "Immediate node health investigation"
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) by (instance) * 100) > 95
+        for: 3m
+        labels:
+          severity: critical
+          category: infrastructure
+          priority: P1
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}"
+          impact: "System performance severely degraded"
+          runbook_url: "https://runbooks.example.com/high-cpu"
+          action_required: "Immediate CPU usage investigation"
+
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: |
+          (
+            1 - (
+              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+            )
+          ) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+          priority: P1
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}"
+          impact: "Risk of OOM kills and system instability"
+          runbook_url: "https://runbooks.example.com/high-memory"
+          action_required: "Immediate memory investigation and cleanup"
+
+      # Critical disk usage
+      - alert: CriticalDiskUsage
+        expr: |
+          (
+            1 - (
+              node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} /
+              node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"}
+            )
+          ) * 100 > 95
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+          priority: P1
+        annotations:
+          summary: "Critical disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} on device {{ $labels.device }} ({{ $labels.mountpoint }}) on instance {{ $labels.instance }}"
+          impact: "Risk of service failures due to disk space"
+          runbook_url: "https://runbooks.example.com/disk-cleanup"
+          action_required: "Immediate disk space cleanup required"
+
+      # Critical disk I/O latency
+      - alert: CriticalDiskLatency
+        expr: |
+          rate(node_disk_read_time_seconds_total[2m]) / rate(node_disk_reads_completed_total[2m]) > 1
+        for: 3m
+        labels:
+          severity: critical
+          category: infrastructure
+          priority: P1
+        annotations:
+          summary: "Critical disk read latency on {{ $labels.instance }}"
+          description: "Disk read latency is {{ $value | humanizeDuration }} on device {{ $labels.device }} on instance {{ $labels.instance }}"
+          impact: "Severe application performance degradation"
+          runbook_url: "https://runbooks.example.com/disk-performance"
+          action_required: "Immediate disk performance investigation"
+
+  - name: critical.database
+    interval: 15s
+    rules:
+      # Database down
+      - alert: DatabaseDown
+        expr: |
+          up{job=~".*postgres.*|.*mysql.*|.*mongodb.*"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: database
+          priority: P1
+        annotations:
+          summary: "Database {{ $labels.job }} is down"
+          description: "Database instance {{ $labels.instance }} has been down for more than 30 seconds"
+          impact: "Application data access completely unavailable"
+          runbook_url: "https://runbooks.example.com/database-down"
+          action_required: "Immediate database restoration required"
+
+      # Database connection exhaustion
+      - alert: DatabaseConnectionExhaustion
+        expr: |
+          (
+            sum(database_connections_active) by (instance) /
+            sum(database_connections_max) by (instance)
+          ) * 100 > 95
+        for: 1m
+        labels:
+          severity: critical
+          category: database
+          priority: P1
+        annotations:
+          summary: "Database connection pool exhausted on {{ $labels.instance }}"
+          description: "Database is using {{ $value | humanizePercentage }} of available connections on {{ $labels.instance }}"
+          impact: "New application requests cannot connect to database"
+          runbook_url: "https://runbooks.example.com/db-connections"
+          action_required: "Immediate connection pool investigation"
+
+      # Database replication lag
+      - alert: CriticalReplicationLag
+        expr: |
+          database_replication_lag_seconds > 300
+        for: 2m
+        labels:
+          severity: critical
+          category: database
+          priority: P1
+        annotations:
+          summary: "Critical database replication lag on {{ $labels.instance }}"
+          description: "Replication lag is {{ $value | humanizeDuration }} on replica {{ $labels.instance }}"
+          impact: "Risk of data inconsistency and read scaling issues"
+          runbook_url: "https://runbooks.example.com/replication-lag"
+          action_required: "Immediate replication investigation"
+
+  - name: critical.kubernetes
+    interval: 15s
+    rules:
+      # Kubernetes API server down
+      - alert: KubernetesAPIServerDown
+        expr: |
+          up{job="apiserver"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: kubernetes
+          priority: P1
+        annotations:
+          summary: "Kubernetes API server is down"
+          description: "Kubernetes API server {{ $labels.instance }} has been down for more than 1 minute"
+          impact: "Cluster management operations unavailable"
+          runbook_url: "https://runbooks.example.com/k8s-apiserver-down"
+          action_required: "Immediate API server investigation"
+
+      # Node not ready
+      - alert: KubernetesNodeNotReady
+        expr: |
+          kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: kubernetes
+          priority: P1
+        annotations:
+          summary: "Kubernetes node {{ $labels.node }} not ready"
+          description: "Node {{ $labels.node }} has been not ready for more than 2 minutes"
+          impact: "Reduced cluster capacity and potential pod evictions"
+          runbook_url: "https://runbooks.example.com/node-not-ready"
+          action_required: "Immediate node health investigation"
+
+      # Pod crash looping
+      - alert: PodCrashLooping
+        expr: |
+          increase(kube_pod_container_status_restarts_total[10m]) > 3
+        for: 0m
+        labels:
+          severity: critical
+          category: kubernetes
+          priority: P1
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash looping"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last 10 minutes"
+          impact: "Application service disruption"
+          runbook_url: "https://runbooks.example.com/pod-crash-loop"
+          action_required: "Immediate pod log investigation"
+
+      # Persistent volume filling up
+      - alert: PersistentVolumeUsageCritical
+        expr: |
+          kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: kubernetes
+          priority: P1
+        annotations:
+          summary: "PV {{ $labels.persistentvolumeclaim }} usage critical"
+          description: "PV {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is {{ $value | humanizePercentage }} full"
+          impact: "Risk of pod failures due to storage space"
+          runbook_url: "https://runbooks.example.com/pv-full"
+          action_required: "Immediate storage cleanup or expansion"
+
+  - name: critical.business
+    interval: 60s
+    rules:
+      # Revenue drop
+      - alert: CriticalRevenueDrop
+        expr: |
+          (
+            sum(increase(revenue_total[1h])) /
+            sum(increase(revenue_total[1h] offset 1h))
+          ) < 0.5
+        for: 15m
+        labels:
+          severity: critical
+          category: business
+          priority: P1
+        annotations:
+          summary: "Critical revenue drop detected"
+          description: "Revenue has dropped by {{ (1 - $value) | humanizePercentage }} compared to the previous hour"
+          impact: "Significant business impact and potential revenue loss"
+          runbook_url: "https://runbooks.example.com/revenue-drop"
+          action_required: "Immediate business impact investigation"
+
+      # Payment system failure
+      - alert: PaymentSystemFailure
+        expr: |
+          (
+            sum(rate(payment_transactions_total{status="failed"}[5m])) /
+            sum(rate(payment_transactions_total[5m]))
+          ) * 100 > 50
+        for: 5m
+        labels:
+          severity: critical
+          category: business
+          priority: P1
+        annotations:
+          summary: "Payment system experiencing high failure rate"
+          description: "Payment failure rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          impact: "Customers cannot complete purchases"
+          runbook_url: "https://runbooks.example.com/payment-failure"
+          action_required: "Immediate payment system investigation"
+
+      # User exodus
+      - alert: CriticalUserDropoff
+        expr: |
+          sum(user_sessions_active) < sum(user_sessions_active offset 1h) * 0.3
+        for: 30m
+        labels:
+          severity: critical
+          category: business
+          priority: P1
+        annotations:
+          summary: "Critical user session dropoff"
+          description: "Active user sessions have dropped by {{ ((sum(user_sessions_active offset 1h) - sum(user_sessions_active)) / sum(user_sessions_active offset 1h)) | humanizePercentage }} in the last hour"
+          impact: "Massive user exodus indicating major service issues"
+          runbook_url: "https://runbooks.example.com/user-dropoff"
+          action_required: "Immediate user experience investigation"

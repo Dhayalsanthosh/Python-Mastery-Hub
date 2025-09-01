@@ -1,0 +1,927 @@
+<!-- Location: src/python_mastery_hub/web/templates/auth/profile.html -->
+
+{% extends "base.html" %}
+
+{% block title %}My Profile - Python Mastery Hub{% endblock %}
+{% block meta_description %}Manage your Python Mastery Hub profile, account settings, and learning preferences{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    object-fit: cover;
+}
+
+.avatar-upload {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-upload-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    cursor: pointer;
+    color: #667eea;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.profile-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-floating input:focus,
+.form-floating select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-outline-danger {
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+.achievement-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f3f4f6;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.achievement-badge.earned {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.preferences-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.danger-zone {
+    border: 2px solid #fecaca;
+    background: #fef2f2;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.password-strength {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.password-strength .strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin: 0.25rem 0;
+    transition: all 0.3s ease;
+}
+
+.strength-weak { background-color: #ef4444; width: 33%; }
+.strength-medium { background-color: #f59e0b; width: 66%; }
+.strength-strong { background-color: #10b981; width: 100%; }
+
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .preferences-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-header {
+        text-align: center;
+    }
+    
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center text-md-start mb-3 mb-md-0">
+                <div class="avatar-upload">
+                    <img src="{{ user.avatar_url or url_for('static', path='images/default-avatar.png') }}" 
+                         alt="Profile Picture" class="profile-avatar" id="profileAvatar">
+                    <button type="button" class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h1 class="h3 mb-2">{{ user.first_name }} {{ user.last_name }}</h1>
+                <p class="mb-1 opacity-90">@{{ user.username }}</p>
+                <p class="mb-0 opacity-75">Member since {{ user.created_at.strftime('%B %Y') }}</p>
+            </div>
+            <div class="col-md-3">
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">{{ user.exercises_completed }}</span>
+                        <span class="stat-label">Exercises</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ user.streak_days }}</span>
+                        <span class="stat-label">Day Streak</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ user.level }}</span>
+                        <span class="stat-label">Level</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ user.points }}</span>
+                        <span class="stat-label">Points</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Personal Information -->
+        <div class="profile-section">
+            <h2 class="section-title">
+                <i class="fas fa-user"></i>
+                Personal Information
+            </h2>
+            
+            <form id="personalInfoForm">
+                <div id="personalAlertContainer"></div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="firstName" 
+                                   value="{{ user.first_name }}" required>
+                            <label for="firstName">First Name</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="lastName" 
+                                   value="{{ user.last_name }}" required>
+                            <label for="lastName">Last Name</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-floating mt-3">
+                    <input type="email" class="form-control" id="email" 
+                           value="{{ user.email }}" required>
+                    <label for="email">Email Address</label>
+                    <div class="invalid-feedback"></div>
+                </div>
+                
+                <div class="form-floating mt-3">
+                    <input type="text" class="form-control" id="username" 
+                           value="{{ user.username }}" required>
+                    <label for="username">Username</label>
+                    <div class="invalid-feedback"></div>
+                </div>
+                
+                <div class="form-floating mt-3">
+                    <textarea class="form-control" id="bio" style="height: 100px" 
+                              placeholder="Tell us about yourself">{{ user.bio or '' }}</textarea>
+                    <label for="bio">Bio</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3">
+                    <span class="btn-text">Update Information</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Learning Preferences -->
+        <div class="profile-section">
+            <h2 class="section-title">
+                <i class="fas fa-cogs"></i>
+                Learning Preferences
+            </h2>
+            
+            <form id="preferencesForm">
+                <div id="preferencesAlertContainer"></div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Programming Experience</label>
+                    <select class="form-select" id="experience">
+                        <option value="beginner" {{ 'selected' if user.experience == 'beginner' }}>Complete Beginner</option>
+                        <option value="some" {{ 'selected' if user.experience == 'some' }}>Some Experience</option>
+                        <option value="experienced" {{ 'selected' if user.experience == 'experienced' }}>Experienced</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Learning Goal</label>
+                    <select class="form-select" id="learningGoal">
+                        <option value="career" {{ 'selected' if user.learning_goal == 'career' }}>Career change to software development</option>
+                        <option value="skills" {{ 'selected' if user.learning_goal == 'skills' }}>Improve current job skills</option>
+                        <option value="hobby" {{ 'selected' if user.learning_goal == 'hobby' }}>Personal interest/hobby</option>
+                        <option value="school" {{ 'selected' if user.learning_goal == 'school' }}>Academic requirements</option>
+                        <option value="business" {{ 'selected' if user.learning_goal == 'business' }}>Build my own project/business</option>
+                    </select>
+                </div>
+                
+                <div class="preferences-grid">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="emailNotifications" 
+                               {{ 'checked' if user.email_notifications }}>
+                        <label class="form-check-label" for="emailNotifications">
+                            Email Notifications
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="pushNotifications"
+                               {{ 'checked' if user.push_notifications }}>
+                        <label class="form-check-label" for="pushNotifications">
+                            Push Notifications
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="weeklyDigest"
+                               {{ 'checked' if user.weekly_digest }}>
+                        <label class="form-check-label" for="weeklyDigest">
+                            Weekly Progress Digest
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="publicProfile"
+                               {{ 'checked' if user.public_profile }}>
+                        <label class="form-check-label" for="publicProfile">
+                            Public Profile
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3">
+                    <span class="btn-text">Save Preferences</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Achievements -->
+        <div class="profile-section">
+            <h2 class="section-title">
+                <i class="fas fa-trophy"></i>
+                Achievements
+            </h2>
+            
+            <div class="achievements-grid">
+                {% for achievement in user.achievements %}
+                <div class="achievement-badge earned">
+                    <i class="fas {{ achievement.icon }}"></i>
+                    <span>{{ achievement.name }}</span>
+                </div>
+                {% endfor %}
+                
+                {% for achievement in available_achievements %}
+                <div class="achievement-badge">
+                    <i class="fas {{ achievement.icon }}"></i>
+                    <span>{{ achievement.name }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="profile-section">
+            <h2 class="section-title">
+                <i class="fas fa-shield-alt"></i>
+                Security Settings
+            </h2>
+            
+            <!-- Change Password -->
+            <form id="passwordForm">
+                <div id="passwordAlertContainer"></div>
+                
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="currentPassword" required>
+                    <label for="currentPassword">Current Password</label>
+                    <div class="invalid-feedback"></div>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="newPassword" required>
+                    <label for="newPassword">New Password</label>
+                    <div class="invalid-feedback"></div>
+                </div>
+                
+                <!-- Password Strength Indicator -->
+                <div class="password-strength">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Password Strength:</span>
+                        <span id="strengthText" class="text-muted">Weak</span>
+                    </div>
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <div class="invalid-feedback"></div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Change Password</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            </form>
+            
+            <!-- Two-Factor Authentication -->
+            <hr class="my-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">Two-Factor Authentication</h6>
+                    <p class="text-muted mb-0">Add an extra layer of security to your account</p>
+                </div>
+                <button class="btn btn-outline-primary" id="toggle2FA">
+                    {% if user.two_factor_enabled %}Disable{% else %}Enable{% endif %}
+                </button>
+            </div>
+            
+            <!-- Connected Accounts -->
+            <hr class="my-4">
+            <h6 class="mb-3">Connected Accounts</h6>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if user.google_connected %}
+                <button class="btn btn-outline-danger btn-sm" onclick="disconnectAccount('google')">
+                    <i class="fab fa-google me-1"></i> Disconnect Google
+                </button>
+                {% else %}
+                <a href="/auth/connect/google" class="btn btn-outline-primary btn-sm">
+                    <i class="fab fa-google me-1"></i> Connect Google
+                </a>
+                {% endif %}
+                
+                {% if user.github_connected %}
+                <button class="btn btn-outline-danger btn-sm" onclick="disconnectAccount('github')">
+                    <i class="fab fa-github me-1"></i> Disconnect GitHub
+                </button>
+                {% else %}
+                <a href="/auth/connect/github" class="btn btn-outline-primary btn-sm">
+                    <i class="fab fa-github me-1"></i> Connect GitHub
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+        <h3 class="h5 text-danger mb-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Danger Zone
+        </h3>
+        <p class="text-muted mb-3">
+            These actions are irreversible. Please proceed with caution.
+        </p>
+        
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-danger" onclick="exportData()">
+                <i class="fas fa-download me-1"></i>
+                Export My Data
+            </button>
+            <button class="btn btn-outline-danger" onclick="confirmDeleteAccount()">
+                <i class="fas fa-trash me-1"></i>
+                Delete Account
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <strong>Warning:</strong> This action cannot be undone. All your progress, 
+                    achievements, and data will be permanently deleted.
+                </div>
+                <p>To confirm, please type your email address below:</p>
+                <input type="email" class="form-control" id="deleteConfirmEmail" 
+                       placeholder="Enter your email address">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                    Delete My Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form handlers
+    document.getElementById('personalInfoForm').addEventListener('submit', handlePersonalInfoSubmit);
+    document.getElementById('preferencesForm').addEventListener('submit', handlePreferencesSubmit);
+    document.getElementById('passwordForm').addEventListener('submit', handlePasswordSubmit);
+    
+    // Avatar upload
+    document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
+    
+    // Password strength checking
+    document.getElementById('newPassword').addEventListener('input', checkPasswordStrength);
+    document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+    
+    // Delete account confirmation
+    document.getElementById('deleteConfirmEmail').addEventListener('input', function() {
+        const userEmail = '{{ user.email }}';
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = this.value !== userEmail;
+    });
+    
+    document.getElementById('confirmDeleteBtn').addEventListener('click', deleteAccount);
+    document.getElementById('toggle2FA').addEventListener('click', toggle2FA);
+});
+
+async function handlePersonalInfoSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Show loading state
+    btnText.classList.add('d-none');
+    spinner.classList.remove('d-none');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = {
+            firstName: document.getElementById('firstName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            bio: document.getElementById('bio').value.trim()
+        };
+        
+        const response = await fetch('/api/user/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert('personalAlertContainer', 'Personal information updated successfully!', 'success');
+        } else {
+            throw new Error(result.message || 'Update failed');
+        }
+        
+    } catch (error) {
+        console.error('Update error:', error);
+        showAlert('personalAlertContainer', error.message || 'An error occurred while updating your information.');
+    } finally {
+        btnText.classList.remove('d-none');
+        spinner.classList.add('d-none');
+        submitBtn.disabled = false;
+    }
+}
+
+async function handlePreferencesSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    btnText.classList.add('d-none');
+    spinner.classList.remove('d-none');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = {
+            experience: document.getElementById('experience').value,
+            learningGoal: document.getElementById('learningGoal').value,
+            emailNotifications: document.getElementById('emailNotifications').checked,
+            pushNotifications: document.getElementById('pushNotifications').checked,
+            weeklyDigest: document.getElementById('weeklyDigest').checked,
+            publicProfile: document.getElementById('publicProfile').checked
+        };
+        
+        const response = await fetch('/api/user/preferences', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert('preferencesAlertContainer', 'Preferences saved successfully!', 'success');
+        } else {
+            throw new Error(result.message || 'Save failed');
+        }
+        
+    } catch (error) {
+        console.error('Preferences error:', error);
+        showAlert('preferencesAlertContainer', error.message || 'An error occurred while saving preferences.');
+    } finally {
+        btnText.classList.remove('d-none');
+        spinner.classList.add('d-none');
+        submitBtn.disabled = false;
+    }
+}
+
+async function handlePasswordSubmit(event) {
+    event.preventDefault();
+    
+    if (!validatePasswordForm()) return;
+    
+    const form = event.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    btnText.classList.add('d-none');
+    spinner.classList.remove('d-none');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = {
+            currentPassword: document.getElementById('currentPassword').value,
+            newPassword: document.getElementById('newPassword').value
+        };
+        
+        const response = await fetch('/api/user/password', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert('passwordAlertContainer', 'Password changed successfully!', 'success');
+            form.reset();
+        } else {
+            throw new Error(result.message || 'Password change failed');
+        }
+        
+    } catch (error) {
+        console.error('Password error:', error);
+        showAlert('passwordAlertContainer', error.message || 'An error occurred while changing your password.');
+    } finally {
+        btnText.classList.remove('d-none');
+        spinner.classList.add('d-none');
+        submitBtn.disabled = false;
+    }
+}
+
+async function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+        const response = await fetch('/api/user/avatar', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('profileAvatar').src = result.avatarUrl;
+            showAlert('personalAlertContainer', 'Profile picture updated successfully!', 'success');
+        } else {
+            throw new Error(result.message || 'Upload failed');
+        }
+        
+    } catch (error) {
+        console.error('Avatar upload error:', error);
+        showAlert('personalAlertContainer', error.message || 'Failed to upload profile picture.');
+    }
+}
+
+function validatePasswordForm() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!currentPassword) {
+        showAlert('passwordAlertContainer', 'Current password is required.');
+        return false;
+    }
+    
+    if (newPassword.length < 8) {
+        showAlert('passwordAlertContainer', 'New password must be at least 8 characters long.');
+        return false;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showAlert('passwordAlertContainer', 'New passwords do not match.');
+        return false;
+    }
+    
+    return true;
+}
+
+function checkPasswordStrength() {
+    const password = document.getElementById('newPassword').value;
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    
+    const strength = getPasswordStrength(password);
+    
+    strengthBar.className = 'strength-bar';
+    
+    if (strength.score >= 4) {
+        strengthBar.classList.add('strength-strong');
+        strengthText.textContent = 'Strong';
+        strengthText.className = 'text-success';
+    } else if (strength.score >= 3) {
+        strengthBar.classList.add('strength-medium');
+        strengthText.textContent = 'Medium';
+        strengthText.className = 'text-warning';
+    } else {
+        strengthBar.classList.add('strength-weak');
+        strengthText.textContent = 'Weak';
+        strengthText.className = 'text-danger';
+    }
+}
+
+function checkPasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const confirmInput = document.getElementById('confirmPassword');
+    
+    if (confirmPassword && newPassword !== confirmPassword) {
+        confirmInput.classList.add('is-invalid');
+        confirmInput.nextElementSibling.textContent = 'Passwords do not match';
+    } else {
+        confirmInput.classList.remove('is-invalid');
+    }
+}
+
+function getPasswordStrength(password) {
+    let score = 0;
+    const checks = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    
+    Object.values(checks).forEach(check => {
+        if (check) score++;
+    });
+    
+    return { score, checks };
+}
+
+async function toggle2FA() {
+    const btn = document.getElementById('toggle2FA');
+    const isEnabled = btn.textContent.trim() === 'Disable';
+    
+    try {
+        const response = await fetch('/api/user/2fa', {
+            method: isEnabled ? 'DELETE' : 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+        
+        if (response.ok) {
+            btn.textContent = isEnabled ? 'Enable' : 'Disable';
+            const message = isEnabled ? 'Two-factor authentication disabled' : 'Two-factor authentication enabled';
+            showAlert('passwordAlertContainer', message, 'success');
+        } else {
+            throw new Error('Failed to update 2FA settings');
+        }
+        
+    } catch (error) {
+        console.error('2FA error:', error);
+        showAlert('passwordAlertContainer', error.message || 'Failed to update 2FA settings.');
+    }
+}
+
+async function disconnectAccount(provider) {
+    if (!confirm(`Are you sure you want to disconnect your ${provider} account?`)) return;
+    
+    try {
+        const response = await fetch(`/api/user/disconnect/${provider}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            throw new Error(`Failed to disconnect ${provider} account`);
+        }
+        
+    } catch (error) {
+        console.error('Disconnect error:', error);
+        showAlert('passwordAlertContainer', error.message || `Failed to disconnect ${provider} account.`);
+    }
+}
+
+async function exportData() {
+    try {
+        const response = await fetch('/api/user/export', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-data.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            throw new Error('Failed to export data');
+        }
+        
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Failed to export data. Please try again.');
+    }
+}
+
+function confirmDeleteAccount() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+    modal.show();
+}
+
+async function deleteAccount() {
+    try {
+        const response = await fetch('/api/user/account', {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+        
+        if (response.ok) {
+            localStorage.removeItem('authToken');
+            window.location.href = '/';
+        } else {
+            throw new Error('Failed to delete account');
+        }
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete account. Please try again.');
+    }
+}
+
+function showAlert(containerId, message, type = 'danger') {
+    const container = document.getElementById(containerId);
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    container.innerHTML = '';
+    container.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,326 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# celery beat schedule file
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.env.*
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+.emacs.d/
+.atom/
+.sublime-*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Project specific databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Temporary files and directories
+temp/
+tmp/
+.tmp/
+*.tmp
+*.temp
+.cache/
+
+# Log files
+logs/
+*.log
+*.log.*
+*.out
+*.err
+
+# Docker
+*.tar
+.docker/
+docker-compose.override.yml
+
+# Node.js (for frontend assets)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+package-lock.json
+
+# Static files and media
+staticfiles/
+media/
+uploads/
+static/collected/
+
+# Security and API keys
+api_docs/
+secrets/
+.secrets/
+*.key
+*.pem
+*.p12
+*.crt
+*.csr
+credentials.json
+service-account*.json
+
+# Cloud and deployment
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+terraform.tfvars.json
+.terraform.lock.hcl
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Monitoring and observability
+prometheus_data/
+grafana_data/
+elasticsearch_data/
+logstash_data/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*~
+.#*
+#*#
+
+# Archive files
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Machine learning / data science
+*.model
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+data/raw/
+data/processed/
+models/
+notebooks/.ipynb_checkpoints/
+
+# Performance and profiling
+.prof
+*.prof
+.benchmarks/
+benchmark_results/
+
+# Testing artifacts
+.coverage.*
+.junit/
+test-results/
+test-reports/
+allure-results/
+allure-reports/
+
+# Documentation build artifacts
+docs/build/
+docs/source/_build/
+docs/api/
+site/
+
+# Local development overrides
+local_settings.py
+settings_local.py
+config_local.py
+.env.local
+docker-compose.local.yml
+
+# Dependency directories
+pip-wheel-metadata/
+.eggs/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Local Netlify folder
+.netlify

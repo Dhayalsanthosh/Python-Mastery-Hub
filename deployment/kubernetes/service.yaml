@@ -1,0 +1,318 @@
+# File: deployment/kubernetes/service.yaml
+# Kubernetes service configuration
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-web-service
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: web
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      protocol: TCP
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: myapp
+    component: web
+  sessionAffinity: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-web-headless
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: web
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    app: myapp
+    component: web
+  publishNotReadyAddresses: false
+
+---
+# Redis Service (if running Redis in cluster)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: myapp-production
+  labels:
+    app: redis
+    component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app: redis
+    component: cache
+
+---
+# PostgreSQL Service (if running PostgreSQL in cluster)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-service
+  namespace: myapp-production
+  labels:
+    app: postgresql
+    component: database
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: postgresql
+    component: database
+
+---
+# Monitoring service for Celery Flower
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-flower-service
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: flower
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5555"
+spec:
+  type: ClusterIP
+  ports:
+    - name: flower
+      port: 5555
+      targetPort: 5555
+      protocol: TCP
+  selector:
+    app: myapp
+    component: flower
+
+---
+# External service for managed PostgreSQL (AWS RDS example)
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-postgresql
+  namespace: myapp-production
+  labels:
+    app: postgresql
+    component: database
+    type: external
+spec:
+  type: ExternalName
+  externalName: myapp-prod.cluster-xxx.us-west-2.rds.amazonaws.com
+  ports:
+    - name: postgresql
+      port: 5432
+      protocol: TCP
+
+---
+# External service for managed Redis (AWS ElastiCache example)
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-redis
+  namespace: myapp-production
+  labels:
+    app: redis
+    component: cache
+    type: external
+spec:
+  type: ExternalName
+  externalName: myapp-prod.xxx.cache.amazonaws.com
+  ports:
+    - name: redis
+      port: 6379
+      protocol: TCP
+
+---
+# LoadBalancer service for direct external access (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-loadbalancer
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: web
+    type: loadbalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:region:account:certificate/cert-id"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    app: myapp
+    component: web
+  loadBalancerSourceRanges:
+    - 0.0.0.0/0 # Restrict this in production
+
+---
+# NodePort service for development/testing access
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-nodeport
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: web
+    type: nodeport
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      nodePort: 30080
+      protocol: TCP
+  selector:
+    app: myapp
+    component: web
+
+---
+# Service Monitor for Prometheus scraping
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: myapp-servicemonitor
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+      component: web
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+
+---
+# Endpoint slice for service discovery
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: myapp-web-endpoints
+  namespace: myapp-production
+  labels:
+    app: myapp
+    component: web
+    kubernetes.io/service-name: myapp-web-service
+addressType: IPv4
+ports:
+  - name: http
+    port: 5000
+    protocol: TCP
+endpoints: [] # This will be populated automatically by the service
+
+---
+# Network Policy to control traffic to services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: myapp-service-netpol
+  namespace: myapp-production
+spec:
+  podSelector:
+    matchLabels:
+      app: myapp
+      component: web
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx-ingress
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 5000
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to: [] # Allow all outbound traffic for external APIs
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+        - protocol: UDP
+          port: 53

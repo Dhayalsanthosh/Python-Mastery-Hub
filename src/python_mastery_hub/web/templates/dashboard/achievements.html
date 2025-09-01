@@ -1,0 +1,933 @@
+<!-- Location: src/python_mastery_hub/web/templates/dashboard/achievements.html -->
+
+{% extends "base.html" %} {% block title %}Achievements - Python Mastery Hub{%
+endblock %} {% block meta_description %}View all your Python learning
+achievements, badges, and milestones in your programming journey{% endblock %}
+{% block extra_css %}
+<style>
+  .achievements-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .achievements-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .achievements-header::before {
+    content: "🏆";
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 8rem;
+    opacity: 0.1;
+    transform: rotate(15deg);
+  }
+
+  .achievement-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .stat-item {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .achievements-filters {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+  }
+
+  .filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .filter-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .filter-label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 100px;
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    background: #f3f4f6;
+    border: none;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .filter-btn.active {
+    background: #667eea;
+    color: white;
+  }
+
+  .filter-btn:hover {
+    background: #e5e7eb;
+  }
+
+  .filter-btn.active:hover {
+    background: #5a67d8;
+  }
+
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .achievement-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 2px solid #e5e7eb;
+    text-align: center;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .achievement-card.earned {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+  }
+
+  .achievement-card.rare {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  }
+
+  .achievement-card.epic {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  }
+
+  .achievement-card.legendary {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  }
+
+  .achievement-card.locked {
+    opacity: 0.6;
+    filter: grayscale(50%);
+  }
+
+  .achievement-card:hover:not(.locked) {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  }
+
+  .achievement-card.earned::before {
+    content: "✨";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    animation: sparkle 2s infinite;
+  }
+
+  @keyframes sparkle {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  .achievement-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    position: relative;
+  }
+
+  .achievement-icon.common {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+  }
+
+  .achievement-icon.rare {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  }
+
+  .achievement-icon.epic {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .achievement-icon.legendary {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  .achievement-icon.earned {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .achievement-icon.locked {
+    background: #9ca3af;
+  }
+
+  .achievement-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .achievement-rarity {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    display: inline-block;
+  }
+
+  .rarity-common {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+
+  .rarity-rare {
+    background: #ede9fe;
+    color: #8b5cf6;
+  }
+
+  .rarity-epic {
+    background: #fef3c7;
+    color: #f59e0b;
+  }
+
+  .rarity-legendary {
+    background: #fee2e2;
+    color: #ef4444;
+  }
+
+  .achievement-description {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .achievement-progress {
+    margin-bottom: 1rem;
+  }
+
+  .progress-bar-container {
+    background: #e5e7eb;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-bar.common {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+  }
+
+  .progress-bar.rare {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  }
+
+  .progress-bar.epic {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .progress-bar.legendary {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  .progress-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .achievement-reward {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    margin-top: 1rem;
+  }
+
+  .reward-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .achievement-date {
+    font-size: 0.8rem;
+    color: #10b981;
+    font-weight: 600;
+    margin-top: 0.5rem;
+  }
+
+  .category-section {
+    margin-bottom: 3rem;
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .category-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .category-count {
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 768px) {
+    .achievements-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .achievement-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filter-section {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .filter-label {
+      min-width: auto;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="achievements-container">
+  <!-- Achievements Header -->
+  <div class="achievements-header">
+    <h1 class="h3 mb-2">Your Achievements</h1>
+    <p class="mb-0 opacity-90">
+      Celebrate your Python learning milestones and unlock new badges
+    </p>
+
+    <div class="achievement-stats">
+      <div class="stat-item">
+        <span class="stat-number">{{ user.achievements_earned }}</span>
+        <span class="stat-label">Earned</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ user.total_achievements }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ user.achievement_points }}</span>
+        <span class="stat-label">Points</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number"
+          >{{ ((user.achievements_earned * 100) / user.total_achievements)|round
+          }}%</span
+        >
+        <span class="stat-label">Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="achievements-filters">
+    <div class="filter-section">
+      <div class="filter-label">Status:</div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="earned">Earned</button>
+        <button class="filter-btn" data-filter="locked">Locked</button>
+        <button class="filter-btn" data-filter="in-progress">
+          In Progress
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Rarity:</div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-rarity="all">All</button>
+        <button class="filter-btn" data-rarity="common">Common</button>
+        <button class="filter-btn" data-rarity="rare">Rare</button>
+        <button class="filter-btn" data-rarity="epic">Epic</button>
+        <button class="filter-btn" data-rarity="legendary">Legendary</button>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Category:</div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-category="all">All</button>
+        <button class="filter-btn" data-category="learning">Learning</button>
+        <button class="filter-btn" data-category="practice">Practice</button>
+        <button class="filter-btn" data-category="mastery">Mastery</button>
+        <button class="filter-btn" data-category="community">Community</button>
+        <button class="filter-btn" data-category="special">Special</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Learning Achievements -->
+  <div class="category-section" data-category="learning">
+    <div class="category-header">
+      <div
+        class="category-icon"
+        style="background: linear-gradient(135deg, #667eea, #764ba2)"
+      >
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <h2 class="category-title">Learning Milestones</h2>
+      <span class="category-count"
+        >{{ learning_achievements|length }} achievements</span
+      >
+    </div>
+
+    <div class="achievements-grid">
+      {% for achievement in learning_achievements %}
+      <div
+        class="achievement-card {{ achievement.status }} {{ achievement.rarity }}"
+        data-filter="{{ achievement.status }}"
+        data-rarity="{{ achievement.rarity }}"
+        data-category="learning"
+      >
+        <div
+          class="achievement-icon {{ achievement.status }} {{ achievement.rarity }}"
+        >
+          <i class="{{ achievement.icon }}"></i>
+        </div>
+
+        <h3 class="achievement-title">{{ achievement.name }}</h3>
+        <div class="achievement-rarity rarity-{{ achievement.rarity }}">
+          {{ achievement.rarity|title }}
+        </div>
+        <p class="achievement-description">{{ achievement.description }}</p>
+
+        {% if achievement.status != 'earned' %}
+        <div class="achievement-progress">
+          <div class="progress-bar-container">
+            <div
+              class="progress-bar {{ achievement.rarity }}"
+              style="width: {{ achievement.progress_percentage }}%"
+            ></div>
+          </div>
+          <div class="progress-text">
+            <span
+              >{{ achievement.current_progress }}/{{ achievement.target }}</span
+            >
+            <span>{{ achievement.progress_percentage }}%</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="achievement-reward">
+          <div class="reward-item">
+            <i class="fas fa-star text-warning"></i>
+            <span>{{ achievement.xp_reward }} XP</span>
+          </div>
+          <div class="reward-item">
+            <i class="fas fa-coins text-warning"></i>
+            <span>{{ achievement.points_reward }} pts</span>
+          </div>
+        </div>
+
+        {% if achievement.status == 'earned' %}
+        <div class="achievement-date">
+          Earned {{ achievement.earned_date|timeago }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Practice Achievements -->
+  <div class="category-section" data-category="practice">
+    <div class="category-header">
+      <div
+        class="category-icon"
+        style="background: linear-gradient(135deg, #10b981, #059669)"
+      >
+        <i class="fas fa-dumbbell"></i>
+      </div>
+      <h2 class="category-title">Practice & Consistency</h2>
+      <span class="category-count"
+        >{{ practice_achievements|length }} achievements</span
+      >
+    </div>
+
+    <div class="achievements-grid">
+      {% for achievement in practice_achievements %}
+      <div
+        class="achievement-card {{ achievement.status }} {{ achievement.rarity }}"
+        data-filter="{{ achievement.status }}"
+        data-rarity="{{ achievement.rarity }}"
+        data-category="practice"
+      >
+        <div
+          class="achievement-icon {{ achievement.status }} {{ achievement.rarity }}"
+        >
+          <i class="{{ achievement.icon }}"></i>
+        </div>
+
+        <h3 class="achievement-title">{{ achievement.name }}</h3>
+        <div class="achievement-rarity rarity-{{ achievement.rarity }}">
+          {{ achievement.rarity|title }}
+        </div>
+        <p class="achievement-description">{{ achievement.description }}</p>
+
+        {% if achievement.status != 'earned' %}
+        <div class="achievement-progress">
+          <div class="progress-bar-container">
+            <div
+              class="progress-bar {{ achievement.rarity }}"
+              style="width: {{ achievement.progress_percentage }}%"
+            ></div>
+          </div>
+          <div class="progress-text">
+            <span
+              >{{ achievement.current_progress }}/{{ achievement.target }}</span
+            >
+            <span>{{ achievement.progress_percentage }}%</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="achievement-reward">
+          <div class="reward-item">
+            <i class="fas fa-star text-warning"></i>
+            <span>{{ achievement.xp_reward }} XP</span>
+          </div>
+          <div class="reward-item">
+            <i class="fas fa-coins text-warning"></i>
+            <span>{{ achievement.points_reward }} pts</span>
+          </div>
+        </div>
+
+        {% if achievement.status == 'earned' %}
+        <div class="achievement-date">
+          Earned {{ achievement.earned_date|timeago }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Mastery Achievements -->
+  <div class="category-section" data-category="mastery">
+    <div class="category-header">
+      <div
+        class="category-icon"
+        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"
+      >
+        <i class="fas fa-crown"></i>
+      </div>
+      <h2 class="category-title">Mastery & Excellence</h2>
+      <span class="category-count"
+        >{{ mastery_achievements|length }} achievements</span
+      >
+    </div>
+
+    <div class="achievements-grid">
+      {% for achievement in mastery_achievements %}
+      <div
+        class="achievement-card {{ achievement.status }} {{ achievement.rarity }}"
+        data-filter="{{ achievement.status }}"
+        data-rarity="{{ achievement.rarity }}"
+        data-category="mastery"
+      >
+        <div
+          class="achievement-icon {{ achievement.status }} {{ achievement.rarity }}"
+        >
+          <i class="{{ achievement.icon }}"></i>
+        </div>
+
+        <h3 class="achievement-title">{{ achievement.name }}</h3>
+        <div class="achievement-rarity rarity-{{ achievement.rarity }}">
+          {{ achievement.rarity|title }}
+        </div>
+        <p class="achievement-description">{{ achievement.description }}</p>
+
+        {% if achievement.status != 'earned' %}
+        <div class="achievement-progress">
+          <div class="progress-bar-container">
+            <div
+              class="progress-bar {{ achievement.rarity }}"
+              style="width: {{ achievement.progress_percentage }}%"
+            ></div>
+          </div>
+          <div class="progress-text">
+            <span
+              >{{ achievement.current_progress }}/{{ achievement.target }}</span
+            >
+            <span>{{ achievement.progress_percentage }}%</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="achievement-reward">
+          <div class="reward-item">
+            <i class="fas fa-star text-warning"></i>
+            <span>{{ achievement.xp_reward }} XP</span>
+          </div>
+          <div class="reward-item">
+            <i class="fas fa-coins text-warning"></i>
+            <span>{{ achievement.points_reward }} pts</span>
+          </div>
+        </div>
+
+        {% if achievement.status == 'earned' %}
+        <div class="achievement-date">
+          Earned {{ achievement.earned_date|timeago }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Special Achievements -->
+  <div class="category-section" data-category="special">
+    <div class="category-header">
+      <div
+        class="category-icon"
+        style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+      >
+        <i class="fas fa-star"></i>
+      </div>
+      <h2 class="category-title">Special Events</h2>
+      <span class="category-count"
+        >{{ special_achievements|length }} achievements</span
+      >
+    </div>
+
+    <div class="achievements-grid">
+      {% for achievement in special_achievements %}
+      <div
+        class="achievement-card {{ achievement.status }} {{ achievement.rarity }}"
+        data-filter="{{ achievement.status }}"
+        data-rarity="{{ achievement.rarity }}"
+        data-category="special"
+      >
+        <div
+          class="achievement-icon {{ achievement.status }} {{ achievement.rarity }}"
+        >
+          <i class="{{ achievement.icon }}"></i>
+        </div>
+
+        <h3 class="achievement-title">{{ achievement.name }}</h3>
+        <div class="achievement-rarity rarity-{{ achievement.rarity }}">
+          {{ achievement.rarity|title }}
+        </div>
+        <p class="achievement-description">{{ achievement.description }}</p>
+
+        {% if achievement.status != 'earned' %}
+        <div class="achievement-progress">
+          <div class="progress-bar-container">
+            <div
+              class="progress-bar {{ achievement.rarity }}"
+              style="width: {{ achievement.progress_percentage }}%"
+            ></div>
+          </div>
+          <div class="progress-text">
+            <span
+              >{{ achievement.current_progress }}/{{ achievement.target }}</span
+            >
+            <span>{{ achievement.progress_percentage }}%</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="achievement-reward">
+          <div class="reward-item">
+            <i class="fas fa-star text-warning"></i>
+            <span>{{ achievement.xp_reward }} XP</span>
+          </div>
+          <div class="reward-item">
+            <i class="fas fa-coins text-warning"></i>
+            <span>{{ achievement.points_reward }} pts</span>
+          </div>
+        </div>
+
+        {% if achievement.status == 'earned' %}
+        <div class="achievement-date">
+          Earned {{ achievement.earned_date|timeago }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeFilters();
+    animateProgressBars();
+    setupAchievementInteractions();
+  });
+
+  function initializeFilters() {
+    const filterButtons = document.querySelectorAll(".filter-btn");
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filterGroup = button.parentElement;
+        const groupButtons = filterGroup.querySelectorAll(".filter-btn");
+
+        // Remove active class from siblings
+        groupButtons.forEach((btn) => btn.classList.remove("active"));
+
+        // Add active class to clicked button
+        button.classList.add("active");
+
+        // Apply filters
+        applyFilters();
+      });
+    });
+  }
+
+  function applyFilters() {
+    const activeFilters = {
+      status:
+        document.querySelector("[data-filter].active")?.dataset.filter || "all",
+      rarity:
+        document.querySelector("[data-rarity].active")?.dataset.rarity || "all",
+      category:
+        document.querySelector("[data-category].active")?.dataset.category ||
+        "all",
+    };
+
+    const achievementCards = document.querySelectorAll(".achievement-card");
+    const categorySections = document.querySelectorAll(".category-section");
+
+    achievementCards.forEach((card) => {
+      let show = true;
+
+      // Check status filter
+      if (activeFilters.status !== "all") {
+        const cardStatus = card.dataset.filter;
+        if (cardStatus !== activeFilters.status) {
+          show = false;
+        }
+      }
+
+      // Check rarity filter
+      if (activeFilters.rarity !== "all") {
+        const cardRarity = card.dataset.rarity;
+        if (cardRarity !== activeFilters.rarity) {
+          show = false;
+        }
+      }
+
+      // Check category filter
+      if (activeFilters.category !== "all") {
+        const cardCategory = card.dataset.category;
+        if (cardCategory !== activeFilters.category) {
+          show = false;
+        }
+      }
+
+      card.style.display = show ? "block" : "none";
+    });
+
+    // Show/hide category sections
+    categorySections.forEach((section) => {
+      const categoryName = section.dataset.category;
+      if (
+        activeFilters.category === "all" ||
+        activeFilters.category === categoryName
+      ) {
+        section.style.display = "block";
+      } else {
+        section.style.display = "none";
+      }
+    });
+
+    // Update achievement counts
+    updateAchievementCounts();
+  }
+
+  function updateAchievementCounts() {
+    const categorySections = document.querySelectorAll(
+      '.category-section:not([style*="display: none"])'
+    );
+
+    categorySections.forEach((section) => {
+      const visibleCards = section.querySelectorAll(
+        '.achievement-card:not([style*="display: none"])'
+      );
+      const countElement = section.querySelector(".category-count");
+      if (countElement) {
+        countElement.textContent = `${visibleCards.length} achievement${
+          visibleCards.length !== 1 ? "s" : ""
+        }`;
+      }
+    });
+  }
+
+  function animateProgressBars() {
+    const progressBars = document.querySelectorAll(".progress-bar");
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const bar = entry.target;
+          const width = bar.style.width;
+          bar.style.width = "0%";
+          setTimeout(() => {
+            bar.style.width = width;
+          }, 200);
+        }
+      });
+    });
+
+    progressBars.forEach((bar) => observer.observe(bar));
+  }
+
+  function setupAchievementInteractions() {
+    const achievementCards = document.querySelectorAll(".achievement-card");
+
+    achievementCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        if (!card.classList.contains("locked")) {
+          showAchievementDetails(card);
+        }
+      });
+    });
+  }
+
+  function showAchievementDetails(card) {
+    const title = card.querySelector(".achievement-title").textContent;
+    const description = card.querySelector(
+      ".achievement-description"
+    ).textContent;
+    const status = card.dataset.filter;
+    const rarity = card.dataset.rarity;
+
+    // Create modal or tooltip with detailed information
+    // This would typically show more information about the achievement
+    console.log("Achievement details:", { title, description, status, rarity });
+  }
+
+  // Add achievement unlock animation
+  function celebrateAchievement(achievementId) {
+    // This function would be called when a new achievement is unlocked
+    // Add confetti or other celebration effects
+    console.log("Achievement unlocked:", achievementId);
+  }
+
+  // Listen for achievement unlock events
+  window.addEventListener("achievementUnlocked", (event) => {
+    celebrateAchievement(event.detail.achievementId);
+  });
+</script>
+{% endblock %}

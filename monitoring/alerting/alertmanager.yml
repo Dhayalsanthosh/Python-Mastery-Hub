@@ -1,0 +1,304 @@
+# File: monitoring/alerting/alertmanager.yml
+# Alertmanager configuration for alert routing and notifications
+
+global:
+  # The smarthost and SMTP sender used for mail notifications.
+  smtp_smarthost: "mail.example.com:587"
+  smtp_from: "alertmanager@example.com"
+  smtp_auth_username: "alertmanager@example.com"
+  smtp_auth_password: "smtp_password"
+  smtp_require_tls: true
+
+  # The API URL to use for Slack notifications.
+  slack_api_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+
+  # Default values for various notification integrations
+  resolve_timeout: 5m
+  http_config:
+    follow_redirects: true
+
+# Templates for customizing notification content
+templates:
+  - "/etc/alertmanager/templates/*.tmpl"
+
+# The root route on which each incoming alert enters.
+route:
+  # The labels by which incoming alerts are grouped together.
+  group_by: ["alertname", "cluster", "service"]
+
+  # When a new group of alerts is created by an incoming alert, wait at
+  # least 'group_wait' to send the initial notification.
+  group_wait: 10s
+
+  # When the first notification was sent, wait 'group_interval' to send a batch
+  # of new alerts that started firing for that group.
+  group_interval: 10s
+
+  # If an alert has successfully been sent, wait 'repeat_interval' to
+  # resend them.
+  repeat_interval: 1h
+
+  # A default receiver
+  receiver: "web.hook"
+
+  # All the above attributes are inherited by all child routes and can
+  # overridden on each.
+  routes:
+    # Critical alerts route
+    - matchers:
+        - severity="critical"
+      receiver: "critical-alerts"
+      group_wait: 0s
+      group_interval: 30s
+      repeat_interval: 15m
+      routes:
+        # Database critical alerts
+        - matchers:
+            - category="database"
+          receiver: "database-critical"
+        # Infrastructure critical alerts
+        - matchers:
+            - category="infrastructure"
+          receiver: "infrastructure-critical"
+        # Application critical alerts
+        - matchers:
+            - category="application"
+          receiver: "application-critical"
+        # Business critical alerts
+        - matchers:
+            - category="business"
+          receiver: "business-critical"
+
+    # Warning alerts route
+    - matchers:
+        - severity="warning"
+      receiver: "warning-alerts"
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+    # Info alerts route
+    - matchers:
+        - severity="info"
+      receiver: "info-alerts"
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 12h
+
+    # Kubernetes specific alerts
+    - matchers:
+        - category="kubernetes"
+      receiver: "kubernetes-alerts"
+      group_by: ["alertname", "namespace", "pod"]
+      routes:
+        - matchers:
+            - severity="critical"
+          receiver: "kubernetes-critical"
+
+    # Development environment alerts (less noisy)
+    - matchers:
+        - environment="development"
+      receiver: "dev-alerts"
+      group_wait: 5m
+      group_interval: 30m
+      repeat_interval: 24h
+
+    # Staging environment alerts
+    - matchers:
+        - environment="staging"
+      receiver: "staging-alerts"
+      group_wait: 2m
+      group_interval: 10m
+      repeat_interval: 8h
+
+# Inhibition rules allow to mute a set of alerts given that another alert is firing.
+inhibit_rules:
+  # Inhibit any warning-level notifications if the same alert is already critical
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ["alertname", "cluster", "service", "instance"]
+
+  # Inhibit any info-level notifications if warning or critical
+  - source_matchers:
+      - severity=~"warning|critical"
+    target_matchers:
+      - severity="info"
+    equal: ["alertname", "cluster", "service", "instance"]
+
+  # Inhibit node-level alerts if entire node is down
+  - source_matchers:
+      - alertname="NodeDown"
+    target_matchers:
+      - category="infrastructure"
+    equal: ["instance"]
+
+  # Inhibit application alerts if node is down
+  - source_matchers:
+      - alertname="NodeDown"
+    target_matchers:
+      - category="application"
+    equal: ["instance"]
+
+# Receivers define how notifications are sent
+receivers:
+  # Default webhook receiver
+  - name: "web.hook"
+    webhook_configs:
+      - url: "http://webhook-service:5000/alerts"
+        send_resolved: true
+        http_config:
+          follow_redirects: true
+
+  # Critical alerts - multiple channels
+  - name: "critical-alerts"
+    email_configs:
+      - to: "oncall@example.com"
+        subject: "CRITICAL: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ if .Annotations.runbook_url }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+          {{ end }}
+        headers:
+          X-Priority: "1"
+    slack_configs:
+      - api_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+        channel: "#alerts-critical"
+        title: "CRITICAL ALERT"
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Instance:* {{ .Labels.instance }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+    pagerduty_configs:
+      - routing_key: "your-pagerduty-integration-key"
+        description: "{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+        severity: "critical"
+
+  # Database critical alerts
+  - name: "database-critical"
+    email_configs:
+      - to: "dba@example.com,oncall@example.com"
+        subject: "DATABASE CRITICAL: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+    slack_configs:
+      - channel: "#database-alerts"
+        title: "DATABASE CRITICAL ALERT"
+
+  # Infrastructure critical alerts
+  - name: "infrastructure-critical"
+    email_configs:
+      - to: "sre@example.com,oncall@example.com"
+        subject: "INFRASTRUCTURE CRITICAL: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+    slack_configs:
+      - channel: "#infrastructure-alerts"
+        title: "INFRASTRUCTURE CRITICAL ALERT"
+
+  # Application critical alerts
+  - name: "application-critical"
+    email_configs:
+      - to: "dev-team@example.com,oncall@example.com"
+        subject: "APPLICATION CRITICAL: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+    slack_configs:
+      - channel: "#application-alerts"
+        title: "APPLICATION CRITICAL ALERT"
+
+  # Business critical alerts
+  - name: "business-critical"
+    email_configs:
+      - to: "business-team@example.com,oncall@example.com"
+        subject: "BUSINESS CRITICAL: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+    slack_configs:
+      - channel: "#business-alerts"
+        title: "BUSINESS CRITICAL ALERT"
+
+  # Warning alerts
+  - name: "warning-alerts"
+    slack_configs:
+      - channel: "#alerts-warning"
+        title: "WARNING ALERT"
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        send_resolved: true
+
+  # Info alerts
+  - name: "info-alerts"
+    slack_configs:
+      - channel: "#alerts-info"
+        title: "INFO ALERT"
+        send_resolved: true
+
+  # Kubernetes alerts
+  - name: "kubernetes-alerts"
+    slack_configs:
+      - channel: "#kubernetes-alerts"
+        title: "KUBERNETES ALERT"
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          {{ .Annotations.description }}
+          *Namespace:* {{ .Labels.namespace }}
+          *Pod:* {{ .Labels.pod }}
+          {{ end }}
+
+  # Kubernetes critical alerts
+  - name: "kubernetes-critical"
+    email_configs:
+      - to: "k8s-admin@example.com"
+        subject: "KUBERNETES CRITICAL: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+    slack_configs:
+      - channel: "#kubernetes-critical"
+        title: "KUBERNETES CRITICAL ALERT"
+    pagerduty_configs:
+      - routing_key: "kubernetes-pagerduty-key"
+
+  # Development alerts
+  - name: "dev-alerts"
+    slack_configs:
+      - channel: "#dev-alerts"
+        title: "DEV ENVIRONMENT ALERT"
+
+  # Staging alerts
+  - name: "staging-alerts"
+    slack_configs:
+      - channel: "#staging-alerts"
+        title: "STAGING ENVIRONMENT ALERT"
+
+# Time intervals for muting alerts
+time_intervals:
+  - name: "business-hours"
+    time_intervals:
+      - times:
+          - start_time: "09:00"
+            end_time: "17:00"
+        weekdays: ["monday:friday"]
+        location: "America/New_York"
+
+  - name: "maintenance-window"
+    time_intervals:
+      - times:
+          - start_time: "02:00"
+            end_time: "04:00"
+        weekdays: ["sunday"]
+        location: "UTC"
+
+# Mute rules
+mute_time_intervals:
+  - name: "maintenance-mute"
+    time_intervals: ["maintenance-window"]

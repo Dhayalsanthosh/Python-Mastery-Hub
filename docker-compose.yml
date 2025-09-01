@@ -1,0 +1,217 @@
+# Python Mastery Hub - Docker Compose Configuration
+# Provides complete development and production environments
+
+version: "3.8"
+
+services:
+  # Main web application
+  web:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - /app/.venv # Exclude .venv from volume mount
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    command: python -m python_mastery_hub.web.app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - python-mastery-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # CLI interface
+  cli:
+    build:
+      context: .
+      target: cli
+    volumes:
+      - .:/app
+    environment:
+      - ENVIRONMENT=development
+    stdin_open: true
+    tty: true
+    command: python -m python_mastery_hub.cli.main
+    networks:
+      - python-mastery-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - python-mastery-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for data storage (future use)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=python_mastery_hub
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - python-mastery-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy (production)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+    networks:
+      - python-mastery-network
+    profiles:
+      - production
+
+  # Documentation server
+  docs:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "cd docs && 
+             make html && 
+             cd _build/html && 
+             python -m http.server 8080"
+    networks:
+      - python-mastery-network
+    profiles:
+      - docs
+
+  # Test runner
+  test:
+    build:
+      context: .
+      target: test
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+    environment:
+      - ENVIRONMENT=test
+    command: pytest tests/ -v --cov=src --cov-report=html --junitxml=test-results/results.xml
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - python-mastery-network
+    profiles:
+      - test
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    networks:
+      - python-mastery-network
+    profiles:
+      - monitoring
+
+  # Grafana for dashboards (optional)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - python-mastery-network
+    profiles:
+      - monitoring
+
+  # Jupyter notebook server for interactive learning
+  jupyter:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - jupyter_notebooks:/app/notebooks
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    command: >
+      sh -c "pip install jupyterlab && 
+             jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+             --NotebookApp.token='' --NotebookApp.password=''"
+    networks:
+      - python-mastery-network
+    profiles:
+      - jupyter
+
+# Named volumes for data persistence
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  jupyter_notebooks:
+    driver: local
+  test_results:
+    driver: local
+
+# Custom network for service communication
+networks:
+  python-mastery-network:
+    driver: bridge
+# Development override (docker-compose.override.yml would be used)
+# This file provides sensible defaults for development

@@ -1,0 +1,1110 @@
+<!-- Location: src/python_mastery_hub/web/templates/exercises/detail.html -->
+
+{% extends "base.html" %} {% block title %}{{ exercise.title }} - Python Mastery
+Hub{% endblock %} {% block meta_description %}{{ exercise.description }} -
+Practice Python programming with interactive exercises{% endblock %} {% block
+extra_css %}
+<style>
+  .exercise-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .exercise-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .exercise-breadcrumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .breadcrumb-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+  }
+
+  .breadcrumb-link:hover {
+    color: white;
+    text-decoration: underline;
+  }
+
+  .exercise-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .difficulty-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .difficulty-beginner {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .difficulty-intermediate {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .difficulty-advanced {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .exercise-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .content-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .panel-content {
+    padding: 1.5rem;
+    height: 600px;
+    overflow-y: auto;
+  }
+
+  .instructions {
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .instructions h3 {
+    color: #1f2937;
+    margin: 1.5rem 0 1rem 0;
+    font-size: 1.1rem;
+  }
+
+  .instructions h4 {
+    color: #374151;
+    margin: 1rem 0 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .instructions pre {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    border-left: 4px solid #667eea;
+  }
+
+  .instructions code {
+    background: #f3f4f6;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .instructions pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .requirements-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .requirements-list li {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .requirements-list li::before {
+    content: "✓";
+    color: #059669;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .hint-item {
+    background: #fffbeb;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .hint-header {
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .code-editor {
+    height: 100%;
+    border: none;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toolbar-btn {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .toolbar-btn:hover {
+    background: #e5e7eb;
+  }
+
+  .toolbar-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .test-results {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .test-case {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+
+  .test-case.passed {
+    background: #f0fdf4;
+    color: #059669;
+  }
+
+  .test-case.failed {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .test-case.pending {
+    background: #fffbeb;
+    color: #d97706;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+  }
+
+  .btn-outline:hover {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #4b5563;
+    color: white;
+    text-decoration: none;
+  }
+
+  .progress-sidebar {
+    position: fixed;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    min-width: 200px;
+  }
+
+  .progress-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .progress-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .progress-item.completed {
+    background: #f0fdf4;
+    color: #059669;
+  }
+
+  .progress-item.current {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+  }
+
+  .progress-item.pending {
+    color: #6b7280;
+  }
+
+  .completion-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .completion-modal.show {
+    display: flex;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 500px;
+    margin: 1rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-description {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-stat {
+    text-align: center;
+  }
+
+  .modal-stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+  }
+
+  .modal-stat-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  @media (max-width: 1200px) {
+    .progress-sidebar {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .exercise-content {
+      grid-template-columns: 1fr;
+    }
+
+    .panel-content {
+      height: 400px;
+    }
+
+    .exercise-meta {
+      justify-content: center;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .modal-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="exercise-container">
+  <!-- Exercise Header -->
+  <div class="exercise-header">
+    <div class="exercise-breadcrumb">
+      <a href="/dashboard" class="breadcrumb-link">Dashboard</a> /
+      <a href="/exercises" class="breadcrumb-link">Exercises</a> /
+      <a href="/exercises?topic={{ exercise.topic }}" class="breadcrumb-link"
+        >{{ exercise.topic|title }}</a
+      >
+      /
+      <span>{{ exercise.title }}</span>
+    </div>
+
+    <h1 class="h3 mb-2">{{ exercise.title }}</h1>
+    <p class="mb-0 opacity-90">{{ exercise.description }}</p>
+
+    <div class="exercise-meta">
+      <div class="meta-item">
+        <i class="fas fa-layer-group"></i>
+        <span class="difficulty-badge difficulty-{{ exercise.difficulty }}">
+          {{ exercise.difficulty|title }}
+        </span>
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-clock"></i>
+        <span>{{ exercise.estimated_time }} minutes</span>
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-star"></i>
+        <span>{{ exercise.points }} XP</span>
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-tag"></i>
+        <span>{{ exercise.topic|title }}</span>
+      </div>
+      {% if exercise.status == 'completed' %}
+      <div class="meta-item">
+        <i class="fas fa-check-circle"></i>
+        <span>Completed</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Exercise Content -->
+  <div class="exercise-content">
+    <!-- Instructions Panel -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-book"></i>
+          Instructions
+        </h3>
+        <div class="editor-toolbar">
+          <button
+            class="toolbar-btn"
+            onclick="toggleSection('instructions')"
+            title="Instructions"
+          >
+            <i class="fas fa-book"></i>
+          </button>
+          <button
+            class="toolbar-btn"
+            onclick="toggleSection('requirements')"
+            title="Requirements"
+          >
+            <i class="fas fa-list-check"></i>
+          </button>
+          <button
+            class="toolbar-btn"
+            onclick="toggleSection('hints')"
+            title="Hints"
+          >
+            <i class="fas fa-lightbulb"></i>
+          </button>
+        </div>
+      </div>
+      <div class="panel-content">
+        <!-- Instructions Section -->
+        <div class="instructions" id="instructionsSection">
+          {{ exercise.instructions|safe }}
+        </div>
+
+        <!-- Requirements Section -->
+        <div class="instructions d-none" id="requirementsSection">
+          <h3>Requirements</h3>
+          <ul class="requirements-list">
+            {% for requirement in exercise.requirements %}
+            <li>{{ requirement }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Hints Section -->
+        <div class="instructions d-none" id="hintsSection">
+          <h3>Hints</h3>
+          {% for hint in exercise.hints %}
+          <div class="hint-item">
+            <div class="hint-header">
+              <i class="fas fa-lightbulb"></i>
+              Hint {{ loop.index }}
+            </div>
+            <div>{{ hint }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Code Editor Panel -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-code"></i>
+          Code Editor
+        </h3>
+        <div class="editor-toolbar">
+          <button class="toolbar-btn" onclick="runCode()" title="Run Code">
+            <i class="fas fa-play"></i>
+          </button>
+          <button class="toolbar-btn" onclick="runTests()" title="Run Tests">
+            <i class="fas fa-vial"></i>
+          </button>
+          <button class="toolbar-btn" onclick="resetCode()" title="Reset">
+            <i class="fas fa-undo"></i>
+          </button>
+          <button
+            class="toolbar-btn"
+            onclick="toggleFullscreen()"
+            title="Fullscreen"
+          >
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+      </div>
+      <div class="panel-content">
+        <textarea
+          class="code-editor"
+          id="codeEditor"
+          placeholder="# Write your Python code here..."
+        >
+{{ exercise.starter_code or exercise.solution_template }}</textarea
+        >
+
+        <!-- Test Results -->
+        <div class="test-results" id="testResults" style="display: none">
+          <h4>Test Results</h4>
+          <div id="testOutput"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-primary" onclick="runTests()" id="runTestsBtn">
+      <i class="fas fa-vial"></i>
+      Run Tests
+    </button>
+
+    <button
+      class="btn btn-success d-none"
+      onclick="submitSolution()"
+      id="submitBtn"
+    >
+      <i class="fas fa-check"></i>
+      Submit Solution
+    </button>
+
+    <button class="btn btn-outline" onclick="getHint()">
+      <i class="fas fa-lightbulb"></i>
+      Get Hint
+    </button>
+
+    <button class="btn btn-secondary" onclick="resetCode()">
+      <i class="fas fa-undo"></i>
+      Reset Code
+    </button>
+
+    {% if exercise.status == 'completed' %}
+    <a
+      href="/exercises/{{ exercise.next_exercise_id }}"
+      class="btn btn-primary"
+    >
+      <i class="fas fa-arrow-right"></i>
+      Next Exercise
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Progress Sidebar -->
+  <div class="progress-sidebar">
+    <div class="progress-title">Exercise Progress</div>
+    <div class="progress-item completed">
+      <i class="fas fa-check"></i>
+      <span>Read Instructions</span>
+    </div>
+    <div class="progress-item current">
+      <i class="fas fa-code"></i>
+      <span>Write Code</span>
+    </div>
+    <div class="progress-item pending">
+      <i class="fas fa-vial"></i>
+      <span>Pass Tests</span>
+    </div>
+    <div class="progress-item pending">
+      <i class="fas fa-check-circle"></i>
+      <span>Submit Solution</span>
+    </div>
+  </div>
+</div>
+
+<!-- Completion Modal -->
+<div class="completion-modal" id="completionModal">
+  <div class="modal-content">
+    <div class="modal-icon">
+      <i class="fas fa-trophy"></i>
+    </div>
+    <h2 class="modal-title">Congratulations!</h2>
+    <p class="modal-description">
+      You've successfully completed this exercise!
+    </p>
+
+    <div class="modal-stats">
+      <div class="modal-stat">
+        <div class="modal-stat-number" id="modalPoints">
+          {{ exercise.points }}
+        </div>
+        <div class="modal-stat-label">XP Earned</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-number" id="modalTime">--</div>
+        <div class="modal-stat-label">Time Taken</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-number" id="modalAttempts">--</div>
+        <div class="modal-stat-label">Attempts</div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      {% if exercise.next_exercise_id %}
+      <a
+        href="/exercises/{{ exercise.next_exercise_id }}"
+        class="btn btn-primary"
+      >
+        <i class="fas fa-arrow-right"></i>
+        Next Exercise
+      </a>
+      {% endif %}
+      <a href="/exercises" class="btn btn-outline">
+        <i class="fas fa-list"></i>
+        More Exercises
+      </a>
+      <button class="btn btn-secondary" onclick="closeModal()">
+        <i class="fas fa-times"></i>
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css"
+/>
+
+<script>
+  let codeEditor;
+  let startTime;
+  let attempts = 0;
+  let allTestsPassed = false;
+
+  document.addEventListener('DOMContentLoaded', function() {
+      initializeCodeEditor();
+      startTime = Date.now();
+
+      // Load saved progress
+      loadProgress();
+
+      // Auto-save code changes
+      setInterval(saveProgress, 30000); // Save every 30 seconds
+  });
+
+  function initializeCodeEditor() {
+      const textarea = document.getElementById('codeEditor');
+
+      codeEditor = CodeMirror.fromTextArea(textarea, {
+          mode: 'python',
+          theme: 'dracula',
+          lineNumbers: true,
+          autoCloseBrackets: true,
+          matchBrackets: true,
+          indentUnit: 4,
+          tabSize: 4,
+          lineWrapping: true,
+          extraKeys: {
+              'Ctrl-Enter': runCode,
+              'Cmd-Enter': runCode,
+              'Ctrl-Shift-Enter': runTests,
+              'Cmd-Shift-Enter': runTests
+          }
+      });
+
+      codeEditor.on('change', function() {
+          saveProgress();
+      });
+  }
+
+  function toggleSection(section) {
+      const sections = ['instructionsSection', 'requirementsSection', 'hintsSection'];
+
+      sections.forEach(s => {
+          const element = document.getElementById(s);
+          if (s === section + 'Section') {
+              element.classList.remove('d-none');
+          } else {
+              element.classList.add('d-none');
+          }
+      });
+
+      // Update toolbar button states
+      document.querySelectorAll('.toolbar-btn').forEach(btn => {
+          btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+  }
+
+  async function runCode() {
+      const code = codeEditor.getValue();
+
+      if (!code.trim()) {
+          alert('Please write some code first!');
+          return;
+      }
+
+      try {
+          const response = await fetch('/api/exercises/run', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              },
+              body: JSON.stringify({
+                  exercise_id: {{ exercise.id }},
+                  code: code
+              })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+              showOutput(result.output, result.error);
+          } else {
+              showError(result.message || 'Failed to run code');
+          }
+
+      } catch (error) {
+          console.error('Run error:', error);
+          showError('An error occurred while running your code');
+      }
+  }
+
+  async function runTests() {
+      const code = codeEditor.getValue();
+      attempts++;
+
+      if (!code.trim()) {
+          alert('Please write some code first!');
+          return;
+      }
+
+      // Update UI
+      const runTestsBtn = document.getElementById('runTestsBtn');
+      const originalText = runTestsBtn.innerHTML;
+      runTestsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running Tests...';
+      runTestsBtn.disabled = true;
+
+      try {
+          const response = await fetch('/api/exercises/test', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              },
+              body: JSON.stringify({
+                  exercise_id: {{ exercise.id }},
+                  code: code
+              })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+              showTestResults(result.test_results);
+
+              if (result.all_passed) {
+                  allTestsPassed = true;
+                  showSubmitButton();
+                  updateProgress('tests-passed');
+              }
+          } else {
+              showError(result.message || 'Failed to run tests');
+          }
+
+      } catch (error) {
+          console.error('Test error:', error);
+          showError('An error occurred while running tests');
+      } finally {
+          runTestsBtn.innerHTML = originalText;
+          runTestsBtn.disabled = false;
+      }
+  }
+
+  async function submitSolution() {
+      if (!allTestsPassed) {
+          alert('Please pass all tests before submitting!');
+          return;
+      }
+
+      const code = codeEditor.getValue();
+      const timeTaken = Math.round((Date.now() - startTime) / 1000);
+
+      try {
+          const response = await fetch('/api/exercises/submit', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              },
+              body: JSON.stringify({
+                  exercise_id: {{ exercise.id }},
+                  code: code,
+                  time_taken: timeTaken,
+                  attempts: attempts
+              })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+              updateProgress('completed');
+              showCompletionModal(result);
+          } else {
+              showError(result.message || 'Failed to submit solution');
+          }
+
+      } catch (error) {
+          console.error('Submit error:', error);
+          showError('An error occurred while submitting your solution');
+      }
+  }
+
+  function showTestResults(results) {
+      const testResults = document.getElementById('testResults');
+      const testOutput = document.getElementById('testOutput');
+
+      testOutput.innerHTML = '';
+
+      results.forEach((test, index) => {
+          const testCase = document.createElement('div');
+          testCase.className = `test-case ${test.passed ? 'passed' : 'failed'}`;
+
+          const icon = test.passed ? 'fa-check' : 'fa-times';
+          const status = test.passed ? 'PASS' : 'FAIL';
+
+          testCase.innerHTML = `
+              <i class="fas ${icon}"></i>
+              <span>${status}: ${test.description}</span>
+              ${!test.passed ? `<div class="ms-2 text-sm">${test.error || 'Expected different output'}</div>` : ''}
+          `;
+
+          testOutput.appendChild(testCase);
+      });
+
+      testResults.style.display = 'block';
+  }
+
+  function showOutput(output, error) {
+      const testResults = document.getElementById('testResults');
+      const testOutput = document.getElementById('testOutput');
+
+      testOutput.innerHTML = '';
+
+      if (error) {
+          testOutput.innerHTML = `<div class="test-case failed"><i class="fas fa-exclamation-triangle"></i> Error: ${error}</div>`;
+      } else {
+          testOutput.innerHTML = `<div class="test-case passed"><i class="fas fa-terminal"></i> Output: ${output || '(no output)'}</div>`;
+      }
+
+      testResults.style.display = 'block';
+  }
+
+  function showError(message) {
+      const testResults = document.getElementById('testResults');
+      const testOutput = document.getElementById('testOutput');
+
+      testOutput.innerHTML = `<div class="test-case failed"><i class="fas fa-exclamation-triangle"></i> ${message}</div>`;
+      testResults.style.display = 'block';
+  }
+
+  function showSubmitButton() {
+      document.getElementById('submitBtn').classList.remove('d-none');
+  }
+
+  function updateProgress(stage) {
+      const progressItems = document.querySelectorAll('.progress-item');
+
+      progressItems.forEach(item => {
+          item.classList.remove('current');
+          item.classList.add('completed');
+      });
+
+      if (stage === 'completed') {
+          // All items completed
+      } else {
+          // Set current item based on stage
+          const currentIndex = stage === 'tests-passed' ? 3 : 2;
+          if (progressItems[currentIndex]) {
+              progressItems[currentIndex].classList.remove('pending');
+              progressItems[currentIndex].classList.add('current');
+          }
+      }
+  }
+
+  function showCompletionModal(result) {
+      const modal = document.getElementById('completionModal');
+      const timeTaken = Math.round((Date.now() - startTime) / 1000);
+
+      document.getElementById('modalTime').textContent = formatTime(timeTaken);
+      document.getElementById('modalAttempts').textContent = attempts;
+
+      modal.classList.add('show');
+
+      // Trigger confetti or celebration animation
+      if (typeof confetti !== 'undefined') {
+          confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+          });
+      }
+  }
+
+  function closeModal() {
+      document.getElementById('completionModal').classList.remove('show');
+  }
+
+  function getHint() {
+      const hintsSection = document.getElementById('hintsSection');
+      toggleSection('hints');
+      hintsSection.classList.remove('d-none');
+  }
+
+  function resetCode() {
+      if (confirm('Are you sure you want to reset your code? This will restore the starter code.')) {
+          codeEditor.setValue('{{ exercise.starter_code or exercise.solution_template }}');
+          document.getElementById('testResults').style.display = 'none';
+          allTestsPassed = false;
+          document.getElementById('submitBtn').classList.add('d-none');
+      }
+  }
+
+  function toggleFullscreen() {
+      const editor = document.querySelector('.CodeMirror');
+
+      if (!document.fullscreenElement) {
+          editor.requestFullscreen().catch(err => {
+              console.error('Error entering fullscreen:', err);
+          });
+      } else {
+          document.exitFullscreen();
+      }
+  }
+
+  function saveProgress() {
+      const progress = {
+          code: codeEditor.getValue(),
+          timestamp: Date.now(),
+          attempts: attempts
+      };
+
+      localStorage.setItem(`exercise_${{{ exercise.id }}}_progress`, JSON.stringify(progress));
+  }
+
+  function loadProgress() {
+      const saved = localStorage.getItem(`exercise_${{{ exercise.id }}}_progress`);
+
+      if (saved) {
+          try {
+              const progress = JSON.parse(saved);
+              if (progress.code && progress.code !== codeEditor.getValue()) {
+                  if (confirm('You have saved progress for this exercise. Would you like to restore it?')) {
+                      codeEditor.setValue(progress.code);
+                      attempts = progress.attempts || 0;
+                  }
+              }
+          } catch (error) {
+              console.error('Error loading progress:', error);
+          }
+      }
+  }
+
+  function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+          e.preventDefault();
+          saveProgress();
+      }
+  });
+
+  // Track time spent
+  window.addEventListener('beforeunload', function() {
+      saveProgress();
+  });
+</script>
+{% endblock %}

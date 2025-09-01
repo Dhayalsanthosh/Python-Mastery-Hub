@@ -1,0 +1,1376 @@
+<!-- Location: src/python_mastery_hub/web/templates/components/code_editor.html -->
+
+<!-- Code Editor Component -->
+<div class="code-editor-component" id="codeEditor-{{ editor_id or 'default' }}">
+  <div class="editor-header">
+    <div class="editor-tabs">
+      <div class="tab active" data-file="main.py">
+        <i class="fab fa-python"></i>
+        <span>main.py</span>
+        {% if allow_multiple_files %}
+        <button class="tab-close" onclick="closeTab('main.py')">
+          <i class="fas fa-times"></i>
+        </button>
+        {% endif %}
+      </div>
+      {% if allow_multiple_files %}
+      <button class="add-tab-btn" onclick="addNewFile()" title="Add new file">
+        <i class="fas fa-plus"></i>
+      </button>
+      {% endif %}
+    </div>
+
+    <div class="editor-toolbar">
+      <div class="toolbar-group">
+        <button
+          class="toolbar-btn"
+          onclick="runCode('{{ editor_id or 'default' }}')"
+          title="Run Code (Ctrl+Enter)"
+        >
+          <i class="fas fa-play"></i>
+          <span>Run</span>
+        </button>
+        {% if show_test_button %}
+        <button
+          class="toolbar-btn"
+          onclick="runTests('{{ editor_id or 'default' }}')"
+          title="Run Tests (Ctrl+Shift+Enter)"
+        >
+          <i class="fas fa-vial"></i>
+          <span>Test</span>
+        </button>
+        {% endif %} {% if show_submit_button %}
+        <button
+          class="toolbar-btn btn-primary d-none"
+          id="submitBtn-{{ editor_id or 'default' }}"
+          onclick="submitCode('{{ editor_id or 'default' }}')"
+        >
+          <i class="fas fa-check"></i>
+          <span>Submit</span>
+        </button>
+        {% endif %}
+      </div>
+
+      <div class="toolbar-group">
+        <button
+          class="toolbar-btn"
+          onclick="formatCode('{{ editor_id or 'default' }}')"
+          title="Format Code (Alt+Shift+F)"
+        >
+          <i class="fas fa-magic"></i>
+          <span>Format</span>
+        </button>
+        <button
+          class="toolbar-btn"
+          onclick="resetCode('{{ editor_id or 'default' }}')"
+          title="Reset to starter code"
+        >
+          <i class="fas fa-undo"></i>
+          <span>Reset</span>
+        </button>
+        <button
+          class="toolbar-btn"
+          onclick="toggleFullscreen('{{ editor_id or 'default' }}')"
+          title="Toggle fullscreen (F11)"
+        >
+          <i class="fas fa-expand"></i>
+          <span>Fullscreen</span>
+        </button>
+      </div>
+
+      <div class="toolbar-group">
+        <div class="settings-dropdown">
+          <button
+            class="toolbar-btn"
+            onclick="toggleSettingsDropdown('{{ editor_id or 'default' }}')"
+            title="Editor settings"
+          >
+            <i class="fas fa-cog"></i>
+          </button>
+          <div
+            class="dropdown-menu"
+            id="settingsDropdown-{{ editor_id or 'default' }}"
+          >
+            <div class="dropdown-item">
+              <label>Theme:</label>
+              <select
+                onchange="changeTheme('{{ editor_id or 'default' }}', this.value)"
+              >
+                <option value="dracula">Dracula</option>
+                <option value="monokai">Monokai</option>
+                <option value="github">GitHub Light</option>
+                <option value="tomorrow-night">Tomorrow Night</option>
+                <option value="solarized">Solarized</option>
+              </select>
+            </div>
+            <div class="dropdown-item">
+              <label>Font Size:</label>
+              <select
+                onchange="changeFontSize('{{ editor_id or 'default' }}', this.value)"
+              >
+                <option value="12">12px</option>
+                <option value="14" selected>14px</option>
+                <option value="16">16px</option>
+                <option value="18">18px</option>
+                <option value="20">20px</option>
+              </select>
+            </div>
+            <div class="dropdown-item">
+              <label>
+                <input
+                  type="checkbox"
+                  onchange="toggleLineNumbers('{{ editor_id or 'default' }}', this.checked)"
+                  checked
+                />
+                Line Numbers
+              </label>
+            </div>
+            <div class="dropdown-item">
+              <label>
+                <input
+                  type="checkbox"
+                  onchange="toggleWordWrap('{{ editor_id or 'default' }}', this.checked)"
+                />
+                Word Wrap
+              </label>
+            </div>
+            <div class="dropdown-item">
+              <label>
+                <input
+                  type="checkbox"
+                  onchange="toggleAutoComplete('{{ editor_id or 'default' }}', this.checked)"
+                  checked
+                />
+                Auto Complete
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-content">
+    <div class="editor-main">
+      <textarea
+        class="code-textarea"
+        id="codeTextarea-{{ editor_id or 'default' }}"
+        placeholder="# Write your Python code here..."
+      >
+{{ starter_code or '' }}</textarea
+      >
+    </div>
+
+    {% if show_console %}
+    <div class="editor-console" id="console-{{ editor_id or 'default' }}">
+      <div class="console-header">
+        <div class="console-tabs">
+          <button class="console-tab active" data-tab="output">
+            <i class="fas fa-terminal"></i>
+            Output
+          </button>
+          {% if show_test_button %}
+          <button class="console-tab" data-tab="tests">
+            <i class="fas fa-vial"></i>
+            Tests
+          </button>
+          {% endif %}
+          <button class="console-tab" data-tab="errors">
+            <i class="fas fa-exclamation-triangle"></i>
+            Errors
+          </button>
+        </div>
+        <div class="console-controls">
+          <button
+            class="console-btn"
+            onclick="clearConsole('{{ editor_id or 'default' }}')"
+            title="Clear console"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+          <button
+            class="console-btn"
+            onclick="toggleConsole('{{ editor_id or 'default' }}')"
+            title="Toggle console"
+          >
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="console-content">
+        <div
+          class="console-pane active"
+          id="output-{{ editor_id or 'default' }}"
+        >
+          <div class="console-welcome">
+            <i class="fas fa-terminal"></i>
+            <p>Console output will appear here when you run your code.</p>
+          </div>
+        </div>
+
+        {% if show_test_button %}
+        <div class="console-pane" id="tests-{{ editor_id or 'default' }}">
+          <div class="console-welcome">
+            <i class="fas fa-vial"></i>
+            <p>Test results will appear here when you run tests.</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="console-pane" id="errors-{{ editor_id or 'default' }}">
+          <div class="console-welcome">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error messages will appear here if your code has issues.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Status Bar -->
+  <div class="editor-status-bar">
+    <div class="status-left">
+      <span class="status-item">
+        <i class="fab fa-python"></i>
+        Python 3.9
+      </span>
+      <span
+        class="status-item"
+        id="cursorPosition-{{ editor_id or 'default' }}"
+      >
+        Ln 1, Col 1
+      </span>
+      <span class="status-item" id="codeLength-{{ editor_id or 'default' }}">
+        0 characters
+      </span>
+    </div>
+
+    <div class="status-right">
+      {% if auto_save %}
+      <span class="status-item" id="saveStatus-{{ editor_id or 'default' }}">
+        <i class="fas fa-circle text-success"></i>
+        Saved
+      </span>
+      {% endif %}
+      <span class="status-item">
+        <i class="fas fa-keyboard"></i>
+        Insert
+      </span>
+      <span class="status-item" id="executionTime-{{ editor_id or 'default' }}">
+        Ready
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Add New File Modal -->
+{% if allow_multiple_files %}
+<div
+  class="modal fade"
+  id="newFileModal-{{ editor_id or 'default' }}"
+  tabindex="-1"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create New File</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="fileName-{{ editor_id or 'default' }}" class="form-label"
+            >File Name</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="fileName-{{ editor_id or 'default' }}"
+            placeholder="example.py"
+            pattern=".*\.py$"
+          />
+          <div class="form-text">File name must end with .py</div>
+        </div>
+        <div class="mb-3">
+          <label
+            for="fileTemplate-{{ editor_id or 'default' }}"
+            class="form-label"
+            >Template</label
+          >
+          <select
+            class="form-select"
+            id="fileTemplate-{{ editor_id or 'default' }}"
+          >
+            <option value="">Empty file</option>
+            <option value="function">Function template</option>
+            <option value="class">Class template</option>
+            <option value="test">Test file template</option>
+            <option value="module">Module template</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="createNewFile('{{ editor_id or 'default' }}')"
+        >
+          Create File
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<style>
+  .code-editor-component {
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border: 1px solid #374151;
+      height: {{ height or '600px' }};
+      display: flex;
+      flex-direction: column;
+  }
+
+  .editor-header {
+      background: #334155;
+      border-bottom: 1px solid #475569;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+  }
+
+  .editor-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+  }
+
+  .tab {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #475569;
+      color: #e2e8f0;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+      border: none;
+  }
+
+  .tab.active {
+      background: #1e293b;
+      color: #f1f5f9;
+  }
+
+  .tab:hover:not(.active) {
+      background: #52525b;
+  }
+
+  .tab-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 3px;
+      transition: all 0.3s ease;
+  }
+
+  .tab-close:hover {
+      background: #ef4444;
+      color: white;
+  }
+
+  .add-tab-btn {
+      background: #475569;
+      border: none;
+      color: #94a3b8;
+      padding: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+  }
+
+  .add-tab-btn:hover {
+      background: #52525b;
+      color: #e2e8f0;
+  }
+
+  .editor-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+  }
+
+  .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+  }
+
+  .toolbar-btn {
+      background: #475569;
+      border: none;
+      color: #e2e8f0;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+  }
+
+  .toolbar-btn:hover {
+      background: #52525b;
+      transform: translateY(-1px);
+  }
+
+  .toolbar-btn.btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+  }
+
+  .toolbar-btn.btn-primary:hover {
+      background: linear-gradient(135deg, #5a67d8, #6b46c1);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .toolbar-btn.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+  }
+
+  .toolbar-btn.loading i {
+      animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+  }
+
+  .settings-dropdown {
+      position: relative;
+  }
+
+  .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #1e293b;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      z-index: 1000;
+      min-width: 200px;
+      display: none;
+      padding: 0.5rem 0;
+      margin-top: 0.25rem;
+  }
+
+  .dropdown-menu.show {
+      display: block;
+  }
+
+  .dropdown-item {
+      padding: 0.75rem 1rem;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #374151;
+  }
+
+  .dropdown-item:last-child {
+      border-bottom: none;
+  }
+
+  .dropdown-item label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      color: #e2e8f0;
+      font-weight: normal;
+  }
+
+  .dropdown-item select {
+      background: #374151;
+      border: 1px solid #4b5563;
+      color: #e2e8f0;
+      border-radius: 4px;
+      padding: 0.25rem;
+      width: 100%;
+  }
+
+  .dropdown-item input[type="checkbox"] {
+      accent-color: #667eea;
+  }
+
+  .editor-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+  }
+
+  .editor-main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+  }
+
+  .code-textarea {
+      width: 100%;
+      height: 100%;
+      background: #1e293b;
+      color: #e2e8f0;
+      border: none;
+      outline: none;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 1rem;
+      resize: none;
+      tab-size: 4;
+  }
+
+  .code-textarea::placeholder {
+      color: #64748b;
+  }
+
+  .editor-console {
+      background: #0f172a;
+      border-top: 1px solid #334155;
+      max-height: 40%;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      resize: vertical;
+      overflow: hidden;
+  }
+
+  .console-header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+  }
+
+  .console-tabs {
+      display: flex;
+      gap: 0.25rem;
+  }
+
+  .console-tab {
+      background: none;
+      border: none;
+      color: #64748b;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+  }
+
+  .console-tab.active {
+      background: #334155;
+      color: #e2e8f0;
+  }
+
+  .console-tab:hover:not(.active) {
+      background: #475569;
+      color: #94a3b8;
+  }
+
+  .console-controls {
+      display: flex;
+      gap: 0.5rem;
+  }
+
+  .console-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      padding: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+  }
+
+  .console-btn:hover {
+      background: #334155;
+      color: #e2e8f0;
+  }
+
+  .console-content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+  }
+
+  .console-pane {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 1rem;
+      overflow-y: auto;
+      color: #e2e8f0;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.4;
+      display: none;
+  }
+
+  .console-pane.active {
+      display: block;
+  }
+
+  .console-welcome {
+      text-align: center;
+      color: #64748b;
+      padding: 2rem;
+  }
+
+  .console-welcome i {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+  }
+
+  .console-output {
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+  }
+
+  .console-output.stdout {
+      color: #e2e8f0;
+  }
+
+  .console-output.stderr {
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.1);
+  }
+
+  .console-output.info {
+      color: #7dd3fc;
+      background: rgba(14, 165, 233, 0.1);
+  }
+
+  .test-result {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+  }
+
+  .test-result.passed {
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.1);
+  }
+
+  .test-result.failed {
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.1);
+  }
+
+  .test-result.skipped {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.1);
+  }
+
+  .editor-status-bar {
+      background: #334155;
+      border-top: 1px solid #475569;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #94a3b8;
+  }
+
+  .status-left,
+  .status-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+  }
+
+  .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+  }
+
+  .text-success {
+      color: #10b981 !important;
+  }
+
+  .text-warning {
+      color: #f59e0b !important;
+  }
+
+  .text-danger {
+      color: #ef4444 !important;
+  }
+
+  /* Fullscreen styles */
+  .code-editor-component.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      height: 100vh;
+      border-radius: 0;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+      .editor-toolbar {
+          flex-wrap: wrap;
+          gap: 0.5rem;
+      }
+
+      .toolbar-group {
+          gap: 0.25rem;
+      }
+
+      .toolbar-btn span {
+          display: none;
+      }
+
+      .editor-console {
+          min-height: 150px;
+      }
+
+      .console-tabs {
+          flex-wrap: wrap;
+      }
+
+      .dropdown-menu {
+          position: fixed;
+          left: 1rem;
+          right: 1rem;
+          width: auto;
+      }
+  }
+
+  /* Theme-specific overrides will be applied dynamically */
+  .theme-github .code-textarea,
+  .theme-github .code-editor-component {
+      background: #ffffff;
+      color: #24292e;
+  }
+
+  .theme-github .editor-header,
+  .theme-github .console-header {
+      background: #f6f8fa;
+      color: #24292e;
+      border-color: #e1e4e8;
+  }
+
+  .theme-monokai .code-textarea,
+  .theme-monokai .code-editor-component {
+      background: #272822;
+      color: #f8f8f2;
+  }
+
+  .theme-tomorrow-night .code-textarea,
+  .theme-tomorrow-night .code-editor-component {
+      background: #1d1f21;
+      color: #c5c8c6;
+  }
+
+  .theme-solarized .code-textarea,
+  .theme-solarized .code-editor-component {
+      background: #002b36;
+      color: #839496;
+  }
+</style>
+
+<script>
+  // CodeMirror will be initialized by the parent component
+  let editorInstances = {};
+  let fileContents = {};
+
+  function initializeCodeEditor(editorId = "default", options = {}) {
+    const textarea = document.getElementById(`codeTextarea-${editorId}`);
+    if (!textarea) return null;
+
+    // Initialize CodeMirror if available, otherwise use textarea
+    if (typeof CodeMirror !== "undefined") {
+      const editor = CodeMirror.fromTextArea(textarea, {
+        mode: "python",
+        theme: "dracula",
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: false,
+        extraKeys: {
+          "Ctrl-Enter": () => runCode(editorId),
+          "Cmd-Enter": () => runCode(editorId),
+          "Ctrl-Shift-Enter": () => runTests(editorId),
+          "Cmd-Shift-Enter": () => runTests(editorId),
+          "Alt-Shift-F": () => formatCode(editorId),
+          F11: () => toggleFullscreen(editorId),
+        },
+        ...options,
+      });
+
+      editor.on("change", () => {
+        updateStatusBar(editorId);
+        autoSave(editorId);
+      });
+
+      editor.on("cursorActivity", () => {
+        updateCursorPosition(editorId);
+      });
+
+      editorInstances[editorId] = editor;
+      return editor;
+    } else {
+      // Fallback to textarea
+      textarea.addEventListener("input", () => {
+        updateStatusBar(editorId);
+        autoSave(editorId);
+      });
+
+      textarea.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          runCode(editorId);
+        }
+      });
+
+      editorInstances[editorId] = {
+        getValue: () => textarea.value,
+        setValue: (val) => (textarea.value = val),
+      };
+      return editorInstances[editorId];
+    }
+  }
+
+  function getEditorValue(editorId) {
+    const editor = editorInstances[editorId];
+    return editor ? editor.getValue() : "";
+  }
+
+  function setEditorValue(editorId, value) {
+    const editor = editorInstances[editorId];
+    if (editor && editor.setValue) {
+      editor.setValue(value);
+    }
+  }
+
+  async function runCode(editorId) {
+    const code = getEditorValue(editorId);
+    const runBtn = document.querySelector(
+      `#codeEditor-${editorId} .toolbar-btn[onclick*="runCode"]`
+    );
+
+    if (!code.trim()) {
+      showConsoleMessage(editorId, "No code to run", "info");
+      return;
+    }
+
+    // Update UI
+    setButtonLoading(runBtn, true);
+    clearConsole(editorId, "output");
+    switchConsoleTab(editorId, "output");
+    updateExecutionStatus(editorId, "Running...");
+
+    const startTime = Date.now();
+
+    try {
+      const response = await fetch("/api/code/execute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          code: code,
+          language: "python",
+        }),
+      });
+
+      const result = await response.json();
+      const executionTime = Date.now() - startTime;
+
+      if (response.ok) {
+        if (result.output) {
+          showConsoleMessage(editorId, result.output, "stdout");
+        }
+        if (result.error) {
+          showConsoleMessage(editorId, result.error, "stderr");
+          switchConsoleTab(editorId, "errors");
+        }
+        updateExecutionStatus(editorId, `Executed in ${executionTime}ms`);
+      } else {
+        showConsoleMessage(
+          editorId,
+          result.error || "Execution failed",
+          "stderr"
+        );
+        switchConsoleTab(editorId, "errors");
+        updateExecutionStatus(editorId, "Execution failed");
+      }
+    } catch (error) {
+      console.error("Execution error:", error);
+      showConsoleMessage(editorId, "Failed to execute code", "stderr");
+      switchConsoleTab(editorId, "errors");
+      updateExecutionStatus(editorId, "Error");
+    } finally {
+      setButtonLoading(runBtn, false);
+    }
+  }
+
+  async function runTests(editorId) {
+    const code = getEditorValue(editorId);
+    const testBtn = document.querySelector(
+      `#codeEditor-${editorId} .toolbar-btn[onclick*="runTests"]`
+    );
+
+    if (!code.trim()) {
+      showConsoleMessage(editorId, "No code to test", "info");
+      return;
+    }
+
+    // Update UI
+    setButtonLoading(testBtn, true);
+    clearConsole(editorId, "tests");
+    switchConsoleTab(editorId, "tests");
+    updateExecutionStatus(editorId, "Running tests...");
+
+    const startTime = Date.now();
+
+    try {
+      const response = await fetch("/api/code/test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          code: code,
+          exercise_id: window.exerciseId || null,
+        }),
+      });
+
+      const result = await response.json();
+      const executionTime = Date.now() - startTime;
+
+      if (response.ok) {
+        showTestResults(editorId, result.tests);
+
+        if (result.all_passed) {
+          const submitBtn = document.getElementById(`submitBtn-${editorId}`);
+          if (submitBtn) {
+            submitBtn.classList.remove("d-none");
+          }
+          updateExecutionStatus(
+            editorId,
+            `All tests passed in ${executionTime}ms`
+          );
+        } else {
+          updateExecutionStatus(
+            editorId,
+            `${result.passed}/${result.total} tests passed`
+          );
+        }
+      } else {
+        showConsoleMessage(
+          editorId,
+          result.error || "Test execution failed",
+          "stderr"
+        );
+        updateExecutionStatus(editorId, "Test failed");
+      }
+    } catch (error) {
+      console.error("Test error:", error);
+      showConsoleMessage(editorId, "Failed to run tests", "stderr");
+      updateExecutionStatus(editorId, "Error");
+    } finally {
+      setButtonLoading(testBtn, false);
+    }
+  }
+
+  function formatCode(editorId) {
+    const code = getEditorValue(editorId);
+
+    // Simple Python formatting (in a real implementation, you'd use a proper formatter)
+    const formatted = code
+      .split("\n")
+      .map((line) => line.trimEnd())
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n"); // Remove excessive blank lines
+
+    setEditorValue(editorId, formatted);
+    showConsoleMessage(editorId, "Code formatted", "info");
+  }
+
+  function resetCode(editorId) {
+    if (
+      confirm(
+        "Are you sure you want to reset your code? This will restore the starter code."
+      )
+    ) {
+      const starterCode =
+        document
+          .getElementById(`codeTextarea-${editorId}`)
+          .getAttribute("data-starter") || "";
+      setEditorValue(editorId, starterCode);
+      clearConsole(editorId);
+      updateExecutionStatus(editorId, "Ready");
+    }
+  }
+
+  function toggleFullscreen(editorId) {
+    const editor = document.getElementById(`codeEditor-${editorId}`);
+    const fullscreenBtn = editor.querySelector(
+      '.toolbar-btn[onclick*="toggleFullscreen"] i'
+    );
+
+    if (editor.classList.contains("fullscreen")) {
+      editor.classList.remove("fullscreen");
+      fullscreenBtn.className = "fas fa-expand";
+      document.body.style.overflow = "";
+    } else {
+      editor.classList.add("fullscreen");
+      fullscreenBtn.className = "fas fa-compress";
+      document.body.style.overflow = "hidden";
+    }
+
+    // Refresh CodeMirror if available
+    const instance = editorInstances[editorId];
+    if (instance && instance.refresh) {
+      setTimeout(() => instance.refresh(), 100);
+    }
+  }
+
+  function toggleSettingsDropdown(editorId) {
+    const dropdown = document.getElementById(`settingsDropdown-${editorId}`);
+    dropdown.classList.toggle("show");
+  }
+
+  function changeTheme(editorId, theme) {
+    const editor = editorInstances[editorId];
+    const container = document.getElementById(`codeEditor-${editorId}`);
+
+    // Remove old theme classes
+    container.className = container.className.replace(/theme-\w+/g, "");
+    // Add new theme class
+    container.classList.add(`theme-${theme}`);
+
+    if (editor && editor.setOption) {
+      editor.setOption("theme", theme);
+    }
+
+    localStorage.setItem(`editor-theme-${editorId}`, theme);
+  }
+
+  function changeFontSize(editorId, size) {
+    const container = document.getElementById(`codeEditor-${editorId}`);
+    const editor = editorInstances[editorId];
+
+    container.style.setProperty("--editor-font-size", `${size}px`);
+
+    if (editor && editor.getWrapperElement) {
+      editor.getWrapperElement().style.fontSize = `${size}px`;
+      editor.refresh();
+    }
+
+    localStorage.setItem(`editor-font-size-${editorId}`, size);
+  }
+
+  function toggleLineNumbers(editorId, show) {
+    const editor = editorInstances[editorId];
+    if (editor && editor.setOption) {
+      editor.setOption("lineNumbers", show);
+    }
+    localStorage.setItem(`editor-line-numbers-${editorId}`, show);
+  }
+
+  function toggleWordWrap(editorId, wrap) {
+    const editor = editorInstances[editorId];
+    if (editor && editor.setOption) {
+      editor.setOption("lineWrapping", wrap);
+    }
+    localStorage.setItem(`editor-word-wrap-${editorId}`, wrap);
+  }
+
+  function toggleAutoComplete(editorId, enable) {
+    // This would enable/disable autocomplete functionality
+    localStorage.setItem(`editor-autocomplete-${editorId}`, enable);
+  }
+
+  function showConsoleMessage(editorId, message, type = "stdout") {
+    const consolePane = document.getElementById(
+      `${type === "stderr" ? "errors" : "output"}-${editorId}`
+    );
+    if (!consolePane) return;
+
+    // Clear welcome message if present
+    const welcome = consolePane.querySelector(".console-welcome");
+    if (welcome) {
+      welcome.remove();
+    }
+
+    const output = document.createElement("div");
+    output.className = `console-output ${type}`;
+    output.textContent = message;
+
+    consolePane.appendChild(output);
+    consolePane.scrollTop = consolePane.scrollHeight;
+  }
+
+  function showTestResults(editorId, tests) {
+    const testsPane = document.getElementById(`tests-${editorId}`);
+    if (!testsPane) return;
+
+    // Clear previous results
+    testsPane.innerHTML = "";
+
+    tests.forEach((test) => {
+      const result = document.createElement("div");
+      result.className = `test-result ${test.status}`;
+
+      const icon =
+        test.status === "passed"
+          ? "fa-check"
+          : test.status === "failed"
+          ? "fa-times"
+          : "fa-minus";
+
+      result.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${test.name}: ${test.description}</span>
+            ${test.error ? `<div class="test-error">${test.error}</div>` : ""}
+        `;
+
+      testsPane.appendChild(result);
+    });
+
+    testsPane.scrollTop = testsPane.scrollHeight;
+  }
+
+  function switchConsoleTab(editorId, tabName) {
+    const container = document.getElementById(`console-${editorId}`);
+    if (!container) return;
+
+    // Update tab buttons
+    container.querySelectorAll(".console-tab").forEach((tab) => {
+      tab.classList.remove("active");
+      if (tab.dataset.tab === tabName) {
+        tab.classList.add("active");
+      }
+    });
+
+    // Update panes
+    container.querySelectorAll(".console-pane").forEach((pane) => {
+      pane.classList.remove("active");
+      if (pane.id === `${tabName}-${editorId}`) {
+        pane.classList.add("active");
+      }
+    });
+  }
+
+  function clearConsole(editorId, tab = null) {
+    const tabs = tab ? [tab] : ["output", "tests", "errors"];
+
+    tabs.forEach((tabName) => {
+      const pane = document.getElementById(`${tabName}-${editorId}`);
+      if (pane) {
+        pane.innerHTML = `
+                <div class="console-welcome">
+                    <i class="fas ${
+                      tabName === "output"
+                        ? "fa-terminal"
+                        : tabName === "tests"
+                        ? "fa-vial"
+                        : "fa-exclamation-triangle"
+                    }"></i>
+                    <p>${
+                      tabName === "output"
+                        ? "Console output"
+                        : tabName === "tests"
+                        ? "Test results"
+                        : "Error messages"
+                    } will appear here.</p>
+                </div>
+            `;
+      }
+    });
+  }
+
+  function toggleConsole(editorId) {
+    const console = document.getElementById(`console-${editorId}`);
+    const toggleBtn = console.querySelector(
+      '.console-btn[onclick*="toggleConsole"] i'
+    );
+
+    if (console.style.display === "none") {
+      console.style.display = "flex";
+      toggleBtn.className = "fas fa-chevron-down";
+    } else {
+      console.style.display = "none";
+      toggleBtn.className = "fas fa-chevron-up";
+    }
+  }
+
+  function updateStatusBar(editorId) {
+    const editor = editorInstances[editorId];
+    const code = getEditorValue(editorId);
+
+    // Update character count
+    const lengthElement = document.getElementById(`codeLength-${editorId}`);
+    if (lengthElement) {
+      lengthElement.textContent = `${code.length} characters`;
+    }
+
+    updateCursorPosition(editorId);
+  }
+
+  function updateCursorPosition(editorId) {
+    const editor = editorInstances[editorId];
+    const positionElement = document.getElementById(
+      `cursorPosition-${editorId}`
+    );
+
+    if (positionElement && editor && editor.getCursor) {
+      const cursor = editor.getCursor();
+      positionElement.textContent = `Ln ${cursor.line + 1}, Col ${
+        cursor.ch + 1
+      }`;
+    }
+  }
+
+  function updateExecutionStatus(editorId, status) {
+    const statusElement = document.getElementById(`executionTime-${editorId}`);
+    if (statusElement) {
+      statusElement.textContent = status;
+    }
+  }
+
+  function setButtonLoading(button, loading) {
+    if (!button) return;
+
+    const icon = button.querySelector("i");
+    const text = button.querySelector("span");
+
+    if (loading) {
+      button.classList.add("loading");
+      button.disabled = true;
+      if (icon) icon.className = "fas fa-spinner";
+      if (text) text.textContent = "Running...";
+    } else {
+      button.classList.remove("loading");
+      button.disabled = false;
+      if (icon)
+        icon.className =
+          button.getAttribute("data-original-icon") || "fas fa-play";
+      if (text)
+        text.textContent = button.getAttribute("data-original-text") || "Run";
+    }
+  }
+
+  function autoSave(editorId) {
+    if (!window.editorAutoSave) return;
+
+    const statusElement = document.getElementById(`saveStatus-${editorId}`);
+    if (statusElement) {
+      const icon = statusElement.querySelector("i");
+      icon.className = "fas fa-circle text-warning";
+      statusElement.childNodes[1].textContent = "Saving...";
+
+      setTimeout(() => {
+        // Simulate save
+        icon.className = "fas fa-circle text-success";
+        statusElement.childNodes[1].textContent = "Saved";
+      }, 1000);
+    }
+  }
+
+  // Event listeners for console tabs
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("console-tab")) {
+      const editorId = e.target
+        .closest(".code-editor-component")
+        .id.replace("codeEditor-", "");
+      const tabName = e.target.dataset.tab;
+      switchConsoleTab(editorId, tabName);
+    }
+
+    // Close settings dropdown when clicking outside
+    if (!e.target.closest(".settings-dropdown")) {
+      document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+        menu.classList.remove("show");
+      });
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+        menu.classList.remove("show");
+      });
+
+      // Exit fullscreen
+      document
+        .querySelectorAll(".code-editor-component.fullscreen")
+        .forEach((editor) => {
+          const editorId = editor.id.replace("codeEditor-", "");
+          toggleFullscreen(editorId);
+        });
+    }
+  });
+
+  // Initialize on load
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize all code editors on the page
+    document.querySelectorAll(".code-editor-component").forEach((editor) => {
+      const editorId = editor.id.replace("codeEditor-", "");
+      initializeCodeEditor(editorId);
+
+      // Load saved preferences
+      const savedTheme = localStorage.getItem(`editor-theme-${editorId}`);
+      const savedFontSize = localStorage.getItem(
+        `editor-font-size-${editorId}`
+      );
+
+      if (savedTheme) changeTheme(editorId, savedTheme);
+      if (savedFontSize) changeFontSize(editorId, savedFontSize);
+    });
+  });
+</script>

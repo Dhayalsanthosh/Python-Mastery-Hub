@@ -1,0 +1,417 @@
+# File: monitoring/alerting/rules/warning.yml
+# Warning alerting rules that require attention but are not immediately critical
+
+groups:
+  - name: warning.performance
+    interval: 30s
+    rules:
+      # Moderate error rate
+      - alert: ModerateErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) * 100 > 2
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+          priority: P2
+        annotations:
+          summary: "Moderate error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} on service {{ $labels.service }}"
+          impact: "User experience may be degraded"
+          runbook_url: "https://runbooks.example.com/moderate-error-rate"
+          action_required: "Investigation recommended within 2 hours"
+
+      # Elevated response time
+      - alert: ElevatedResponseTime
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 1
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+          priority: P2
+        annotations:
+          summary: "Elevated response time on {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value | humanizeDuration }} on service {{ $labels.service }}"
+          impact: "Slower user experience"
+          runbook_url: "https://runbooks.example.com/elevated-response-time"
+          action_required: "Performance investigation recommended"
+
+      # Low throughput
+      - alert: LowThroughput
+        expr: |
+          sum(rate(http_requests_total[10m])) by (service) < 
+          sum(rate(http_requests_total[10m] offset 1h)) by (service) * 0.7
+        for: 15m
+        labels:
+          severity: warning
+          category: application
+          priority: P2
+        annotations:
+          summary: "Low throughput on {{ $labels.service }}"
+          description: "Request rate is {{ $value }} requests/second on service {{ $labels.service }}, down {{ ((sum(rate(http_requests_total[10m] offset 1h)) by (service) - sum(rate(http_requests_total[10m])) by (service)) / sum(rate(http_requests_total[10m] offset 1h)) by (service)) * 100 }}% from last hour"
+          impact: "Reduced service capacity"
+          runbook_url: "https://runbooks.example.com/low-throughput"
+          action_required: "Capacity investigation within 4 hours"
+
+  - name: warning.infrastructure
+    interval: 30s
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+          priority: P2
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}"
+          impact: "Potential performance degradation"
+          runbook_url: "https://runbooks.example.com/high-cpu-usage"
+          action_required: "Monitor and investigate within 4 hours"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            1 - (
+              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+            )
+          ) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+          priority: P2
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}"
+          impact: "Risk of performance issues"
+          runbook_url: "https://runbooks.example.com/high-memory-usage"
+          action_required: "Memory analysis within 4 hours"
+
+      # High disk usage
+      - alert: HighDiskUsage
+        expr: |
+          (
+            1 - (
+              node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} /
+              node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"}
+            )
+          ) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+          priority: P2
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} on device {{ $labels.device }} ({{ $labels.mountpoint }}) on instance {{ $labels.instance }}"
+          impact: "Risk of disk space exhaustion"
+          runbook_url: "https://runbooks.example.com/high-disk-usage"
+          action_required: "Disk cleanup planning within 8 hours"
+
+      # High system load
+      - alert: HighSystemLoad
+        expr: |
+          node_load5 / count(node_cpu_seconds_total{mode="idle"}) by (instance) > 0.7
+        for: 15m
+        labels:
+          severity: warning
+          category: infrastructure
+          priority: P2
+        annotations:
+          summary: "High system load on {{ $labels.instance }}"
+          description: "5-minute load average is {{ $value }} on instance {{ $labels.instance }}"
+          impact: "System performance may be affected"
+          runbook_url: "https://runbooks.example.com/high-system-load"
+          action_required: "Load investigation within 4 hours"
+
+      # High network errors
+      - alert: HighNetworkErrors
+        expr: |
+          rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 5
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+          priority: P2
+        annotations:
+          summary: "High network errors on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} has {{ $value }} errors/second on instance {{ $labels.instance }}"
+          impact: "Network reliability may be compromised"
+          runbook_url: "https://runbooks.example.com/network-errors"
+          action_required: "Network investigation within 6 hours"
+
+  - name: warning.database
+    interval: 30s
+    rules:
+      # High database connections
+      - alert: HighDatabaseConnections
+        expr: |
+          (
+            sum(database_connections_active) by (instance) /
+            sum(database_connections_max) by (instance)
+          ) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+          priority: P2
+        annotations:
+          summary: "High database connection usage on {{ $labels.instance }}"
+          description: "Database is using {{ $value | humanizePercentage }} of available connections on {{ $labels.instance }}"
+          impact: "Risk of connection pool exhaustion"
+          runbook_url: "https://runbooks.example.com/high-db-connections"
+          action_required: "Connection analysis within 4 hours"
+
+      # Slow database queries
+      - alert: SlowDatabaseQueries
+        expr: |
+          histogram_quantile(0.95, sum(rate(database_query_duration_seconds_bucket[5m])) by (le, database)) > 2
+        for: 15m
+        labels:
+          severity: warning
+          category: database
+          priority: P2
+        annotations:
+          summary: "Slow database queries on {{ $labels.database }}"
+          description: "95th percentile query time is {{ $value | humanizeDuration }} on database {{ $labels.database }}"
+          impact: "Application performance degradation"
+          runbook_url: "https://runbooks.example.com/slow-queries"
+          action_required: "Query optimization within 8 hours"
+
+      # Database replication lag
+      - alert: ModerateReplicationLag
+        expr: |
+          database_replication_lag_seconds > 60
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+          priority: P2
+        annotations:
+          summary: "Database replication lag on {{ $labels.instance }}"
+          description: "Replication lag is {{ $value | humanizeDuration }} on replica {{ $labels.instance }}"
+          impact: "Potential data consistency issues"
+          runbook_url: "https://runbooks.example.com/replication-lag"
+          action_required: "Replication monitoring within 4 hours"
+
+      # High database CPU
+      - alert: HighDatabaseCPU
+        expr: |
+          database_cpu_usage_percent > 80
+        for: 15m
+        labels:
+          severity: warning
+          category: database
+          priority: P2
+        annotations:
+          summary: "High database CPU usage on {{ $labels.instance }}"
+          description: "Database CPU usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          impact: "Database performance may be affected"
+          runbook_url: "https://runbooks.example.com/high-db-cpu"
+          action_required: "Database performance analysis within 6 hours"
+
+  - name: warning.kubernetes
+    interval: 30s
+    rules:
+      # Pod not ready
+      - alert: PodNotReady
+        expr: |
+          kube_pod_status_ready{condition="false"} == 1
+        for: 10m
+        labels:
+          severity: warning
+          category: kubernetes
+          priority: P2
+        annotations:
+          summary: "Pod {{ $labels.pod }} not ready"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready for more than 10 minutes"
+          impact: "Reduced service capacity"
+          runbook_url: "https://runbooks.example.com/pod-not-ready"
+          action_required: "Pod investigation within 4 hours"
+
+      # High pod CPU usage
+      - alert: HighPodCPUUsage
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{container!="POD",container!=""}[5m])) by (pod, namespace) /
+          sum(kube_pod_container_resource_limits_cpu_cores) by (pod, namespace) * 100 > 80
+        for: 15m
+        labels:
+          severity: warning
+          category: kubernetes
+          priority: P2
+        annotations:
+          summary: "High CPU usage in pod {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage }} of its CPU limit"
+          impact: "Pod may be throttled"
+          runbook_url: "https://runbooks.example.com/high-pod-cpu"
+          action_required: "Resource analysis within 6 hours"
+
+      # High pod memory usage
+      - alert: HighPodMemoryUsage
+        expr: |
+          sum(container_memory_working_set_bytes{container!="POD",container!=""}) by (pod, namespace) /
+          sum(kube_pod_container_resource_limits_memory_bytes) by (pod, namespace) * 100 > 80
+        for: 15m
+        labels:
+          severity: warning
+          category: kubernetes
+          priority: P2
+        annotations:
+          summary: "High memory usage in pod {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage }} of its memory limit"
+          impact: "Pod may be killed by OOM"
+          runbook_url: "https://runbooks.example.com/high-pod-memory"
+          action_required: "Memory analysis within 6 hours"
+
+      # Deployment has unavailable replicas
+      - alert: DeploymentReplicasUnavailable
+        expr: |
+          kube_deployment_status_replicas_unavailable > 0
+        for: 15m
+        labels:
+          severity: warning
+          category: kubernetes
+          priority: P2
+        annotations:
+          summary: "Deployment {{ $labels.deployment }} has unavailable replicas"
+          description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has {{ $value }} unavailable replicas"
+          impact: "Reduced service capacity"
+          runbook_url: "https://runbooks.example.com/deployment-replicas"
+          action_required: "Deployment investigation within 4 hours"
+
+  - name: warning.business
+    interval: 60s
+    rules:
+      # Low user registrations
+      - alert: LowUserRegistrations
+        expr: |
+          sum(increase(user_registrations_total[1h])) < 
+          sum(increase(user_registrations_total[1h] offset 24h)) * 0.5
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+          priority: P2
+        annotations:
+          summary: "Low user registration rate"
+          description: "Only {{ $value }} users registered in the last hour, down {{ ((sum(increase(user_registrations_total[1h] offset 24h)) - sum(increase(user_registrations_total[1h]))) / sum(increase(user_registrations_total[1h] offset 24h))) * 100 }}% from yesterday"
+          impact: "Potential growth impact"
+          runbook_url: "https://runbooks.example.com/low-registrations"
+          action_required: "Marketing funnel analysis within 8 hours"
+
+      # Elevated payment failures
+      - alert: ElevatedPaymentFailures
+        expr: |
+          (
+            sum(rate(payment_transactions_total{status="failed"}[15m])) /
+            sum(rate(payment_transactions_total[15m]))
+          ) * 100 > 5
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+          priority: P2
+        annotations:
+          summary: "Elevated payment failure rate"
+          description: "Payment failure rate is {{ $value | humanizePercentage }} over the last 15 minutes"
+          impact: "Revenue loss and customer frustration"
+          runbook_url: "https://runbooks.example.com/payment-failures"
+          action_required: "Payment system analysis within 4 hours"
+
+      # Low cache hit rate
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            sum(rate(cache_hits_total[10m])) by (service, cache_type) /
+            (sum(rate(cache_hits_total[10m])) by (service, cache_type) + sum(rate(cache_misses_total[10m])) by (service, cache_type))
+          ) * 100 < 70
+        for: 20m
+        labels:
+          severity: warning
+          category: application
+          priority: P2
+        annotations:
+          summary: "Low cache hit rate in {{ $labels.service }}"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} for {{ $labels.cache_type }} in service {{ $labels.service }}"
+          impact: "Increased backend load and slower responses"
+          runbook_url: "https://runbooks.example.com/low-cache-hit"
+          action_required: "Cache optimization within 8 hours"
+
+      # High queue depth
+      - alert: HighQueueDepth
+        expr: |
+          sum(queue_depth) by (queue_name, service) > 100
+        for: 15m
+        labels:
+          severity: warning
+          category: application
+          priority: P2
+        annotations:
+          summary: "High queue depth in {{ $labels.queue_name }}"
+          description: "Queue {{ $labels.queue_name }} has {{ $value }} messages pending in service {{ $labels.service }}"
+          impact: "Processing delays and potential backlog"
+          runbook_url: "https://runbooks.example.com/high-queue-depth"
+          action_required: "Queue processing analysis within 6 hours"
+
+  - name: warning.security
+    interval: 60s
+    rules:
+      # High failed login attempts
+      - alert: HighFailedLogins
+        expr: |
+          sum(rate(authentication_failures_total[5m])) > 10
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+          priority: P2
+        annotations:
+          summary: "High failed login attempts"
+          description: "{{ $value }} failed login attempts per second in the last 5 minutes"
+          impact: "Potential security threat"
+          runbook_url: "https://runbooks.example.com/failed-logins"
+          action_required: "Security investigation within 2 hours"
+
+      # Unusual API access patterns
+      - alert: UnusualAPIAccess
+        expr: |
+          sum(rate(http_requests_total[5m])) by (client_ip) > 100
+        for: 15m
+        labels:
+          severity: warning
+          category: security
+          priority: P2
+        annotations:
+          summary: "Unusual API access pattern from {{ $labels.client_ip }}"
+          description: "Client {{ $labels.client_ip }} is making {{ $value }} requests per second"
+          impact: "Potential DDoS or abuse"
+          runbook_url: "https://runbooks.example.com/unusual-access"
+          action_required: "Traffic analysis within 2 hours"
+
+  - name: warning.certificates
+    interval: 3600s # Check every hour
+    rules:
+      # Certificate expiring soon
+      - alert: CertificateExpiringSoon
+        expr: |
+          (x509_cert_expiry - time()) / 86400 < 30
+        for: 0m
+        labels:
+          severity: warning
+          category: security
+          priority: P2
+        annotations:
+          summary: "Certificate expiring soon"
+          description: "Certificate {{ $labels.cn }} will expire in {{ $value }} days"
+          impact: "Service interruption if not renewed"
+          runbook_url: "https://runbooks.example.com/cert-renewal"
+          action_required: "Certificate renewal within 7 days"

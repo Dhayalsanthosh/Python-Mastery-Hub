@@ -1,0 +1,1190 @@
+<!-- Location: src/python_mastery_hub/web/templates/exercises/list.html -->
+
+{% extends "base.html" %} {% block title %}Python Exercises - Python Mastery
+Hub{% endblock %} {% block meta_description %}Browse and practice Python
+programming exercises organized by difficulty, topic, and skill level{% endblock
+%} {% block extra_css %}
+<style>
+  .exercises-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .exercises-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .search-filters {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+  }
+
+  .search-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .search-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    background: #f3f4f6;
+    border: 2px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .filter-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .filter-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .filter-btn.active:hover {
+    background: #5a67d8;
+  }
+
+  .exercises-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .results-info {
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .view-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .view-btn {
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6b7280;
+  }
+
+  .view-btn.active {
+    background: #667eea;
+    color: white;
+  }
+
+  .sort-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem;
+  }
+
+  .exercises-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .exercises-list {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .exercises-list.active {
+    display: flex;
+  }
+
+  .exercises-grid.active {
+    display: grid;
+  }
+
+  .exercise-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .exercise-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .exercise-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .exercise-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin-right: 1rem;
+  }
+
+  .exercise-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .difficulty-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+
+  .difficulty-beginner {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .difficulty-intermediate {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .difficulty-advanced {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .exercise-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .exercise-description {
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .exercise-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .exercise-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tag {
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+
+  .exercise-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .btn-outline:hover {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+  }
+
+  .exercise-list-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .exercise-list-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .exercise-list-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .exercise-list-title {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .exercise-list-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+
+  .pagination-btn {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6b7280;
+  }
+
+  .pagination-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .pagination-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .progress-indicator {
+    width: 100%;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    .exercises-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .search-section {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .exercises-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .view-controls {
+      justify-content: center;
+    }
+
+    .exercise-list-content {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="exercises-container">
+  <!-- Exercises Header -->
+  <div class="exercises-header">
+    <h1 class="h3 mb-2">Python Exercises</h1>
+    <p class="mb-0 opacity-90">
+      Master Python programming through hands-on practice with our curated
+      exercises
+    </p>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="search-filters">
+    <div class="search-section">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search exercises by title, description, or tags..."
+        id="searchInput"
+      />
+      <button class="search-btn" onclick="searchExercises()">
+        <i class="fas fa-search me-2"></i>
+        Search
+      </button>
+    </div>
+
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label class="filter-label">Difficulty</label>
+        <div class="filter-buttons">
+          <button
+            class="filter-btn active"
+            data-filter="difficulty"
+            data-value="all"
+          >
+            All
+          </button>
+          <button
+            class="filter-btn"
+            data-filter="difficulty"
+            data-value="beginner"
+          >
+            Beginner
+          </button>
+          <button
+            class="filter-btn"
+            data-filter="difficulty"
+            data-value="intermediate"
+          >
+            Intermediate
+          </button>
+          <button
+            class="filter-btn"
+            data-filter="difficulty"
+            data-value="advanced"
+          >
+            Advanced
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Topic</label>
+        <select class="filter-select" id="topicFilter">
+          <option value="all">All Topics</option>
+          <option value="basics">Python Basics</option>
+          <option value="data-structures">Data Structures</option>
+          <option value="algorithms">Algorithms</option>
+          <option value="oop">Object-Oriented Programming</option>
+          <option value="web">Web Development</option>
+          <option value="data-science">Data Science</option>
+          <option value="apis">APIs</option>
+          <option value="testing">Testing</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Status</label>
+        <div class="filter-buttons">
+          <button
+            class="filter-btn active"
+            data-filter="status"
+            data-value="all"
+          >
+            All
+          </button>
+          <button
+            class="filter-btn"
+            data-filter="status"
+            data-value="not-started"
+          >
+            Not Started
+          </button>
+          <button
+            class="filter-btn"
+            data-filter="status"
+            data-value="in-progress"
+          >
+            In Progress
+          </button>
+          <button
+            class="filter-btn"
+            data-filter="status"
+            data-value="completed"
+          >
+            Completed
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Duration</label>
+        <select class="filter-select" id="durationFilter">
+          <option value="all">Any Duration</option>
+          <option value="short">Short (5-15 min)</option>
+          <option value="medium">Medium (15-30 min)</option>
+          <option value="long">Long (30+ min)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercise Controls -->
+  <div class="exercises-controls">
+    <div class="results-info">
+      <span id="resultsCount">{{ exercises|length }}</span> exercises found
+    </div>
+
+    <div class="view-controls">
+      <button class="view-btn active" data-view="grid" title="Grid View">
+        <i class="fas fa-th"></i>
+      </button>
+      <button class="view-btn" data-view="list" title="List View">
+        <i class="fas fa-list"></i>
+      </button>
+
+      <select class="sort-select" id="sortSelect">
+        <option value="title">Sort by Title</option>
+        <option value="difficulty">Sort by Difficulty</option>
+        <option value="duration">Sort by Duration</option>
+        <option value="popularity">Sort by Popularity</option>
+        <option value="recent">Recently Added</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Exercises Grid View -->
+  <div class="exercises-grid active" id="exercisesGrid">
+    {% for exercise in exercises %}
+    <div
+      class="exercise-card"
+      data-difficulty="{{ exercise.difficulty }}"
+      data-topic="{{ exercise.topic }}"
+      data-status="{{ exercise.status }}"
+      data-duration="{{ exercise.duration_category }}"
+    >
+      <div class="exercise-header">
+        <div class="d-flex align-items-center">
+          <div class="exercise-icon" style="background: {{ exercise.color }};">
+            <i class="{{ exercise.icon }}"></i>
+          </div>
+          <div class="exercise-meta">
+            <div class="difficulty-badge difficulty-{{ exercise.difficulty }}">
+              {{ exercise.difficulty }}
+            </div>
+          </div>
+        </div>
+        {% if exercise.status == 'completed' %}
+        <i
+          class="fas fa-check-circle text-success"
+          style="font-size: 1.5rem"
+        ></i>
+        {% elif exercise.status == 'in-progress' %}
+        <i class="fas fa-clock text-warning" style="font-size: 1.5rem"></i>
+        {% endif %}
+      </div>
+
+      <h3 class="exercise-title">{{ exercise.title }}</h3>
+      <p class="exercise-description">{{ exercise.description }}</p>
+
+      {% if exercise.status == 'in-progress' %}
+      <div class="progress-indicator">
+        <div
+          class="progress-bar"
+          style="width: {{ exercise.progress_percentage }}%"
+        ></div>
+      </div>
+      <div class="text-sm text-muted mb-2">
+        {{ exercise.progress_percentage }}% complete
+      </div>
+      {% endif %}
+
+      <div class="exercise-stats">
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span>{{ exercise.estimated_time }} min</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-star"></i>
+          <span>{{ exercise.points }} XP</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>{{ exercise.completions }}</span>
+        </div>
+      </div>
+
+      <div class="exercise-tags">
+        {% for tag in exercise.tags %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="exercise-actions">
+        {% if exercise.status == 'completed' %}
+        <a href="/exercises/{{ exercise.id }}" class="btn-outline">
+          <i class="fas fa-eye me-1"></i>
+          Review
+        </a>
+        <a href="/exercises/{{ exercise.id }}/retry" class="btn-primary">
+          <i class="fas fa-redo me-1"></i>
+          Retry
+        </a>
+        {% elif exercise.status == 'in-progress' %}
+        <a href="/exercises/{{ exercise.id }}" class="btn-primary">
+          <i class="fas fa-play me-1"></i>
+          Continue
+        </a>
+        {% else %}
+        <a href="/exercises/{{ exercise.id }}" class="btn-primary">
+          <i class="fas fa-play me-1"></i>
+          Start
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Exercises List View -->
+  <div class="exercises-list" id="exercisesList">
+    {% for exercise in exercises %}
+    <div
+      class="exercise-list-item"
+      data-difficulty="{{ exercise.difficulty }}"
+      data-topic="{{ exercise.topic }}"
+      data-status="{{ exercise.status }}"
+      data-duration="{{ exercise.duration_category }}"
+    >
+      <div class="exercise-icon" style="background: {{ exercise.color }};">
+        <i class="{{ exercise.icon }}"></i>
+      </div>
+
+      <div class="exercise-list-content">
+        <div>
+          <div class="exercise-list-title">{{ exercise.title }}</div>
+          <div class="exercise-list-description">
+            {{ exercise.description }}
+          </div>
+        </div>
+
+        <div class="difficulty-badge difficulty-{{ exercise.difficulty }}">
+          {{ exercise.difficulty }}
+        </div>
+
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span>{{ exercise.estimated_time }} min</span>
+        </div>
+
+        <div class="stat-item">
+          <i class="fas fa-star"></i>
+          <span>{{ exercise.points }} XP</span>
+        </div>
+
+        <div class="exercise-actions">
+          {% if exercise.status == 'completed' %}
+          <a href="/exercises/{{ exercise.id }}" class="btn-outline">Review</a>
+          {% elif exercise.status == 'in-progress' %}
+          <a href="/exercises/{{ exercise.id }}" class="btn-primary"
+            >Continue</a
+          >
+          {% else %}
+          <a href="/exercises/{{ exercise.id }}" class="btn-primary">Start</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state d-none" id="emptyState">
+    <div class="empty-state-icon">
+      <i class="fas fa-search"></i>
+    </div>
+    <h4>No exercises found</h4>
+    <p>Try adjusting your search criteria or filters to find more exercises.</p>
+    <button class="btn-primary" onclick="clearFilters()">
+      Clear All Filters
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="pagination">
+    <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <div id="pageNumbers"></div>
+
+    <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let currentPage = 1;
+  const exercisesPerPage = 12;
+  let filteredExercises = [];
+  let allExercises = [];
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize exercises data
+    allExercises = Array.from(
+      document.querySelectorAll(".exercise-card, .exercise-list-item")
+    );
+    filteredExercises = [...allExercises];
+
+    // Initialize event listeners
+    initializeFilters();
+    initializeViewControls();
+    initializeSort();
+    initializeSearch();
+
+    // Initial pagination setup
+    updatePagination();
+  });
+
+  function initializeFilters() {
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const selectFilters = document.querySelectorAll(".filter-select");
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filterType = button.dataset.filter;
+        const filterValue = button.dataset.value;
+
+        // Remove active class from siblings
+        const siblings = button.parentElement.querySelectorAll(".filter-btn");
+        siblings.forEach((btn) => btn.classList.remove("active"));
+
+        // Add active class to clicked button
+        button.classList.add("active");
+
+        // Apply filters
+        applyFilters();
+      });
+    });
+
+    selectFilters.forEach((select) => {
+      select.addEventListener("change", applyFilters);
+    });
+  }
+
+  function initializeViewControls() {
+    const viewButtons = document.querySelectorAll(".view-btn");
+    const gridView = document.getElementById("exercisesGrid");
+    const listView = document.getElementById("exercisesList");
+
+    viewButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const view = button.dataset.view;
+
+        // Update button states
+        viewButtons.forEach((btn) => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        // Toggle views
+        if (view === "grid") {
+          gridView.classList.add("active");
+          listView.classList.remove("active");
+        } else {
+          gridView.classList.remove("active");
+          listView.classList.add("active");
+        }
+      });
+    });
+  }
+
+  function initializeSort() {
+    const sortSelect = document.getElementById("sortSelect");
+    sortSelect.addEventListener("change", () => {
+      sortExercises(sortSelect.value);
+      updatePagination();
+    });
+  }
+
+  function initializeSearch() {
+    const searchInput = document.getElementById("searchInput");
+
+    searchInput.addEventListener(
+      "input",
+      debounce(() => {
+        searchExercises();
+      }, 300)
+    );
+
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        searchExercises();
+      }
+    });
+  }
+
+  function applyFilters() {
+    const difficultyFilter =
+      document.querySelector('[data-filter="difficulty"].active')?.dataset
+        .value || "all";
+    const statusFilter =
+      document.querySelector('[data-filter="status"].active')?.dataset.value ||
+      "all";
+    const topicFilter = document.getElementById("topicFilter").value;
+    const durationFilter = document.getElementById("durationFilter").value;
+    const searchTerm = document
+      .getElementById("searchInput")
+      .value.toLowerCase();
+
+    filteredExercises = allExercises.filter((exercise) => {
+      // Difficulty filter
+      if (
+        difficultyFilter !== "all" &&
+        exercise.dataset.difficulty !== difficultyFilter
+      ) {
+        return false;
+      }
+
+      // Status filter
+      if (statusFilter !== "all" && exercise.dataset.status !== statusFilter) {
+        return false;
+      }
+
+      // Topic filter
+      if (topicFilter !== "all" && exercise.dataset.topic !== topicFilter) {
+        return false;
+      }
+
+      // Duration filter
+      if (
+        durationFilter !== "all" &&
+        exercise.dataset.duration !== durationFilter
+      ) {
+        return false;
+      }
+
+      // Search filter
+      if (searchTerm) {
+        const title =
+          exercise
+            .querySelector(".exercise-title, .exercise-list-title")
+            ?.textContent.toLowerCase() || "";
+        const description =
+          exercise
+            .querySelector(".exercise-description, .exercise-list-description")
+            ?.textContent.toLowerCase() || "";
+        const tags = Array.from(exercise.querySelectorAll(".tag"))
+          .map((tag) => tag.textContent.toLowerCase())
+          .join(" ");
+
+        if (
+          !title.includes(searchTerm) &&
+          !description.includes(searchTerm) &&
+          !tags.includes(searchTerm)
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    currentPage = 1;
+    updateDisplay();
+    updatePagination();
+  }
+
+  function searchExercises() {
+    applyFilters();
+  }
+
+  function sortExercises(sortBy) {
+    filteredExercises.sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          const titleA = a.querySelector(
+            ".exercise-title, .exercise-list-title"
+          ).textContent;
+          const titleB = b.querySelector(
+            ".exercise-title, .exercise-list-title"
+          ).textContent;
+          return titleA.localeCompare(titleB);
+
+        case "difficulty":
+          const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
+          return (
+            difficultyOrder[a.dataset.difficulty] -
+            difficultyOrder[b.dataset.difficulty]
+          );
+
+        case "duration":
+          const durationA =
+            parseInt(a.querySelector("[data-duration]")?.textContent) || 0;
+          const durationB =
+            parseInt(b.querySelector("[data-duration]")?.textContent) || 0;
+          return durationA - durationB;
+
+        case "popularity":
+          const popularityA =
+            parseInt(
+              a.querySelector(".stat-item:nth-child(3) span")?.textContent
+            ) || 0;
+          const popularityB =
+            parseInt(
+              b.querySelector(".stat-item:nth-child(3) span")?.textContent
+            ) || 0;
+          return popularityB - popularityA;
+
+        case "recent":
+          // For demo purposes, reverse the current order
+          return Math.random() - 0.5;
+
+        default:
+          return 0;
+      }
+    });
+  }
+
+  function updateDisplay() {
+    // Hide all exercises
+    allExercises.forEach((exercise) => {
+      exercise.style.display = "none";
+    });
+
+    // Show filtered exercises for current page
+    const startIndex = (currentPage - 1) * exercisesPerPage;
+    const endIndex = startIndex + exercisesPerPage;
+    const pageExercises = filteredExercises.slice(startIndex, endIndex);
+
+    pageExercises.forEach((exercise) => {
+      exercise.style.display = "";
+    });
+
+    // Update results count
+    document.getElementById("resultsCount").textContent =
+      filteredExercises.length;
+
+    // Show/hide empty state
+    const emptyState = document.getElementById("emptyState");
+    if (filteredExercises.length === 0) {
+      emptyState.classList.remove("d-none");
+      document.getElementById("pagination").style.display = "none";
+    } else {
+      emptyState.classList.add("d-none");
+      document.getElementById("pagination").style.display = "flex";
+    }
+  }
+
+  function updatePagination() {
+    const totalPages = Math.ceil(filteredExercises.length / exercisesPerPage);
+    const pageNumbers = document.getElementById("pageNumbers");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    // Update navigation buttons
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
+
+    // Generate page numbers
+    pageNumbers.innerHTML = "";
+
+    // Calculate visible page range
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Adjust range if at the beginning or end
+    if (endPage - startPage < 4) {
+      if (startPage === 1) {
+        endPage = Math.min(totalPages, startPage + 4);
+      } else {
+        startPage = Math.max(1, endPage - 4);
+      }
+    }
+
+    // Add first page and ellipsis if needed
+    if (startPage > 1) {
+      addPageButton(1);
+      if (startPage > 2) {
+        const ellipsis = document.createElement("span");
+        ellipsis.textContent = "...";
+        ellipsis.className = "pagination-ellipsis";
+        pageNumbers.appendChild(ellipsis);
+      }
+    }
+
+    // Add visible page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      addPageButton(i);
+    }
+
+    // Add last page and ellipsis if needed
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const ellipsis = document.createElement("span");
+        ellipsis.textContent = "...";
+        ellipsis.className = "pagination-ellipsis";
+        pageNumbers.appendChild(ellipsis);
+      }
+      addPageButton(totalPages);
+    }
+
+    updateDisplay();
+  }
+
+  function addPageButton(page) {
+    const button = document.createElement("button");
+    button.className = `pagination-btn ${page === currentPage ? "active" : ""}`;
+    button.textContent = page;
+    button.onclick = () => goToPage(page);
+    document.getElementById("pageNumbers").appendChild(button);
+  }
+
+  function changePage(direction) {
+    const totalPages = Math.ceil(filteredExercises.length / exercisesPerPage);
+    const newPage = currentPage + direction;
+
+    if (newPage >= 1 && newPage <= totalPages) {
+      goToPage(newPage);
+    }
+  }
+
+  function goToPage(page) {
+    currentPage = page;
+    updatePagination();
+
+    // Scroll to top of exercises
+    document.querySelector(".exercises-grid, .exercises-list").scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+
+  function clearFilters() {
+    // Reset all filter buttons to default
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    document
+      .querySelectorAll('.filter-btn[data-value="all"]')
+      .forEach((btn) => {
+        btn.classList.add("active");
+      });
+
+    // Reset select filters
+    document.getElementById("topicFilter").value = "all";
+    document.getElementById("durationFilter").value = "all";
+    document.getElementById("sortSelect").value = "title";
+
+    // Clear search
+    document.getElementById("searchInput").value = "";
+
+    // Reset view
+    filteredExercises = [...allExercises];
+    currentPage = 1;
+    updateDisplay();
+    updatePagination();
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Track exercise interactions
+  document.addEventListener("click", function (e) {
+    if (e.target.closest(".exercise-card, .exercise-list-item")) {
+      const exerciseCard = e.target.closest(
+        ".exercise-card, .exercise-list-item"
+      );
+      const exerciseTitle = exerciseCard.querySelector(
+        ".exercise-title, .exercise-list-title"
+      ).textContent;
+
+      // Track click analytics
+      fetch("/api/analytics/track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          event: "exercise_clicked",
+          exercise_title: exerciseTitle,
+          source: "exercise_list",
+        }),
+      }).catch(console.error);
+    }
+  });
+</script>
+{% endblock %}

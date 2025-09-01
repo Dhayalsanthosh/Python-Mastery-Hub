@@ -1,0 +1,82 @@
+# File: monitoring/grafana/provisioning/dashboards.yml
+# Grafana dashboards provisioning configuration
+
+apiVersion: 1
+
+providers:
+  # Application Dashboards
+  - name: "application-dashboards"
+    orgId: 1
+    folder: "Application Monitoring"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/application
+
+  # Infrastructure Dashboards
+  - name: "infrastructure-dashboards"
+    orgId: 1
+    folder: "Infrastructure Monitoring"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/infrastructure
+
+  # Business Dashboards
+  - name: "business-dashboards"
+    orgId: 1
+    folder: "Business Metrics"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/business
+
+  # Custom Dashboards
+  - name: "custom-dashboards"
+    orgId: 1
+    folder: "Custom"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/custom
+
+  # Kubernetes Dashboards
+  - name: "kubernetes-dashboards"
+    orgId: 1
+    folder: "Kubernetes"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/kubernetes
+
+  # Security Dashboards
+  - name: "security-dashboards"
+    orgId: 1
+    folder: "Security"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/security
+
+  # Database Dashboards
+  - name: "database-dashboards"
+    orgId: 1
+    folder: "Database"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/database

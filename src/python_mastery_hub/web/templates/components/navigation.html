@@ -1,0 +1,1122 @@
+<!-- Location: src/python_mastery_hub/web/templates/components/navigation.html -->
+
+<!-- Navigation Component -->
+<nav
+  class="navbar navbar-expand-lg {{ 'navbar-' + (theme or 'light') }}"
+  id="mainNavigation"
+>
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand" href="/">
+      <img
+        src="{{ url_for('static', path='images/logo.svg') }}"
+        alt="Python Mastery Hub"
+        height="32"
+        class="d-inline-block align-text-top"
+      />
+      {% if show_brand_text %}
+      <span class="brand-text ms-2">Python Mastery Hub</span>
+      {% endif %}
+    </a>
+
+    <!-- Mobile Toggle -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navigation Menu -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Main Navigation Links -->
+      <ul class="navbar-nav me-auto">
+        {% if user %}
+        <!-- Authenticated User Menu -->
+        <li class="nav-item">
+          <a
+            class="nav-link {{ 'active' if request.path == '/dashboard' }}"
+            href="/dashboard"
+          >
+            <i class="fas fa-tachometer-alt me-1"></i>
+            Dashboard
+          </a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle {{ 'active' if request.path.startswith('/exercises') }}"
+            href="#"
+            id="exercisesDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="fas fa-code me-1"></i>
+            Exercises
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="/exercises">
+                <i class="fas fa-list me-2"></i>Browse All
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/exercises?difficulty=beginner">
+                <i class="fas fa-seedling me-2"></i>Beginner
+              </a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                href="/exercises?difficulty=intermediate"
+              >
+                <i class="fas fa-tree me-2"></i>Intermediate
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/exercises?difficulty=advanced">
+                <i class="fas fa-mountain me-2"></i>Advanced
+              </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" href="/exercises/random">
+                <i class="fas fa-random me-2"></i>Random Exercise
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/exercises/results">
+                <i class="fas fa-chart-line me-2"></i>My Results
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link {{ 'active' if request.path.startswith('/progress') }}"
+            href="/progress"
+          >
+            <i class="fas fa-chart-bar me-1"></i>
+            Progress
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link {{ 'active' if request.path.startswith('/achievements') }}"
+            href="/achievements"
+          >
+            <i class="fas fa-trophy me-1"></i>
+            Achievements
+          </a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="learnDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="fas fa-graduation-cap me-1"></i>
+            Learn
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="/tutorials">
+                <i class="fas fa-book me-2"></i>Tutorials
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/documentation">
+                <i class="fas fa-file-alt me-2"></i>Documentation
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/cheatsheets">
+                <i class="fas fa-sticky-note me-2"></i>Cheat Sheets
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/examples">
+                <i class="fas fa-code me-2"></i>Code Examples
+              </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" href="/learning-paths">
+                <i class="fas fa-route me-2"></i>Learning Paths
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link {{ 'active' if request.path.startswith('/community') }}"
+            href="/community"
+          >
+            <i class="fas fa-users me-1"></i>
+            Community
+          </a>
+        </li>
+
+        {% else %}
+        <!-- Guest User Menu -->
+        <li class="nav-item">
+          <a class="nav-link {{ 'active' if request.path == '/' }}" href="/">
+            <i class="fas fa-home me-1"></i>
+            Home
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link {{ 'active' if request.path.startswith('/about') }}"
+            href="/about"
+          >
+            <i class="fas fa-info-circle me-1"></i>
+            About
+          </a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="featuresDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="fas fa-star me-1"></i>
+            Features
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="/features/exercises">
+                <i class="fas fa-code me-2"></i>Interactive Exercises
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/features/progress">
+                <i class="fas fa-chart-line me-2"></i>Progress Tracking
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/features/achievements">
+                <i class="fas fa-trophy me-2"></i>Achievements System
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/features/community">
+                <i class="fas fa-users me-2"></i>Community Support
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link {{ 'active' if request.path.startswith('/pricing') }}"
+            href="/pricing"
+          >
+            <i class="fas fa-dollar-sign me-1"></i>
+            Pricing
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+
+      <!-- Search Bar (if enabled) -->
+      {% if show_search %}
+      <form class="d-flex me-3" role="search" id="navSearch">
+        <div class="search-container">
+          <input
+            class="form-control search-input"
+            type="search"
+            placeholder="Search exercises..."
+            aria-label="Search"
+            id="navSearchInput"
+            autocomplete="off"
+          />
+          <button class="btn search-btn" type="submit">
+            <i class="fas fa-search"></i>
+          </button>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </form>
+      {% endif %}
+
+      <!-- Right Side Menu -->
+      <ul class="navbar-nav">
+        {% if user %}
+        <!-- Notifications -->
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link position-relative"
+            href="#"
+            id="notificationDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="fas fa-bell"></i>
+            {% if user.unread_notifications_count > 0 %}
+            <span class="badge bg-danger notification-badge">
+              {{ user.unread_notifications_count if
+              user.unread_notifications_count < 100 else '99+' }}
+            </span>
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+            <li class="dropdown-header d-flex justify-content-between">
+              <span>Notifications</span>
+              {% if user.unread_notifications_count > 0 %}
+              <button
+                class="btn btn-sm btn-link p-0"
+                onclick="markAllNotificationsRead()"
+              >
+                Mark all read
+              </button>
+              {% endif %}
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+
+            {% if user.recent_notifications %} {% for notification in
+            user.recent_notifications[:5] %}
+            <li>
+              <a
+                class="dropdown-item notification-item {{ 'unread' if not notification.read }}"
+                href="{{ notification.url or '#' }}"
+                data-notification-id="{{ notification.id }}"
+              >
+                <div class="notification-icon">
+                  <i
+                    class="{{ notification.icon or 'fas fa-info-circle' }}"
+                  ></i>
+                </div>
+                <div class="notification-content">
+                  <div class="notification-title">{{ notification.title }}</div>
+                  <div class="notification-text">
+                    {{ notification.message }}
+                  </div>
+                  <div class="notification-time">
+                    {{ notification.created_at|timeago }}
+                  </div>
+                </div>
+                {% if not notification.read %}
+                <div class="notification-dot"></div>
+                {% endif %}
+              </a>
+            </li>
+            {% endfor %} {% if user.total_notifications_count > 5 %}
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-center" href="/notifications">
+                View all notifications
+              </a>
+            </li>
+            {% endif %} {% else %}
+            <li>
+              <div class="dropdown-item-text text-center text-muted py-3">
+                <i class="fas fa-bell-slash mb-2"></i><br />
+                No notifications
+              </div>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+
+        <!-- User Streak -->
+        {% if user.streak_days > 0 %}
+        <li class="nav-item">
+          <span class="nav-link streak-indicator" title="Current streak">
+            <i class="fas fa-fire text-warning"></i>
+            <span class="streak-count">{{ user.streak_days }}</span>
+          </span>
+        </li>
+        {% endif %}
+
+        <!-- User Menu -->
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle d-flex align-items-center"
+            href="#"
+            id="userDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <img
+              src="{{ user.avatar_url or url_for('static', path='images/default-avatar.png') }}"
+              alt="{{ user.first_name }}"
+              class="user-avatar me-2"
+            />
+            <span class="user-name d-none d-md-inline"
+              >{{ user.first_name }}</span
+            >
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end user-dropdown">
+            <li class="dropdown-header">
+              <div class="user-info">
+                <div class="user-name">
+                  {{ user.first_name }} {{ user.last_name }}
+                </div>
+                <div class="user-email">{{ user.email }}</div>
+                <div class="user-stats">
+                  <span class="stat-item">
+                    <i class="fas fa-trophy text-warning"></i>
+                    Level {{ user.level }}
+                  </span>
+                  <span class="stat-item">
+                    <i class="fas fa-star text-primary"></i>
+                    {{ user.points }} XP
+                  </span>
+                </div>
+              </div>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+
+            <li>
+              <a class="dropdown-item" href="/profile">
+                <i class="fas fa-user me-2"></i>Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/settings">
+                <i class="fas fa-cog me-2"></i>Settings
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/billing">
+                <i class="fas fa-credit-card me-2"></i>Billing
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider" /></li>
+
+            <li>
+              <a class="dropdown-item" href="/help">
+                <i class="fas fa-question-circle me-2"></i>Help & Support
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/feedback">
+                <i class="fas fa-comment me-2"></i>Send Feedback
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider" /></li>
+
+            <li>
+              <a
+                class="dropdown-item text-danger"
+                href="/logout"
+                onclick="return confirmLogout()"
+              >
+                <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {% else %}
+        <!-- Guest Actions -->
+        <li class="nav-item">
+          <a class="nav-link" href="/login">
+            <i class="fas fa-sign-in-alt me-1"></i>
+            Sign In
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-primary ms-2" href="/register">
+            <i class="fas fa-user-plus me-1"></i>
+            Get Started
+          </a>
+        </li>
+        {% endif %}
+
+        <!-- Theme Toggle -->
+        <li class="nav-item">
+          <button
+            class="nav-link btn btn-link theme-toggle"
+            onclick="toggleTheme()"
+            title="Toggle theme"
+          >
+            <i class="fas fa-moon theme-icon"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Progress Bar (for page loading) -->
+<div class="page-loading-bar" id="pageLoadingBar"></div>
+
+<style>
+  /* Navigation Styles */
+  .navbar {
+    background: var(--nav-bg, #ffffff);
+    border-bottom: 1px solid var(--nav-border, #e5e7eb);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    padding: 0.75rem 0;
+  }
+
+  .navbar-brand {
+    font-weight: 700;
+    color: var(--brand-color, #1f2937) !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+
+  .brand-text {
+    font-size: 1.25rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-link {
+    color: var(--nav-link-color, #6b7280) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    border-radius: 6px;
+    margin: 0 0.25rem;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--nav-link-active-color, #667eea) !important;
+    background: var(--nav-link-active-bg, rgba(102, 126, 234, 0.1));
+  }
+
+  .nav-link i {
+    opacity: 0.8;
+  }
+
+  .dropdown-menu {
+    border: 1px solid var(--dropdown-border, #e5e7eb);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+    min-width: 200px;
+  }
+
+  .dropdown-item {
+    padding: 0.5rem 1rem;
+    color: var(--dropdown-item-color, #374151);
+    transition: all 0.3s ease;
+  }
+
+  .dropdown-item:hover {
+    background: var(--dropdown-item-hover-bg, #f3f4f6);
+    color: var(--dropdown-item-hover-color, #1f2937);
+  }
+
+  .dropdown-item i {
+    width: 16px;
+    opacity: 0.7;
+  }
+
+  /* Search Bar */
+  .search-container {
+    position: relative;
+    width: 300px;
+  }
+
+  .search-input {
+    background: var(--search-bg, #f9fafb);
+    border: 1px solid var(--search-border, #e5e7eb);
+    border-radius: 20px;
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    background: var(--search-focus-bg, #ffffff);
+    border-color: var(--search-focus-border, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: var(--search-btn-color, #6b7280);
+    padding: 0.25rem 0.5rem;
+  }
+
+  .search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+  }
+
+  .search-result-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .search-result-item:hover {
+    background: #f9fafb;
+  }
+
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
+
+  .search-result-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-result-description {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  /* User Avatar */
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--avatar-border, #e5e7eb);
+  }
+
+  /* User Dropdown */
+  .user-dropdown {
+    min-width: 280px;
+  }
+
+  .user-dropdown .dropdown-header {
+    padding: 1rem;
+    background: var(--user-dropdown-header-bg, #f9fafb);
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .user-info .user-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .user-info .user-email {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  .user-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #6b7280;
+  }
+
+  /* Notification Dropdown */
+  .notification-dropdown {
+    min-width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+  }
+
+  .notification-item.unread {
+    background: #f0f9ff;
+  }
+
+  .notification-item:hover {
+    background: #f9fafb;
+    text-decoration: none;
+  }
+
+  .notification-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .notification-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .notification-text {
+    color: #6b7280;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 0.25rem;
+  }
+
+  .notification-time {
+    color: #9ca3af;
+    font-size: 0.75rem;
+  }
+
+  .notification-dot {
+    width: 8px;
+    height: 8px;
+    background: #3b82f6;
+    border-radius: 50%;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  /* Streak Indicator */
+  .streak-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--streak-bg, rgba(245, 158, 11, 0.1));
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem !important;
+    margin: 0 0.5rem;
+  }
+
+  .streak-count {
+    font-weight: 600;
+    color: var(--streak-color, #d97706);
+  }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    border: none !important;
+    background: none !important;
+    color: var(--theme-toggle-color, #6b7280) !important;
+    padding: 0.5rem !important;
+    border-radius: 50% !important;
+    transition: all 0.3s ease;
+  }
+
+  .theme-toggle:hover {
+    background: var(
+      --theme-toggle-hover-bg,
+      rgba(107, 114, 128, 0.1)
+    ) !important;
+    color: var(--theme-toggle-hover-color, #374151) !important;
+  }
+
+  /* Page Loading Bar */
+  .page-loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    z-index: 9999;
+    transition: width 0.3s ease;
+    opacity: 0;
+  }
+
+  .page-loading-bar.loading {
+    opacity: 1;
+  }
+
+  /* Mobile Styles */
+  @media (max-width: 991px) {
+    .search-container {
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    .user-name {
+      display: none !important;
+    }
+
+    .streak-indicator {
+      margin: 0.5rem 0;
+    }
+
+    .navbar-nav .nav-link {
+      padding: 0.75rem 1rem !important;
+    }
+  }
+
+  /* Dark Theme */
+  [data-theme="dark"] .navbar {
+    --nav-bg: #1f2937;
+    --nav-border: #374151;
+    --brand-color: #f9fafb;
+    --nav-link-color: #d1d5db;
+    --nav-link-active-color: #818cf8;
+    --nav-link-active-bg: rgba(129, 140, 248, 0.1);
+    --dropdown-border: #374151;
+    --dropdown-item-color: #d1d5db;
+    --dropdown-item-hover-bg: #374151;
+    --dropdown-item-hover-color: #f9fafb;
+    --search-bg: #374151;
+    --search-border: #4b5563;
+    --search-focus-bg: #4b5563;
+    --search-focus-border: #818cf8;
+    --search-btn-color: #9ca3af;
+    --avatar-border: #4b5563;
+    --user-dropdown-header-bg: #374151;
+    --streak-bg: rgba(245, 158, 11, 0.2);
+    --streak-color: #fbbf24;
+    --theme-toggle-color: #d1d5db;
+    --theme-toggle-hover-bg: rgba(209, 213, 219, 0.1);
+    --theme-toggle-hover-color: #f9fafb;
+  }
+
+  /* Print Styles */
+  @media print {
+    .navbar {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Navigation JavaScript functionality
+  class Navigation {
+    constructor() {
+      this.searchTimeout = null;
+      this.currentTheme = localStorage.getItem("theme") || "light";
+      this.init();
+    }
+
+    init() {
+      this.initializeTheme();
+      this.initializeSearch();
+      this.initializeNotifications();
+      this.initializePageProgress();
+      this.setupEventListeners();
+    }
+
+    initializeTheme() {
+      document.documentElement.setAttribute("data-theme", this.currentTheme);
+      this.updateThemeIcon();
+    }
+
+    initializeSearch() {
+      const searchInput = document.getElementById("navSearchInput");
+      const searchResults = document.getElementById("searchResults");
+
+      if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+          clearTimeout(this.searchTimeout);
+          this.searchTimeout = setTimeout(() => {
+            this.performSearch(e.target.value);
+          }, 300);
+        });
+
+        searchInput.addEventListener("focus", () => {
+          if (searchInput.value.length > 0) {
+            this.performSearch(searchInput.value);
+          }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest(".search-container")) {
+            if (searchResults) {
+              searchResults.style.display = "none";
+            }
+          }
+        });
+      }
+    }
+
+    async performSearch(query) {
+      const searchResults = document.getElementById("searchResults");
+      if (!searchResults || query.length < 2) {
+        searchResults.style.display = "none";
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const results = await response.json();
+          this.displaySearchResults(results);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+      }
+    }
+
+    displaySearchResults(results) {
+      const searchResults = document.getElementById("searchResults");
+      if (!searchResults) return;
+
+      if (results.length === 0) {
+        searchResults.innerHTML = `
+                <div class="search-result-item">
+                    <div class="search-result-title">No results found</div>
+                    <div class="search-result-description">Try a different search term</div>
+                </div>
+            `;
+      } else {
+        searchResults.innerHTML = results
+          .map(
+            (result) => `
+                <div class="search-result-item" onclick="window.location.href='${result.url}'">
+                    <div class="search-result-title">${result.title}</div>
+                    <div class="search-result-description">${result.description}</div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      searchResults.style.display = "block";
+    }
+
+    initializeNotifications() {
+      // Mark notification as read when clicked
+      document.addEventListener("click", (e) => {
+        const notificationItem = e.target.closest(".notification-item");
+        if (notificationItem && notificationItem.classList.contains("unread")) {
+          const notificationId = notificationItem.dataset.notificationId;
+          this.markNotificationRead(notificationId);
+          notificationItem.classList.remove("unread");
+          this.updateNotificationBadge();
+        }
+      });
+    }
+
+    async markNotificationRead(notificationId) {
+      try {
+        await fetch(`/api/notifications/${notificationId}/read`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+
+    async markAllNotificationsRead() {
+      try {
+        await fetch("/api/notifications/mark-all-read", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        // Update UI
+        document
+          .querySelectorAll(".notification-item.unread")
+          .forEach((item) => {
+            item.classList.remove("unread");
+          });
+
+        this.updateNotificationBadge(0);
+      } catch (error) {
+        console.error("Error marking all notifications as read:", error);
+      }
+    }
+
+    updateNotificationBadge(count = null) {
+      const badge = document.querySelector(".notification-badge");
+      if (!badge) return;
+
+      if (count === null) {
+        // Count unread notifications
+        count = document.querySelectorAll(".notification-item.unread").length;
+      }
+
+      if (count > 0) {
+        badge.textContent = count > 99 ? "99+" : count;
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    initializePageProgress() {
+      const progressBar = document.getElementById("pageLoadingBar");
+      if (!progressBar) return;
+
+      // Show progress bar on page navigation
+      window.addEventListener("beforeunload", () => {
+        progressBar.classList.add("loading");
+        progressBar.style.width = "30%";
+      });
+
+      // Hide progress bar when page loads
+      window.addEventListener("load", () => {
+        progressBar.style.width = "100%";
+        setTimeout(() => {
+          progressBar.classList.remove("loading");
+          progressBar.style.width = "0%";
+        }, 200);
+      });
+    }
+
+    setupEventListeners() {
+      // Handle dropdown toggles
+      document
+        .querySelectorAll('[data-bs-toggle="dropdown"]')
+        .forEach((dropdown) => {
+          dropdown.addEventListener("click", (e) => {
+            // Custom dropdown logic if needed
+          });
+        });
+
+      // Handle keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        // ESC to close dropdowns
+        if (e.key === "Escape") {
+          this.closeAllDropdowns();
+        }
+
+        // Ctrl/Cmd + K to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+          e.preventDefault();
+          const searchInput = document.getElementById("navSearchInput");
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }
+      });
+    }
+
+    closeAllDropdowns() {
+      document.querySelectorAll(".dropdown-menu.show").forEach((menu) => {
+        menu.classList.remove("show");
+      });
+
+      const searchResults = document.getElementById("searchResults");
+      if (searchResults) {
+        searchResults.style.display = "none";
+      }
+    }
+
+    toggleTheme() {
+      this.currentTheme = this.currentTheme === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", this.currentTheme);
+      localStorage.setItem("theme", this.currentTheme);
+      this.updateThemeIcon();
+
+      // Dispatch theme change event
+      window.dispatchEvent(
+        new CustomEvent("themeChanged", {
+          detail: { theme: this.currentTheme },
+        })
+      );
+    }
+
+    updateThemeIcon() {
+      const themeIcon = document.querySelector(".theme-icon");
+      if (themeIcon) {
+        themeIcon.className =
+          this.currentTheme === "light" ? "fas fa-moon" : "fas fa-sun";
+      }
+    }
+  }
+
+  // Global functions
+  function toggleTheme() {
+    window.navigation.toggleTheme();
+  }
+
+  function markAllNotificationsRead() {
+    window.navigation.markAllNotificationsRead();
+  }
+
+  function confirmLogout() {
+    return confirm("Are you sure you want to sign out?");
+  }
+
+  // Initialize navigation
+  document.addEventListener("DOMContentLoaded", function () {
+    window.navigation = new Navigation();
+  });
+
+  // Handle form submissions for search
+  document
+    .getElementById("navSearch")
+    ?.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const query = document.getElementById("navSearchInput").value;
+      if (query.trim()) {
+        window.location.href = `/search?q=${encodeURIComponent(query)}`;
+      }
+    });
+</script>

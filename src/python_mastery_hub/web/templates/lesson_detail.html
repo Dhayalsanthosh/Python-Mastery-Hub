@@ -1,0 +1,1052 @@
+<!-- Location: src/python_mastery_hub/web/templates/lesson_detail.html -->
+
+{% extends "base.html" %} {% block title %}{{ lesson.title }} - {{ module.title
+}} - Python Mastery Hub{% endblock %} {% block content %}
+<div class="lesson-container">
+  <div class="container">
+    <!-- Lesson Header -->
+    <div class="lesson-header">
+      <div class="breadcrumb">
+        <a href="{{ url_for('modules.list_modules') }}">Modules</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{{ url_for('modules.module_detail', module_id=module.id) }}"
+          >{{ module.title }}</a
+        >
+        <span class="breadcrumb-separator">›</span>
+        <span class="current-page">{{ lesson.title }}</span>
+      </div>
+
+      <div class="lesson-title-section">
+        <h1>{{ lesson.title }}</h1>
+        <p class="lesson-description">{{ lesson.description }}</p>
+
+        <div class="lesson-meta">
+          <div class="meta-item">
+            <span class="meta-icon">📚</span>
+            <span class="meta-label">Type:</span>
+            <span class="meta-value">{{ lesson.type.title() }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">⏱️</span>
+            <span class="meta-label">Duration:</span>
+            <span class="meta-value"
+              >{{ lesson.estimated_minutes }} minutes</span
+            >
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">💪</span>
+            <span class="meta-label">Exercises:</span>
+            <span class="meta-value"
+              >{{ lesson_exercises|length }} exercises</span
+            >
+          </div>
+          {% if lesson_progress %}
+          <div class="meta-item">
+            <span class="meta-icon">📊</span>
+            <span class="meta-label">Progress:</span>
+            <span
+              class="meta-value progress-{{ 'completed' if lesson_progress.is_completed else 'in-progress' }}"
+            >
+              {{ 'Completed' if lesson_progress.is_completed else 'In Progress'
+              }}
+            </span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson Content -->
+    <div class="lesson-content">
+      <!-- Lesson Navigation -->
+      <div class="lesson-nav">
+        {% if previous_lesson %}
+        <a
+          href="{{ url_for('modules.lesson_detail', module_id=module.id, lesson_id=previous_lesson.id) }}"
+          class="nav-button nav-previous"
+        >
+          <span class="nav-icon">←</span>
+          <div class="nav-content">
+            <span class="nav-label">Previous</span>
+            <span class="nav-title">{{ previous_lesson.title }}</span>
+          </div>
+        </a>
+        {% else %}
+        <div class="nav-placeholder"></div>
+        {% endif %}
+
+        <div class="lesson-progress-indicator">
+          <div class="progress-circle">
+            <svg width="60" height="60">
+              <circle cx="30" cy="30" r="25" class="progress-circle-bg" />
+              <circle
+                cx="30"
+                cy="30"
+                r="25"
+                class="progress-circle-bar"
+                style="stroke-dasharray: {{ (lesson_progress.completion_percentage or 0) * 1.57 }}, 157"
+              />
+            </svg>
+            <span class="progress-percentage"
+              >{{ lesson_progress.completion_percentage or 0 }}%</span
+            >
+          </div>
+        </div>
+
+        {% if next_lesson %}
+        <a
+          href="{{ url_for('modules.lesson_detail', module_id=module.id, lesson_id=next_lesson.id) }}"
+          class="nav-button nav-next"
+        >
+          <div class="nav-content">
+            <span class="nav-label">Next</span>
+            <span class="nav-title">{{ next_lesson.title }}</span>
+          </div>
+          <span class="nav-icon">→</span>
+        </a>
+        {% else %}
+        <div class="nav-placeholder"></div>
+        {% endif %}
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="lesson-main">
+        <!-- Lesson Content Tabs -->
+        <div class="content-tabs">
+          <button class="tab-button active" data-tab="overview">
+            Overview
+          </button>
+          <button class="tab-button" data-tab="exercises">
+            Exercises ({{ lesson_exercises|length }})
+          </button>
+          {% if lesson.type == 'assessment' %}
+          <button class="tab-button" data-tab="assessment">Assessment</button>
+          {% endif %}
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+          <div class="lesson-overview">
+            <div class="overview-section">
+              <h2>What You'll Learn</h2>
+              <div class="learning-objectives">
+                {% if lesson.learning_objectives %}
+                <ul class="objectives-list">
+                  {% for objective in lesson.learning_objectives %}
+                  <li class="objective-item">{{ objective }}</li>
+                  {% endfor %}
+                </ul>
+                {% else %}
+                <p>
+                  Complete the exercises in this lesson to advance your Python
+                  skills.
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if lesson.content %}
+            <div class="overview-section">
+              <h2>Lesson Content</h2>
+              <div class="lesson-text">{{ lesson.content | safe }}</div>
+            </div>
+            {% endif %}
+
+            <div class="overview-section">
+              <h2>Getting Started</h2>
+              <div class="getting-started">
+                <p>
+                  This lesson contains {{ lesson_exercises|length }} exercises
+                  to help you practice the concepts. Each exercise builds on the
+                  previous one, so we recommend completing them in order.
+                </p>
+
+                {% if lesson.type == 'assessment' %}
+                <div class="assessment-notice">
+                  <div class="notice-icon">⚡</div>
+                  <div class="notice-content">
+                    <strong>Assessment Lesson</strong>
+                    <p>
+                      This is an assessment lesson that will test your
+                      understanding of the module topics. You'll need to score
+                      at least 80% to complete this lesson.
+                    </p>
+                  </div>
+                </div>
+                {% endif %}
+
+                <div class="start-lesson-action">
+                  {% if not lesson_progress or not lesson_progress.is_completed
+                  %}
+                  <button
+                    onclick="startFirstExercise()"
+                    class="btn btn-primary btn-large"
+                  >
+                    <span class="btn-icon">🚀</span>
+                    {{ 'Continue Lesson' if lesson_progress else 'Start Lesson'
+                    }}
+                  </button>
+                  {% else %}
+                  <div class="completion-message">
+                    <div class="completion-icon">✅</div>
+                    <div class="completion-text">
+                      <strong>Lesson Completed!</strong>
+                      <p>
+                        You've successfully completed this lesson. Review the
+                        exercises below or move on to the next lesson.
+                      </p>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercises Tab -->
+        <div id="exercises-tab" class="tab-content">
+          <div class="exercises-section">
+            <div class="exercises-header">
+              <h2>Practice Exercises</h2>
+              <div class="exercises-progress">
+                {% set completed_count = lesson_exercises |
+                selectattr('user_progress.is_completed', 'equalto', True) | list
+                | length %}
+                <span class="progress-text"
+                  >{{ completed_count }} of {{ lesson_exercises|length }}
+                  completed</span
+                >
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style="width: {{ (completed_count / lesson_exercises|length * 100) if lesson_exercises else 0 }}%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="exercises-list">
+              {% for exercise in lesson_exercises %}
+              <div
+                class="exercise-card {{ 'completed' if exercise.user_progress and exercise.user_progress.is_completed else 'incomplete' }}"
+              >
+                <div class="exercise-status">
+                  {% if exercise.user_progress and
+                  exercise.user_progress.is_completed %}
+                  <span class="status-icon completed">✅</span>
+                  {% elif exercise.user_progress %}
+                  <span class="status-icon in-progress">📝</span>
+                  {% else %}
+                  <span class="status-icon not-started">○</span>
+                  {% endif %}
+                </div>
+
+                <div class="exercise-content">
+                  <h3 class="exercise-title">{{ exercise.title }}</h3>
+                  <p class="exercise-description">{{ exercise.description }}</p>
+
+                  <div class="exercise-meta">
+                    <span
+                      class="difficulty-badge difficulty-{{ exercise.difficulty }}"
+                    >
+                      {{ exercise.difficulty.title() }}
+                    </span>
+                    {% if exercise.user_progress and
+                    exercise.user_progress.best_score %}
+                    <span class="score-badge">
+                      Best: {{ exercise.user_progress.best_score }}%
+                    </span>
+                    {% endif %} {% if exercise.user_progress and
+                    exercise.user_progress.attempts %}
+                    <span class="attempts-badge">
+                      {{ exercise.user_progress.attempts }} attempts
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="exercise-actions">
+                  <a
+                    href="{{ url_for('exercises.detail', exercise_id=exercise.id) }}"
+                    class="btn btn-primary"
+                  >
+                    {{ 'Review' if exercise.user_progress and
+                    exercise.user_progress.is_completed else 'Start' }}
+                  </a>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            {% if lesson_exercises and not lesson_progress.is_completed %}
+            <div class="lesson-completion">
+              <div class="completion-requirements">
+                <h3>Complete This Lesson</h3>
+                <p>To complete this lesson, you need to:</p>
+                <ul>
+                  <li>Complete all {{ lesson_exercises|length }} exercises</li>
+                  {% if lesson.type == 'assessment' %}
+                  <li>Achieve an average score of 80% or higher</li>
+                  {% endif %}
+                </ul>
+              </div>
+
+              {% set all_completed = lesson_exercises |
+              selectattr('user_progress.is_completed', 'equalto', True) | list |
+              length == lesson_exercises | length %} {% if all_completed %}
+              <button
+                onclick="completeLesson()"
+                class="btn btn-success btn-large"
+                id="completeLessonBtn"
+              >
+                <span class="btn-icon">🎉</span>
+                Mark Lesson Complete
+              </button>
+              {% else %}
+              <button class="btn btn-secondary btn-large" disabled>
+                Complete All Exercises First
+              </button>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Assessment Tab (if applicable) -->
+        {% if lesson.type == 'assessment' %}
+        <div id="assessment-tab" class="tab-content">
+          <div class="assessment-section">
+            <div class="assessment-info">
+              <h2>Assessment Information</h2>
+              <div class="assessment-details">
+                <div class="detail-item">
+                  <strong>Time Limit:</strong> {{ lesson.estimated_minutes }}
+                  minutes
+                </div>
+                <div class="detail-item">
+                  <strong>Passing Score:</strong> 80%
+                </div>
+                <div class="detail-item">
+                  <strong>Attempts:</strong> Unlimited
+                </div>
+                <div class="detail-item">
+                  <strong>Questions:</strong> {{ lesson_exercises|length }}
+                  exercises
+                </div>
+              </div>
+            </div>
+
+            {% if lesson_progress and lesson_progress.is_completed %}
+            <div class="assessment-results">
+              <h3>Your Results</h3>
+              <div class="results-summary">
+                <div class="result-score">
+                  <span class="score-value"
+                    >{{ lesson_progress.final_score or 0 }}%</span
+                  >
+                  <span class="score-label">Final Score</span>
+                </div>
+                <div
+                  class="result-status {{ 'passed' if lesson_progress.final_score >= 80 else 'failed' }}"
+                >
+                  {{ 'Passed' if lesson_progress.final_score >= 80 else 'Failed'
+                  }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab functionality
+  document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', function() {
+          const tabName = this.getAttribute('data-tab');
+
+          // Remove active class from all tabs and contents
+          document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+          // Add active class to clicked tab and corresponding content
+          this.classList.add('active');
+          document.getElementById(tabName + '-tab').classList.add('active');
+      });
+  });
+
+  // Start first exercise
+  function startFirstExercise() {
+      {% if lesson_exercises %}
+      window.location.href = "{{ url_for('exercises.detail', exercise_id=lesson_exercises[0].id) }}";
+      {% endif %}
+  }
+
+  // Complete lesson
+  function completeLesson() {
+      const btn = document.getElementById('completeLessonBtn');
+      const originalText = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span> Completing...';
+
+      fetch("{{ url_for('modules.complete_lesson', module_id=module.id, lesson_id=lesson.id) }}", {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken()
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              btn.innerHTML = '<span class="btn-icon">✅</span> Lesson Completed!';
+              btn.classList.remove('btn-success');
+              btn.classList.add('btn-completed');
+
+              // Show success message
+              showNotification('Congratulations! Lesson completed successfully.', 'success');
+
+              // Refresh page after short delay
+              setTimeout(() => {
+                  window.location.reload();
+              }, 2000);
+          } else {
+              btn.disabled = false;
+              btn.innerHTML = originalText;
+              showNotification(data.error || 'Failed to complete lesson', 'error');
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          showNotification('An error occurred', 'error');
+      });
+  }
+
+  function getCSRFToken() {
+      const tokenElement = document.querySelector('input[name="csrf_token"]');
+      return tokenElement ? tokenElement.value : '';
+  }
+
+  function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+          notification.classList.add('show');
+      }, 100);
+
+      setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => {
+              document.body.removeChild(notification);
+          }, 300);
+      }, 3000);
+  }
+</script>
+
+<style>
+  .lesson-container {
+    background: #f8fafc;
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+
+  .lesson-header {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+  }
+
+  .breadcrumb {
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  .breadcrumb a {
+    color: #4f46e5;
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 0.5rem;
+    color: #9ca3af;
+  }
+
+  .current-page {
+    color: #374151;
+    font-weight: 500;
+  }
+
+  .lesson-title-section h1 {
+    font-size: 2.5rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+
+  .lesson-description {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .lesson-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+
+  .meta-icon {
+    font-size: 1.2rem;
+  }
+
+  .meta-label {
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .meta-value {
+    color: #6b7280;
+  }
+
+  .meta-value.progress-completed {
+    color: #10b981;
+    font-weight: 600;
+  }
+
+  .meta-value.progress-in-progress {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+
+  .lesson-content {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  .lesson-nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: center;
+  }
+
+  .nav-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .nav-button:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .nav-previous {
+    justify-self: start;
+  }
+
+  .nav-next {
+    justify-self: end;
+  }
+
+  .nav-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .nav-title {
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .nav-icon {
+    font-size: 1.5rem;
+    color: #9ca3af;
+  }
+
+  .progress-circle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+  }
+
+  .progress-circle svg {
+    transform: rotate(-90deg);
+  }
+
+  .progress-circle-bg {
+    fill: none;
+    stroke: #e5e7eb;
+    stroke-width: 4;
+  }
+
+  .progress-circle-bar {
+    fill: none;
+    stroke: #4f46e5;
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+
+  .progress-percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .content-tabs {
+    display: flex;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .tab-button {
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.2s ease;
+  }
+
+  .tab-button.active {
+    color: #4f46e5;
+    border-bottom-color: #4f46e5;
+    background: white;
+  }
+
+  .tab-button:hover {
+    color: #374151;
+    background: white;
+  }
+
+  .tab-content {
+    display: none;
+    padding: 2rem;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .overview-section {
+    margin-bottom: 2rem;
+  }
+
+  .overview-section h2 {
+    color: #1f2937;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+  }
+
+  .objectives-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .objective-item {
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+    color: #374151;
+  }
+
+  .objective-item::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: bold;
+  }
+
+  .assessment-notice {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
+
+  .notice-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .notice-content strong {
+    color: #92400e;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .notice-content p {
+    color: #78350f;
+    margin: 0;
+  }
+
+  .start-lesson-action {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .completion-message {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    border-radius: 12px;
+  }
+
+  .completion-icon {
+    font-size: 2rem;
+  }
+
+  .completion-text strong {
+    color: #065f46;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .completion-text p {
+    color: #047857;
+    margin: 0;
+  }
+
+  .exercises-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .exercises-header h2 {
+    margin: 0;
+    color: #1f2937;
+  }
+
+  .exercises-progress {
+    text-align: right;
+  }
+
+  .progress-text {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-bar {
+    width: 200px;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #4f46e5;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .exercise-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .exercise-card:hover {
+    background: #f9fafb;
+    border-color: #4f46e5;
+  }
+
+  .exercise-card.completed {
+    background: #f0fdf4;
+    border-color: #10b981;
+  }
+
+  .exercise-status {
+    flex-shrink: 0;
+  }
+
+  .status-icon {
+    font-size: 1.5rem;
+  }
+
+  .status-icon.completed {
+    color: #10b981;
+  }
+
+  .status-icon.in-progress {
+    color: #f59e0b;
+  }
+
+  .status-icon.not-started {
+    color: #d1d5db;
+  }
+
+  .exercise-content {
+    flex: 1;
+  }
+
+  .exercise-title {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1.1rem;
+  }
+
+  .exercise-description {
+    color: #6b7280;
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+  }
+
+  .exercise-meta {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .difficulty-badge,
+  .score-badge,
+  .attempts-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .difficulty-easy {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .difficulty-medium {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .difficulty-hard {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .score-badge {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .attempts-badge {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  .lesson-completion {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #f9fafb;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .completion-requirements h3 {
+    margin-bottom: 1rem;
+    color: #1f2937;
+  }
+
+  .completion-requirements ul {
+    text-align: left;
+    max-width: 300px;
+    margin: 1rem auto 2rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    background: #4f46e5;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+  }
+
+  .btn-success {
+    background: #10b981;
+    color: white;
+  }
+
+  .btn-success:hover {
+    background: #059669;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+  }
+
+  .btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .notification.show {
+    transform: translateX(0);
+  }
+
+  .notification-success {
+    background: #10b981;
+  }
+
+  .notification-error {
+    background: #ef4444;
+  }
+
+  @media (max-width: 1024px) {
+    .lesson-nav {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .nav-button {
+      justify-self: center;
+    }
+
+    .exercises-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .lesson-title-section h1 {
+      font-size: 2rem;
+    }
+
+    .lesson-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .content-tabs {
+      flex-wrap: wrap;
+    }
+
+    .tab-content {
+      padding: 1rem;
+    }
+
+    .exercise-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .exercise-meta {
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}

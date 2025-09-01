@@ -1,0 +1,412 @@
+# File: security/scanning/bandit_config.yml
+# Bandit Security Scanning Configuration
+# Bandit is a tool designed to find common security issues in Python code
+
+# Test discovery configuration
+tests:
+  # Enable specific tests by ID
+  include:
+    - B101 # assert_used - Use of assert detected
+    - B102 # exec_used - Use of exec detected
+    - B103 # set_bad_file_permissions - Test for setting a bad file permission
+    - B104 # hardcoded_bind_all_interfaces - Binding to all network interfaces
+    - B105 # hardcoded_password_string - Possible hardcoded password
+    - B106 # hardcoded_password_funcarg - Possible hardcoded password in function argument
+    - B107 # hardcoded_password_default - Possible hardcoded password in default argument
+    - B108 # hardcoded_tmp_directory - Probable insecure usage of temp file/directory
+    - B110 # try_except_pass - Try, Except, Pass detected
+    - B112 # try_except_continue - Try, Except, Continue detected
+    - B201 # flask_debug_true - Flask app with debug=True
+    - B301 # pickle - Pickle and modules that wrap it can be unsafe
+    - B302 # marshal - Deserialization with the marshal module is possibly dangerous
+    - B303 # md5 - Use of insecure MD2, MD4, MD5, or SHA1 hash function
+    - B304 # des - Use of insecure cipher
+    - B305 # cipher - Use of insecure cipher mode
+    - B306 # mktemp_q - Use of insecure and deprecated function (mktemp)
+    - B307 # eval - Use of possibly insecure function - consider using safer ast.literal_eval
+    - B308 # mark_safe - Use of mark_safe() may expose cross-site scripting vulnerabilities
+    - B309 # httpsconnection - Use of HTTPSConnection on older versions of Python prior to 2.7.9
+    - B310 # urllib_urlopen - Audit url open for permitted schemes
+    - B311 # random - Standard pseudo-random generators are not suitable for security/cryptographic purposes
+    - B312 # telnetlib - Telnet-related functions are being called
+    - B313 # xml_bad_cElementTree - Using xml.etree.cElementTree.XMLParser without disabling DTD processing
+    - B314 # xml_bad_ElementTree - Using xml.etree.ElementTree.XMLParser without disabling DTD processing
+    - B315 # xml_bad_expatreader - Using xml.sax.expatreader.create_parser without disabling DTD processing
+    - B316 # xml_bad_expatbuilder - Using xml.dom.expatbuilder.parse without disabling DTD processing
+    - B317 # xml_bad_sax - Using xml.sax.parse without disabling DTD processing
+    - B318 # xml_bad_minidom - Using xml.dom.minidom.parse without disabling DTD processing
+    - B319 # xml_bad_pulldom - Using xml.dom.pulldom.parse without disabling DTD processing
+    - B320 # xml_bad_xmlrpc - Using xmlrpclib.ServerProxy without disabling DTD processing
+    - B321 # ftplib - FTP-related functions are being called
+    - B322 # input - The input method in Python 2 will read from standard input, evaluate and run the resulting string as python source code
+    - B323 # unverified_context - By default, Python will create a secure, verified ssl context for use in such classes
+    - B324 # hashlib_new_insecure_functions - Use of insecure MD2, MD4, MD5, or SHA1 hash function
+    - B325 # tempnam - Use of os.tempnam() and os.tmpnam() is vulnerable to symlink attacks
+    - B401 # import_telnetlib - A telnet-related module is being imported
+    - B402 # import_ftplib - A FTP-related module is being imported
+    - B403 # import_pickle - Consider possible security implications associated with pickle module
+    - B404 # import_subprocess - Consider possible security implications associated with subprocess module
+    - B405 # import_xml_etree - Using xml.etree.ElementTree can expose your application to XML vulnerabilities
+    - B406 # import_xml_sax - Using xml.sax can expose your application to XML vulnerabilities
+    - B407 # import_xml_expat - Using xml.expat can expose your application to XML vulnerabilities
+    - B408 # import_xml_xmlrpc - Using xmlrpclib can expose your application to XML vulnerabilities
+    - B409 # import_xml_minidom - Using xml.dom.minidom can expose your application to XML vulnerabilities
+    - B410 # import_lxml - Using lxml can expose your application to XML vulnerabilities
+    - B411 # import_xmlrpclib - Using xmlrpclib can expose your application to XML vulnerabilities
+    - B501 # request_with_no_cert_validation - Requests call with verify=False disabling SSL certificate checks
+    - B502 # ssl_with_bad_version - ssl.wrap_socket call with insecure SSL/TLS protocol version
+    - B503 # ssl_with_bad_defaults - ssl.wrap_socket call with insecure SSL/TLS protocol defaults
+    - B504 # ssl_with_no_version - ssl.wrap_socket call without SSL/TLS protocol version specified
+    - B505 # weak_cryptographic_key - Use of weak cryptographic key
+    - B506 # yaml_load - Use of yaml.load() can execute arbitrary code
+    - B507 # ssh_no_host_key_verification - Paramiko call with policy set to automatically trust the unknown host key
+    - B601 # paramiko_calls - Possible shell injection via Paramiko call
+    - B602 # subprocess_popen_with_shell_equals_true - subprocess call with shell=True identified
+    - B603 # subprocess_without_shell_equals_false - subprocess call - check for execution of untrusted input
+    - B604 # any_other_function_with_shell_equals_true - Function call with shell=True parameter identified
+    - B605 # start_process_with_a_shell - Starting a process with a shell, possible injection detected
+    - B606 # start_process_with_no_shell - Starting a process without a shell
+    - B607 # start_process_with_partial_path - Starting a process with a partial executable path
+    - B608 # hardcoded_sql_expressions - Possible SQL injection vector through string-based query construction
+    - B609 # linux_commands_wildcard_injection - Possible wildcard injection in call
+    - B610 # django_extra_used - Potential SQL injection on extra function
+    - B611 # django_rawsql_used - Potential SQL injection on RawSQL function
+    - B701 # jinja2_autoescape_false - By default, jinja2 sets autoescape to False
+    - B702 # use_of_mako_templates - Mako templates allow HTML and JavaScript rendering by default
+    - B703 # django_mark_safe - Potential XSS on mark_safe function
+
+  # Exclude specific tests (override includes if needed)
+  exclude:
+    # Uncomment to disable specific tests
+    # - B101  # Allow assert statements in test files
+    # - B601  # Allow paramiko usage with proper validation
+
+# Severity configuration
+severity:
+  # Set minimum severity level to report
+  # Options: low, medium, high
+  min_level: medium
+
+  # Custom severity mappings
+  overrides:
+    B105: high # Hardcoded passwords are critical
+    B106: high # Hardcoded password arguments are critical
+    B107: high # Hardcoded password defaults are critical
+    B201: medium # Flask debug mode in production
+    B501: high # Unverified SSL certificates
+    B608: high # SQL injection vulnerabilities
+
+# Confidence levels
+confidence:
+  # Set minimum confidence level to report
+  # Options: low, medium, high
+  min_level: medium
+
+  # Report issues with these confidence levels
+  levels:
+    - medium
+    - high
+
+# Scan configuration
+scan:
+  # Directories to scan (relative to project root)
+  include_paths:
+    - "src/"
+    - "app/"
+    - "lib/"
+    - "scripts/"
+    - "tests/"
+
+  # Directories and files to exclude from scanning
+  exclude_paths:
+    - "*/migrations/*"
+    - "*/venv/*"
+    - "*/virtualenv/*"
+    - "*/.venv/*"
+    - "*/node_modules/*"
+    - "*/__pycache__/*"
+    - "*.pyc"
+    - "*/build/*"
+    - "*/dist/*"
+    - "*/docs/*"
+    - "*/.git/*"
+    - "*/.pytest_cache/*"
+    - "*/coverage/*"
+    - "*/htmlcov/*"
+    - "*/logs/*"
+    - "*/tmp/*"
+    - "*/temp/*"
+
+  # File patterns to include
+  include_patterns:
+    - "*.py"
+    - "*.pyw"
+
+  # File patterns to exclude
+  exclude_patterns:
+    - "*_test.py" # Test files may have relaxed security
+    - "test_*.py" # Test files may have relaxed security
+    - "*conftest.py" # Pytest configuration files
+    - "setup.py" # Setup scripts may need special handling
+
+  # Recursive scanning
+  recursive: true
+
+  # Follow symbolic links
+  follow_symlinks: false
+
+# Reporting configuration
+reporting:
+  # Output format options: json, csv, txt, html, xml, yaml
+  format: json
+
+  # Output file (optional, defaults to stdout)
+  output_file: "reports/bandit_security_report.json"
+
+  # Include additional information in reports
+  include_paths: true
+  include_nosec: false # Don't include # nosec commented issues
+
+  # Report template (for custom formatting)
+  template: null
+
+  # Aggregate results across multiple runs
+  aggregate: false
+
+# Baseline configuration
+baseline:
+  # Baseline file to compare against (for tracking new issues)
+  file: "security/scanning/bandit_baseline.json"
+
+  # Update baseline after scan
+  update: false
+
+  # Only report new issues not in baseline
+  compare_only: false
+
+# Skip configuration
+skip:
+  # Skip entire directories
+  directories:
+    - "migrations"
+    - "fixtures"
+    - "static"
+    - "media"
+
+  # Skip specific files
+  files:
+    - "manage.py"
+    - "wsgi.py"
+    - "asgi.py"
+
+  # Skip based on nosec comments
+  nosec: true
+
+# Plugin configuration
+plugins:
+  # Additional bandit plugins to load
+  load:
+    # - "bandit_django"  # Django-specific security checks
+    # - "bandit_flask"   # Flask-specific security checks
+
+  # Plugin-specific configuration
+  config:
+    django:
+      # Django-specific settings
+      debug_mode_check: true
+      csrf_protection: true
+      sql_injection: true
+
+    flask:
+      # Flask-specific settings
+      debug_mode_check: true
+      session_security: true
+
+# Custom rules configuration
+custom_rules:
+  # Define custom security rules
+  enabled: false
+
+  # Path to custom rules directory
+  rules_dir: "security/rules/"
+
+  # Custom rule definitions
+  rules:
+    custom_password_check:
+      id: "C001"
+      message: "Custom password validation check"
+      severity: "high"
+      confidence: "medium"
+      pattern: "password\\s*=\\s*[\"'][^\"']*[\"']"
+
+    custom_api_key_check:
+      id: "C002"
+      message: "Potential hardcoded API key detected"
+      severity: "high"
+      confidence: "high"
+      pattern: "api[_-]?key\\s*=\\s*[\"'][A-Za-z0-9]{20,}[\"']"
+
+# Integration configuration
+integration:
+  # CI/CD integration settings
+  ci_cd:
+    # Fail build on security issues
+    fail_on_high: true
+    fail_on_medium: false
+    fail_on_low: false
+
+    # Maximum allowed issues by severity
+    max_issues:
+      high: 0
+      medium: 5
+      low: 10
+
+  # IDE integration
+  ide:
+    # Generate IDE-compatible output
+    compatible_format: true
+
+    # Real-time scanning
+    watch_mode: false
+
+  # Git hooks integration
+  git_hooks:
+    # Pre-commit hook configuration
+    pre_commit:
+      enabled: true
+      strict: false # Don't fail commit on warnings
+
+    # Pre-push hook configuration
+    pre_push:
+      enabled: true
+      strict: true # Fail push on high severity issues
+
+# Performance configuration
+performance:
+  # Number of parallel processes
+  processes: 4
+
+  # Timeout per file (seconds)
+  timeout: 60
+
+  # Memory limit per process (MB)
+  memory_limit: 512
+
+  # Cache scan results
+  cache_results: true
+  cache_dir: ".bandit_cache/"
+
+  # Progress reporting
+  progress: true
+  verbose: false
+
+# Notification configuration
+notifications:
+  # Email notifications
+  email:
+    enabled: false
+    smtp_server: "smtp.company.com"
+    smtp_port: 587
+    username: "security@company.com"
+    recipients:
+      - "security-team@company.com"
+      - "dev-team@company.com"
+
+    # When to send notifications
+    on_high_severity: true
+    on_new_issues: true
+    on_scan_failure: true
+
+  # Slack notifications
+  slack:
+    enabled: false
+    webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    channel: "#security-alerts"
+
+    # Message customization
+    username: "BanditBot"
+    icon_emoji: ":warning:"
+
+    # When to send notifications
+    on_high_severity: true
+    on_scan_complete: false
+
+  # Webhook notifications
+  webhook:
+    enabled: false
+    url: "https://api.company.com/security/alerts"
+    method: "POST"
+    headers:
+      Authorization: "Bearer YOUR_API_TOKEN"
+      Content-Type: "application/json"
+
+# Exemption configuration
+exemptions:
+  # Global exemptions (apply to all scans)
+  global:
+    # Exempt specific test IDs globally
+    tests: []
+
+    # Exempt specific file patterns
+    file_patterns:
+      - "*/legacy/*" # Legacy code exemptions
+      - "*/third_party/*" # Third-party code exemptions
+
+  # Temporary exemptions (with expiration)
+  temporary:
+    # Format: test_id: expiration_date (YYYY-MM-DD)
+    B105: "2024-12-31" # Temporary exemption for hardcoded passwords
+    B501: "2024-06-30" # Temporary exemption for SSL verification
+
+  # Project-specific exemptions
+  projects:
+    legacy_system:
+      tests:
+        - B301 # Allow pickle in legacy system
+        - B303 # Allow MD5 in legacy system
+      reason: "Legacy system scheduled for replacement"
+      expires: "2025-01-01"
+
+# Documentation and help
+documentation:
+  # Generate security documentation
+  generate_docs: true
+  docs_output: "docs/security/"
+
+  # Include remediation guidance
+  include_remediation: true
+
+  # Link to internal security guidelines
+  security_guidelines_url: "https://wiki.company.com/security"
+
+  # Training resources
+  training_resources:
+    - "https://owasp.org/www-project-top-ten/"
+    - "https://bandit.readthedocs.io/en/latest/"
+    - "https://wiki.company.com/security-training"
+
+# Version and metadata
+metadata:
+  config_version: "1.0.0"
+  created_by: "Security Team"
+  created_date: "2024-01-01"
+  last_updated: "2024-08-20"
+  description: "Comprehensive Bandit security scanning configuration for Python projects"
+
+  # Environment-specific overrides
+  environments:
+    development:
+      severity.min_level: "low"
+      confidence.min_level: "low"
+      reporting.format: "txt"
+
+    staging:
+      severity.min_level: "medium"
+      confidence.min_level: "medium"
+      integration.ci_cd.fail_on_medium: true
+
+    production:
+      severity.min_level: "high"
+      confidence.min_level: "high"
+      integration.ci_cd.fail_on_high: true
+      integration.ci_cd.fail_on_medium: true

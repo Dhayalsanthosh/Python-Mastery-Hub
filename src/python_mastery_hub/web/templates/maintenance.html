@@ -1,0 +1,469 @@
+<!-- Location: src/python_mastery_hub/web/templates/maintenance.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Under Maintenance - Python Mastery Hub</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      .maintenance-container {
+        text-align: center;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      .maintenance-icon {
+        font-size: 6rem;
+        margin-bottom: 2rem;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-20px);
+        }
+        60% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .maintenance-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .maintenance-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        font-weight: 300;
+      }
+
+      .maintenance-message {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 2rem;
+        text-align: left;
+      }
+
+      .maintenance-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #fff;
+      }
+
+      .maintenance-message p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+      }
+
+      .maintenance-message ul {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .maintenance-message li {
+        padding: 0.5rem 0;
+        position: relative;
+        padding-left: 2rem;
+      }
+
+      .maintenance-message li::before {
+        content: "🔧";
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+      }
+
+      .status-updates {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 2rem;
+      }
+
+      .status-updates h4 {
+        margin-bottom: 1rem;
+        color: #fff;
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .status-item:last-child {
+        border-bottom: none;
+      }
+
+      .status-time {
+        font-size: 0.9rem;
+        opacity: 0.7;
+        min-width: 80px;
+      }
+
+      .status-message {
+        flex: 1;
+        font-size: 0.95rem;
+      }
+
+      .progress-section {
+        margin-bottom: 2rem;
+      }
+
+      .progress-label {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #34d399);
+        border-radius: 4px;
+        width: 75%;
+        animation: progress-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes progress-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      .progress-text {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        text-align: center;
+      }
+
+      .contact-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 2rem;
+      }
+
+      .contact-info h4 {
+        margin-bottom: 1rem;
+        color: #fff;
+      }
+
+      .contact-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .contact-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .contact-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+      }
+
+      .eta-section {
+        background: rgba(16, 185, 129, 0.2);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        margin-bottom: 2rem;
+      }
+
+      .eta-section h4 {
+        color: #6ee7b7;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+      }
+
+      .eta-time {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #a7f3d0;
+        margin-bottom: 0.5rem;
+      }
+
+      .eta-note {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .social-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1rem;
+      }
+
+      .social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .social-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px) scale(1.1);
+        text-decoration: none;
+        color: white;
+      }
+
+      .refresh-notice {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        border: 1px solid rgba(59, 130, 246, 0.4);
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      @media (max-width: 768px) {
+        .maintenance-title {
+          font-size: 2.5rem;
+        }
+
+        .maintenance-subtitle {
+          font-size: 1.1rem;
+        }
+
+        .maintenance-icon {
+          font-size: 4rem;
+        }
+
+        .maintenance-message,
+        .status-updates,
+        .contact-info,
+        .eta-section {
+          padding: 1rem;
+        }
+
+        .contact-links {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .status-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 1rem;
+        }
+
+        .maintenance-title {
+          font-size: 2rem;
+        }
+
+        .maintenance-subtitle {
+          font-size: 1rem;
+        }
+
+        .social-links {
+          gap: 0.5rem;
+        }
+
+        .social-link {
+          width: 2.5rem;
+          height: 2.5rem;
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="maintenance-container">
+      <div class="maintenance-icon">🔧</div>
+
+      <h1 class="maintenance-title">Under Maintenance</h1>
+      <p class="maintenance-subtitle">
+        We're making Python Mastery Hub even better!
+      </p>
+
+      <div class="maintenance-message">
+        <h3>What's happening?</h3>
+        <p>
+          We're currently performing scheduled maintenance to improve your
+          learning experience. During this time, the platform may be temporarily
+          unavailable.
+        </p>
+
+        <p><strong>Maintenance includes:</strong></p>
+        <ul>
+          <li>Performance optimizations</li>
+          <li>Security updates</li>
+          <li>New feature deployments</li>
+          <li>Database maintenance</li>
+          <li>Server infrastructure upgrades</li>
+        </ul>
+      </div>
+
+      <div class="eta-section">
+        <h4>Expected Duration</h4>
+        <div class="eta-time">2 hours</div>
+        <p class="eta-note">
+          We expect to be back online shortly. Thank you for your patience!
+        </p>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-label">Maintenance Progress</div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="progress-text">75% Complete</div>
+      </div>
+
+      <div class="status-updates">
+        <h4>Recent Updates</h4>
+        <div class="status-item">
+          <div class="status-time">14:30</div>
+          <div class="status-message">Database optimization completed ✅</div>
+        </div>
+        <div class="status-item">
+          <div class="status-time">14:15</div>
+          <div class="status-message">Security patches applied ✅</div>
+        </div>
+        <div class="status-item">
+          <div class="status-time">14:00</div>
+          <div class="status-message">Maintenance started 🔧</div>
+        </div>
+      </div>
+
+      <div class="contact-info">
+        <h4>Stay Connected</h4>
+        <div class="contact-links">
+          <a href="mailto:support@pythonmasteryhub.com" class="contact-link">
+            📧 Email Support
+          </a>
+          <a
+            href="https://status.pythonmasteryhub.com"
+            class="contact-link"
+            target="_blank"
+          >
+            📊 Status Page
+          </a>
+        </div>
+
+        <div class="social-links">
+          <a href="#" class="social-link" title="Twitter">🐦</a>
+          <a href="#" class="social-link" title="Discord">💬</a>
+          <a href="#" class="social-link" title="GitHub">🐙</a>
+        </div>
+      </div>
+
+      <div class="refresh-notice">
+        💡 <strong>Tip:</strong> Bookmark this page and refresh periodically for
+        updates, or check our status page for real-time information.
+      </div>
+    </div>
+
+    <script>
+      // Auto-refresh every 5 minutes
+      setTimeout(() => {
+        window.location.reload();
+      }, 300000);
+
+      // Update progress periodically (simulation)
+      let progress = 75;
+      const progressFill = document.querySelector(".progress-fill");
+      const progressText = document.querySelector(".progress-text");
+
+      setInterval(() => {
+        if (progress < 100) {
+          progress += Math.random() * 2;
+          if (progress > 100) progress = 100;
+
+          progressFill.style.width = progress + "%";
+          progressText.textContent = Math.round(progress) + "% Complete";
+
+          if (progress >= 100) {
+            progressText.textContent = "Almost ready! 🎉";
+          }
+        }
+      }, 30000);
+    </script>
+  </body>
+</html>

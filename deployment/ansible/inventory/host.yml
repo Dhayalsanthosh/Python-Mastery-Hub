@@ -1,0 +1,340 @@
+# File: deployment/ansible/inventory/hosts.yml
+# Ansible inventory file for different environments
+
+---
+# Production Environment
+production:
+  children:
+    app_servers:
+      hosts:
+        prod-app-01:
+          ansible_host: 10.0.1.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: primary
+          instance_type: c5.large
+
+        prod-app-02:
+          ansible_host: 10.0.1.11
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: secondary
+          instance_type: c5.large
+
+        prod-app-03:
+          ansible_host: 10.0.1.12
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: secondary
+          instance_type: c5.large
+
+      vars:
+        environment: production
+        app_port: 5000
+        nginx_port: 80
+        ssl_enabled: true
+        log_level: INFO
+        debug_mode: false
+        database_pool_size: 20
+        redis_max_connections: 100
+
+    database_servers:
+      hosts:
+        prod-db-01:
+          ansible_host: 10.0.2.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: master
+          instance_type: r5.xlarge
+          postgres_version: "15"
+
+        prod-db-02:
+          ansible_host: 10.0.2.11
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: replica
+          instance_type: r5.large
+          postgres_version: "15"
+
+      vars:
+        environment: production
+        postgres_port: 5432
+        postgres_max_connections: 200
+        postgres_shared_buffers: "2GB"
+        postgres_effective_cache_size: "6GB"
+        backup_enabled: true
+        replication_enabled: true
+
+    load_balancers:
+      hosts:
+        prod-lb-01:
+          ansible_host: 10.0.3.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: primary
+          instance_type: c5.large
+
+        prod-lb-02:
+          ansible_host: 10.0.3.11
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: secondary
+          instance_type: c5.large
+
+      vars:
+        environment: production
+        nginx_worker_processes: 4
+        nginx_worker_connections: 2048
+        ssl_certificate_path: "/etc/ssl/certs/myapp-prod.crt"
+        ssl_private_key_path: "/etc/ssl/private/myapp-prod.key"
+        rate_limit_enabled: true
+        gzip_enabled: true
+
+    monitoring_servers:
+      hosts:
+        prod-mon-01:
+          ansible_host: 10.0.4.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: monitoring
+          instance_type: m5.large
+
+      vars:
+        environment: production
+        prometheus_retention: "90d"
+        grafana_admin_user: admin
+        alertmanager_enabled: true
+        elasticsearch_heap: "2g"
+        log_retention_days: 30
+
+    backup_servers:
+      hosts:
+        prod-backup-01:
+          ansible_host: 10.0.5.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/prod-key.pem
+          server_role: backup
+          instance_type: t3.medium
+
+      vars:
+        environment: production
+        backup_schedule: "0 2 * * *"
+        backup_retention_days: 90
+        s3_backup_enabled: true
+        encryption_enabled: true
+
+# Staging Environment
+staging:
+  children:
+    app_servers:
+      hosts:
+        staging-app-01:
+          ansible_host: 10.1.1.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/staging-key.pem
+          server_role: primary
+          instance_type: t3.medium
+
+        staging-app-02:
+          ansible_host: 10.1.1.11
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/staging-key.pem
+          server_role: secondary
+          instance_type: t3.medium
+
+      vars:
+        environment: staging
+        app_port: 5000
+        nginx_port: 80
+        ssl_enabled: true
+        log_level: DEBUG
+        debug_mode: true
+        database_pool_size: 10
+        redis_max_connections: 50
+
+    database_servers:
+      hosts:
+        staging-db-01:
+          ansible_host: 10.1.2.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/staging-key.pem
+          server_role: master
+          instance_type: t3.medium
+          postgres_version: "15"
+
+      vars:
+        environment: staging
+        postgres_port: 5432
+        postgres_max_connections: 100
+        postgres_shared_buffers: "512MB"
+        postgres_effective_cache_size: "1GB"
+        backup_enabled: true
+        replication_enabled: false
+
+    load_balancers:
+      hosts:
+        staging-lb-01:
+          ansible_host: 10.1.3.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/staging-key.pem
+          server_role: primary
+          instance_type: t3.small
+
+      vars:
+        environment: staging
+        nginx_worker_processes: 2
+        nginx_worker_connections: 1024
+        ssl_certificate_path: "/etc/ssl/certs/myapp-staging.crt"
+        ssl_private_key_path: "/etc/ssl/private/myapp-staging.key"
+        rate_limit_enabled: false
+        gzip_enabled: true
+
+    monitoring_servers:
+      hosts:
+        staging-mon-01:
+          ansible_host: 10.1.4.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/staging-key.pem
+          server_role: monitoring
+          instance_type: t3.small
+
+      vars:
+        environment: staging
+        prometheus_retention: "30d"
+        grafana_admin_user: admin
+        alertmanager_enabled: false
+        elasticsearch_heap: "512m"
+        log_retention_days: 7
+
+# Development Environment
+development:
+  children:
+    development_servers:
+      hosts:
+        dev-all-01:
+          ansible_host: 10.2.1.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/dev-key.pem
+          server_role: all-in-one
+          instance_type: t3.large
+
+      vars:
+        environment: development
+        app_port: 5000
+        nginx_port: 80
+        ssl_enabled: false
+        log_level: DEBUG
+        debug_mode: true
+        database_pool_size: 5
+        redis_max_connections: 20
+        postgres_port: 5432
+        postgres_max_connections: 50
+        postgres_shared_buffers: "256MB"
+        postgres_effective_cache_size: "512MB"
+        backup_enabled: false
+        monitoring_enabled: false
+
+# Local Development Environment
+local:
+  children:
+    localhost:
+      hosts:
+        127.0.0.1:
+          ansible_connection: local
+
+      vars:
+        environment: local
+        app_port: 5000
+        database_url: "postgresql://dev_user:dev_password@localhost:5432/myapp_dev"
+        redis_url: "redis://localhost:6379/0"
+        debug_mode: true
+        log_level: DEBUG
+
+# Group Variables for All Environments
+all:
+  vars:
+    # Common application settings
+    project_name: myapp
+    app_user: myapp
+    app_group: myapp
+    app_home: /opt/myapp
+
+    # Python settings
+    python_version: "3.11"
+    pip_version: latest
+    virtualenv_path: "{{ app_home }}/venv"
+
+    # Security settings
+    ssh_port: 22
+    fail2ban_enabled: true
+    ufw_enabled: true
+
+    # Monitoring settings
+    node_exporter_enabled: true
+    filebeat_enabled: true
+
+    # Backup settings
+    backup_user: backup
+    backup_home: /opt/backup
+
+    # SSL/TLS settings
+    ssl_protocols: "TLSv1.2 TLSv1.3"
+    ssl_ciphers: "ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512"
+
+    # Application configuration
+    flask_app: "app:create_app()"
+    gunicorn_workers: "{{ ansible_processor_vcpus * 2 + 1 }}"
+    gunicorn_timeout: 120
+    gunicorn_keepalive: 5
+
+    # Database configuration
+    postgres_data_dir: "/var/lib/postgresql/15/main"
+    postgres_config_dir: "/etc/postgresql/15/main"
+    postgres_log_dir: "/var/log/postgresql"
+
+    # Redis configuration
+    redis_port: 6379
+    redis_bind: "127.0.0.1"
+    redis_timeout: 300
+    redis_maxmemory: "256mb"
+    redis_maxmemory_policy: "allkeys-lru"
+
+    # Nginx configuration
+    nginx_user: www-data
+    nginx_worker_rlimit_nofile: 65535
+    nginx_client_max_body_size: "16M"
+    nginx_proxy_connect_timeout: "30s"
+    nginx_proxy_send_timeout: "30s"
+    nginx_proxy_read_timeout: "30s"
+
+    # Logging configuration
+    log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    log_max_size: "100MB"
+    log_backup_count: 5
+    syslog_enabled: true
+
+    # Monitoring configuration
+    prometheus_port: 9090
+    grafana_port: 3000
+    alertmanager_port: 9093
+    node_exporter_port: 9100
+
+    # Security configuration
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+    password_authentication: false
+    root_login: false
+
+    # Package management
+    package_update_cache: true
+    package_upgrade: false
+    pip_cache_dir: "/tmp/pip-cache"
+
+    # Time and locale
+    timezone: "UTC"
+    locale: "en_US.UTF-8"
+    ntp_servers:
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org
+      - 2.pool.ntp.org
+      - 3.pool.ntp.org

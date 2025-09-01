@@ -1,0 +1,842 @@
+{% extends "base.html" %} {% block title %}{{ module.name }} - Python Mastery
+Hub{% endblock %} {% block description %}Learn {{ module.name }} with
+interactive examples and exercises. {{ module.description }}{% endblock %} {%
+block content %}
+<div class="container">
+  <!-- Module Header -->
+  <section class="section">
+    <div class="card">
+      <div class="card-header">
+        <div class="module-header-content">
+          <div>
+            <h1>{{ module.name }}</h1>
+            <span class="module-difficulty difficulty-{{ module.difficulty }}">
+              {{ module.difficulty }}
+            </span>
+            <p class="module-description">{{ module.description }}</p>
+          </div>
+          <div class="module-actions">
+            <button class="btn btn-outline" onclick="resetProgress()">
+              🔄 Reset Progress
+            </button>
+            <button class="btn btn-secondary" onclick="downloadResources()">
+              📥 Download Resources
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="module-progress">
+          <div class="progress-info">
+            <span>Overall Progress</span>
+            <span id="progress-percentage">0%</span>
+          </div>
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="overall-progress"
+              style="width: 0%"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <section class="section">
+    <div class="card">
+      <div class="tab-navigation">
+        <button class="tab-button active" data-tab="overview">
+          📋 Overview
+        </button>
+        <button class="tab-button" data-tab="topics">📚 Topics</button>
+        <button class="tab-button" data-tab="examples">💻 Examples</button>
+        <button class="tab-button" data-tab="exercises">🎯 Exercises</button>
+        <button class="tab-button" data-tab="resources">📖 Resources</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="tab-pane active">
+      <div class="section">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📋 Learning Objectives</h3>
+            </div>
+            <div class="card-body">
+              <ul id="learning-objectives">
+                <!-- Will be populated by JavaScript -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📊 Module Stats</h3>
+            </div>
+            <div class="card-body">
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-number" id="topic-count">0</span>
+                  <span class="stat-label">Topics</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number" id="example-count">0</span>
+                  <span class="stat-label">Examples</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number" id="exercise-count">0</span>
+                  <span class="stat-label">Exercises</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number" id="estimated-time">0h</span>
+                  <span class="stat-label">Est. Time</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🚀 Quick Start</h3>
+          </div>
+          <div class="card-body">
+            <div class="quick-start-steps">
+              <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <h4>Read the Topics</h4>
+                  <p>Start with the core concepts and theory</p>
+                  <button
+                    class="btn btn-outline btn-sm"
+                    onclick="switchTab('topics')"
+                  >
+                    Go to Topics
+                  </button>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <h4>Try the Examples</h4>
+                  <p>Run interactive code examples in your browser</p>
+                  <button
+                    class="btn btn-outline btn-sm"
+                    onclick="switchTab('examples')"
+                  >
+                    View Examples
+                  </button>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <h4>Practice with Exercises</h4>
+                  <p>Test your knowledge with hands-on coding challenges</p>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onclick="switchTab('exercises')"
+                  >
+                    Start Exercises
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topics Tab -->
+    <div id="topics-tab" class="tab-pane">
+      <div class="section">
+        <div id="topics-container">
+          <!-- Topics will be loaded dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Examples Tab -->
+    <div id="examples-tab" class="tab-pane">
+      <div class="section">
+        <div id="examples-container">
+          <!-- Examples will be loaded dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Exercises Tab -->
+    <div id="exercises-tab" class="tab-pane">
+      <div class="section">
+        <div id="exercises-container">
+          <!-- Exercises will be loaded dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Resources Tab -->
+    <div id="resources-tab" class="tab-pane">
+      <div class="section">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📖 Additional Reading</h3>
+            </div>
+            <div class="card-body">
+              <ul id="additional-reading">
+                <!-- Will be populated by JavaScript -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🔗 Useful Links</h3>
+            </div>
+            <div class="card-body">
+              <ul id="useful-links">
+                <li>
+                  <a href="https://docs.python.org" target="_blank"
+                    >Python Documentation</a
+                  >
+                </li>
+                <li>
+                  <a href="https://realpython.com" target="_blank"
+                    >Real Python</a
+                  >
+                </li>
+                <li>
+                  <a href="https://python.org/dev/peps/" target="_blank"
+                    >Python PEPs</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module Content (Dynamic) -->
+  <div id="module-content">
+    <!-- Content will be loaded dynamically by app.js -->
+  </div>
+</div>
+
+<style>
+  /* Module Header Styles */
+  .module-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .module-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+  }
+
+  .module-progress {
+    margin-top: var(--spacing-lg);
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+  }
+
+  /* Tab Navigation */
+  .tab-navigation {
+    display: flex;
+    border-bottom: 1px solid var(--bg-tertiary);
+    overflow-x: auto;
+  }
+
+  .tab-button {
+    background: none;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .tab-button:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+  }
+
+  .tab-button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background-color: var(--bg-secondary);
+  }
+
+  /* Tab Content */
+  .tab-content {
+    margin-top: var(--spacing-lg);
+  }
+
+  .tab-pane {
+    display: none;
+  }
+
+  .tab-pane.active {
+    display: block;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+  }
+
+  .stat-number {
+    display: block;
+    font-size: var(--font-size-xxl);
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  .stat-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: var(--spacing-xs);
+  }
+
+  /* Quick Start Steps */
+  .quick-start-steps {
+    display: flex;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+  }
+
+  .step {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .step-content h4 {
+    margin: 0 0 var(--spacing-sm) 0;
+  }
+
+  .step-content p {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-secondary);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .module-header-content {
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .module-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .quick-start-steps {
+      flex-direction: column;
+    }
+
+    .step {
+      min-width: auto;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tab-navigation {
+      justify-content: flex-start;
+    }
+  }
+</style>
+
+<script>
+  // Get module ID from URL
+  const moduleId = window.location.pathname.split("/").pop();
+  let moduleData = null;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    loadModuleData();
+    setupTabNavigation();
+  });
+
+  async function loadModuleData() {
+    try {
+      const response = await fetch(`/api/v1/modules/${moduleId}`);
+      moduleData = await response.json();
+
+      populateModuleContent();
+      updateProgress();
+    } catch (error) {
+      console.error("Failed to load module data:", error);
+      showError("Failed to load module content. Please try again.");
+    }
+  }
+
+  function populateModuleContent() {
+    if (!moduleData) return;
+
+    // Update learning objectives
+    const objectives = document.getElementById("learning-objectives");
+    if (moduleData.learning_objectives) {
+      objectives.innerHTML = moduleData.learning_objectives
+        .map((obj) => `<li>${obj}</li>`)
+        .join("");
+    }
+
+    // Update stats
+    document.getElementById("topic-count").textContent =
+      moduleData.topic_count || 0;
+    document.getElementById("example-count").textContent =
+      moduleData.example_count || 0;
+    document.getElementById("exercise-count").textContent =
+      moduleData.exercise_count || 0;
+    document.getElementById("estimated-time").textContent =
+      moduleData.estimated_time || "2-4h";
+
+    // Load topics
+    loadTopics();
+    loadExamples();
+    loadExercises();
+    loadResources();
+  }
+
+  function loadTopics() {
+    const container = document.getElementById("topics-container");
+
+    if (!moduleData.topics || moduleData.topics.length === 0) {
+      container.innerHTML =
+        '<p class="text-center text-muted">No topics available for this module.</p>';
+      return;
+    }
+
+    container.innerHTML = moduleData.topics
+      .map(
+        (topic, index) => `
+        <div class="card topic-card" data-topic-id="${
+          topic.id
+        }" data-track-view>
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="topic-number">${index + 1}.</span>
+                    ${topic.title}
+                </h3>
+                <div class="topic-actions">
+                    <span class="topic-status" data-topic-id="${topic.id}">
+                        ${getTopicStatus(topic.id)}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>${topic.description}</p>
+                <div class="topic-meta">
+                    <small class="text-muted">
+                        📖 ${topic.reading_time || "5 min"} read • 
+                        🎯 ${topic.difficulty || "beginner"} level
+                    </small>
+                </div>
+                <div class="topic-progress">
+                    <div class="progress">
+                        <div class="progress-bar" data-topic-id="${
+                          topic.id
+                        }" style="width: ${getTopicProgress(topic.id)}%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline btn-sm" onclick="toggleTopicContent('${
+                  topic.id
+                }')">
+                    <span id="toggle-${topic.id}">Show Content</span>
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="markTopicComplete('${
+                  topic.id
+                }')">
+                    Mark Complete
+                </button>
+            </div>
+            <div id="content-${
+              topic.id
+            }" class="topic-content" style="display: none;">
+                <div class="card-body border-top">
+                    ${topic.content || "<p>Content will be loaded here...</p>"}
+                </div>
+            </div>
+        </div>
+    `
+      )
+      .join("");
+  }
+
+  function loadExamples() {
+    const container = document.getElementById("examples-container");
+
+    if (!moduleData.examples || Object.keys(moduleData.examples).length === 0) {
+      container.innerHTML =
+        '<p class="text-center text-muted">No examples available for this module.</p>';
+      return;
+    }
+
+    container.innerHTML = Object.entries(moduleData.examples)
+      .map(
+        ([key, example]) => `
+        <div class="card code-example">
+            <div class="code-example-header">
+                <h4>${key.replace(/_/g, " ").toUpperCase()}</h4>
+                <div class="code-actions">
+                    <button class="copy-button" onclick="copyCode('${key}')">📋 Copy</button>
+                    <button class="run-button" onclick="runCode('${key}')">▶️ Run</button>
+                </div>
+            </div>
+            <div class="code-content">
+                <pre><code id="code-${key}" class="language-python">${escapeHtml(
+          example
+        )}</code></pre>
+            </div>
+            <div id="output-${key}" class="code-output" style="display: none;">
+                <div class="output-header">Output:</div>
+                <pre class="output-content"></pre>
+            </div>
+        </div>
+    `
+      )
+      .join("");
+  }
+
+  function loadExercises() {
+    const container = document.getElementById("exercises-container");
+
+    if (!moduleData.exercises || moduleData.exercises.length === 0) {
+      container.innerHTML =
+        '<p class="text-center text-muted">No exercises available for this module.</p>';
+      return;
+    }
+
+    container.innerHTML = moduleData.exercises
+      .map(
+        (exercise, index) => `
+        <div class="card exercise-card" data-exercise-id="${exercise.id}">
+            <div class="card-header">
+                <h3 class="card-title">
+                    Exercise ${index + 1}: ${exercise.title}
+                </h3>
+                <span class="exercise-difficulty difficulty-${
+                  exercise.difficulty
+                }">
+                    ${exercise.difficulty}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="exercise-description">
+                    <p>${exercise.description}</p>
+                    ${
+                      exercise.hints
+                        ? `
+                        <details class="exercise-hints">
+                            <summary>💡 Hints</summary>
+                            <ul>
+                                ${exercise.hints
+                                  .map((hint) => `<li>${hint}</li>`)
+                                  .join("")}
+                            </ul>
+                        </details>
+                    `
+                        : ""
+                    }
+                </div>
+                
+                <form class="exercise-form" data-exercise-id="${exercise.id}">
+                    <div class="form-group">
+                        <label class="form-label">Your Solution:</label>
+                        <textarea 
+                            class="form-control code-input" 
+                            name="solution" 
+                            rows="10" 
+                            placeholder="Write your Python code here..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="exercise-actions">
+                        <button type="button" class="btn btn-outline" onclick="testCode('${
+                          exercise.id
+                        }')">
+                            🧪 Test Code
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            ✅ Submit Solution
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="exercise-result-${
+                  exercise.id
+                }" class="exercise-result" style="display: none;">
+                    <!-- Test results will appear here -->
+                </div>
+            </div>
+        </div>
+    `
+      )
+      .join("");
+
+    // Setup form submissions
+    container.querySelectorAll(".exercise-form").forEach((form) => {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        submitExercise(
+          this.dataset.exerciseId,
+          this.querySelector('[name="solution"]').value
+        );
+      });
+    });
+  }
+
+  function loadResources() {
+    const readingList = document.getElementById("additional-reading");
+
+    if (moduleData.additional_reading) {
+      readingList.innerHTML = moduleData.additional_reading
+        .map(
+          (resource) =>
+            `<li><a href="${resource.url}" target="_blank">${resource.title}</a></li>`
+        )
+        .join("");
+    }
+  }
+
+  function setupTabNavigation() {
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", function () {
+        switchTab(this.dataset.tab);
+      });
+    });
+  }
+
+  function switchTab(tabName) {
+    // Update active tab button
+    document
+      .querySelectorAll(".tab-button")
+      .forEach((btn) => btn.classList.remove("active"));
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
+
+    // Update active tab pane
+    document
+      .querySelectorAll(".tab-pane")
+      .forEach((pane) => pane.classList.remove("active"));
+    document.getElementById(`${tabName}-tab`).classList.add("active");
+  }
+
+  // Helper functions for module interactions
+  function toggleTopicContent(topicId) {
+    const content = document.getElementById(`content-${topicId}`);
+    const toggle = document.getElementById(`toggle-${topicId}`);
+
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      toggle.textContent = "Hide Content";
+    } else {
+      content.style.display = "none";
+      toggle.textContent = "Show Content";
+    }
+  }
+
+  function markTopicComplete(topicId) {
+    // Track progress
+    if (window.pythonMasteryHub) {
+      window.pythonMasteryHub.trackProgress(moduleId, topicId, "completed");
+    }
+
+    // Update UI
+    updateTopicStatus(topicId, "completed");
+    updateProgress();
+  }
+
+  function copyCode(exampleKey) {
+    const code = document.getElementById(`code-${exampleKey}`).textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      showSuccess("Code copied to clipboard!");
+    });
+  }
+
+  async function runCode(exampleKey) {
+    const code = document.getElementById(`code-${exampleKey}`).textContent;
+    const outputDiv = document.getElementById(`output-${exampleKey}`);
+
+    try {
+      outputDiv.style.display = "block";
+      outputDiv.querySelector(".output-content").textContent = "Running...";
+
+      const response = await fetch("/api/v1/code/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const result = await response.json();
+      outputDiv.querySelector(".output-content").textContent =
+        result.output || result.error || "No output";
+    } catch (error) {
+      outputDiv.querySelector(".output-content").textContent =
+        "Error running code";
+    }
+  }
+
+  async function submitExercise(exerciseId, solution) {
+    try {
+      const response = await fetch("/api/v1/exercises/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exercise_id: exerciseId, code: solution }),
+      });
+
+      const result = await response.json();
+      displayExerciseResult(exerciseId, result);
+    } catch (error) {
+      showError("Failed to submit exercise solution");
+    }
+  }
+
+  function displayExerciseResult(exerciseId, result) {
+    const resultDiv = document.getElementById(`exercise-result-${exerciseId}`);
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = `
+        <div class="alert alert-${result.success ? "success" : "danger"}">
+            <h5>${result.success ? "✅ Correct!" : "❌ Incorrect"}</h5>
+            <p>${result.message}</p>
+            ${result.output ? `<pre>${result.output}</pre>` : ""}
+        </div>
+    `;
+  }
+
+  // Utility functions
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function getTopicStatus(topicId) {
+    // This would get from user progress data
+    return "⭕ Not Started";
+  }
+
+  function getTopicProgress(topicId) {
+    // This would get from user progress data
+    return 0;
+  }
+
+  function updateTopicStatus(topicId, status) {
+    const statusElement = document.querySelector(
+      `[data-topic-id="${topicId}"]`
+    );
+    if (statusElement) {
+      statusElement.textContent =
+        status === "completed" ? "✅ Completed" : "⭕ Not Started";
+    }
+  }
+
+  function updateProgress() {
+    // Calculate and update overall progress
+    const totalTopics = moduleData.topics ? moduleData.topics.length : 0;
+    const completedTopics = 0; // This would be calculated from user data
+    const progress =
+      totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
+
+    document.getElementById("overall-progress").style.width = `${progress}%`;
+    document.getElementById("progress-percentage").textContent = `${Math.round(
+      progress
+    )}%`;
+  }
+
+  function resetProgress() {
+    if (
+      confirm("Are you sure you want to reset your progress for this module?")
+    ) {
+      // Reset progress logic here
+      showSuccess("Progress reset successfully!");
+      updateProgress();
+    }
+  }
+
+  function downloadResources() {
+    // Download module resources
+    showInfo("Resource download feature coming soon!");
+  }
+
+  function showSuccess(message) {
+    if (window.pythonMasteryHub) {
+      window.pythonMasteryHub.showSuccess(message);
+    } else {
+      alert(message);
+    }
+  }
+
+  function showError(message) {
+    if (window.pythonMasteryHub) {
+      window.pythonMasteryHub.showError(message);
+    } else {
+      alert(message);
+    }
+  }
+
+  function showInfo(message) {
+    if (window.pythonMasteryHub) {
+      window.pythonMasteryHub.showNotification(message);
+    } else {
+      alert(message);
+    }
+  }
+</script>
+{% endblock %}

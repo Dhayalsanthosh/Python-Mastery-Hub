@@ -1,0 +1,483 @@
+{% extends "base.html" %} {% block title %}Learning Modules - Python Mastery
+Hub{% endblock %} {% block description %}Browse all Python learning modules from
+beginner to advanced. Interactive lessons covering basics, OOP, web development,
+data science, and more.{% endblock %} {% block content %}
+<div class="container">
+  <!-- Page Header -->
+  <section class="section">
+    <div class="text-center">
+      <h1>Learning Modules</h1>
+      <p class="text-secondary">
+        Choose your learning path and master Python step by step
+      </p>
+    </div>
+  </section>
+
+  <!-- Filters and Search -->
+  <section class="section">
+    <div class="card">
+      <div class="card-body">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label for="module-search" class="form-label">Search Modules</label>
+            <input
+              type="text"
+              id="module-search"
+              class="form-control"
+              placeholder="Search by name or description..."
+            />
+          </div>
+          <div class="form-group">
+            <label for="difficulty-filter" class="form-label"
+              >Filter by Difficulty</label
+            >
+            <select id="difficulty-filter" class="form-control">
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sort-order" class="form-label">Sort Order</label>
+            <select id="sort-order" class="form-control">
+              <option value="name">Name (A-Z)</option>
+              <option value="difficulty">Difficulty</option>
+              <option value="progress">Progress</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learning Path -->
+  <section class="section">
+    <h2 class="section-title">Recommended Learning Path</h2>
+    <div class="card">
+      <div class="card-body">
+        <div class="learning-path">
+          <div class="path-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Python Basics</h4>
+              <p>Variables, data types, control flow, functions</p>
+            </div>
+          </div>
+          <div class="path-arrow">→</div>
+          <div class="path-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Object-Oriented Programming</h4>
+              <p>Classes, inheritance, polymorphism</p>
+            </div>
+          </div>
+          <div class="path-arrow">→</div>
+          <div class="path-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Advanced Topics</h4>
+              <p>Decorators, context managers, metaclasses</p>
+            </div>
+          </div>
+          <div class="path-arrow">→</div>
+          <div class="path-step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h4>Specialization</h4>
+              <p>Web dev, data science, async programming</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modules Grid -->
+  <section class="section">
+    <h2 class="section-title">All Modules</h2>
+    <div class="module-grid" id="modules-container">
+      <!-- Modules will be loaded dynamically -->
+      <div class="loading text-center">
+        <div class="spinner"></div>
+        <p>Loading modules...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Module Details Modal -->
+  <div id="module-modal" class="modal" style="display: none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Module Details</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Module details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+        <a href="#" id="modal-start-btn" class="btn btn-primary"
+          >Start Learning</a
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Learning Path Styles */
+  .learning-path {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    margin: var(--spacing-xl) 0;
+  }
+
+  .path-step {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    min-width: 200px;
+    transition: all var(--transition-normal);
+  }
+
+  .path-step:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .step-content h4 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--text-primary);
+  }
+
+  .step-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .path-arrow {
+    font-size: var(--font-size-xl);
+    color: var(--primary-color);
+    font-weight: bold;
+  }
+
+  /* Modal Styles */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .modal-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+  }
+
+  .modal-close:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .modal-body {
+    padding: var(--spacing-lg);
+  }
+
+  .modal-footer {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .learning-path {
+      flex-direction: column;
+    }
+
+    .path-arrow {
+      transform: rotate(90deg);
+    }
+
+    .path-step {
+      min-width: auto;
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  let allModules = [];
+
+  document.addEventListener("DOMContentLoaded", function () {
+    loadModules();
+    setupFilters();
+  });
+
+  async function loadModules() {
+    try {
+      const response = await fetch("/api/v1/modules");
+      allModules = await response.json();
+      displayModules(allModules);
+    } catch (error) {
+      console.error("Failed to load modules:", error);
+      document.getElementById("modules-container").innerHTML =
+        '<div class="alert alert-danger">Failed to load modules. Please try again later.</div>';
+    }
+  }
+
+  function displayModules(modules) {
+    const container = document.getElementById("modules-container");
+
+    if (modules.length === 0) {
+      container.innerHTML =
+        '<p class="text-center text-muted">No modules found</p>';
+      return;
+    }
+
+    container.innerHTML = modules
+      .map(
+        (module) => `
+        <div class="card module-card" data-module-id="${
+          module.id
+        }" data-difficulty="${module.difficulty}">
+            <div class="card-header">
+                <h3 class="card-title">${module.name}</h3>
+                <span class="module-difficulty difficulty-${module.difficulty}">
+                    ${module.difficulty}
+                </span>
+            </div>
+            <div class="card-body">
+                <p>${module.description}</p>
+                <div class="module-stats">
+                    <small class="text-muted">
+                        📚 ${module.topic_count || 0} topics • 
+                        💻 ${module.example_count || 0} examples • 
+                        🎯 ${module.exercise_count || 0} exercises
+                    </small>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" data-module-id="${
+                      module.id
+                    }" style="width: ${getModuleProgress(module.id)}%"></div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline btn-sm" onclick="showModuleDetails('${
+                  module.id
+                }')">
+                    View Details
+                </button>
+                <a href="/modules/${module.id}" class="btn btn-primary btn-sm">
+                    ${
+                      getModuleProgress(module.id) > 0
+                        ? "Continue"
+                        : "Start Learning"
+                    }
+                </a>
+            </div>
+        </div>
+    `
+      )
+      .join("");
+  }
+
+  function setupFilters() {
+    const searchInput = document.getElementById("module-search");
+    const difficultyFilter = document.getElementById("difficulty-filter");
+    const sortOrder = document.getElementById("sort-order");
+
+    searchInput.addEventListener("input", filterModules);
+    difficultyFilter.addEventListener("change", filterModules);
+    sortOrder.addEventListener("change", filterModules);
+  }
+
+  function filterModules() {
+    const searchTerm = document
+      .getElementById("module-search")
+      .value.toLowerCase();
+    const selectedDifficulty =
+      document.getElementById("difficulty-filter").value;
+    const selectedSort = document.getElementById("sort-order").value;
+
+    let filteredModules = allModules.filter((module) => {
+      const matchesSearch =
+        !searchTerm ||
+        module.name.toLowerCase().includes(searchTerm) ||
+        module.description.toLowerCase().includes(searchTerm);
+
+      const matchesDifficulty =
+        !selectedDifficulty || module.difficulty === selectedDifficulty;
+
+      return matchesSearch && matchesDifficulty;
+    });
+
+    // Sort modules
+    filteredModules.sort((a, b) => {
+      switch (selectedSort) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "difficulty":
+          const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
+          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+        case "progress":
+          return getModuleProgress(b.id) - getModuleProgress(a.id);
+        default:
+          return 0;
+      }
+    });
+
+    displayModules(filteredModules);
+  }
+
+  async function showModuleDetails(moduleId) {
+    try {
+      const response = await fetch(`/api/v1/modules/${moduleId}`);
+      const moduleData = await response.json();
+
+      document.getElementById("modal-title").textContent = moduleData.name;
+      document.getElementById("modal-start-btn").href = `/modules/${moduleId}`;
+
+      document.getElementById("modal-body").innerHTML = `
+            <div class="module-details">
+                <div class="detail-section">
+                    <h4>Description</h4>
+                    <p>${moduleData.description}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Difficulty Level</h4>
+                    <span class="module-difficulty difficulty-${
+                      moduleData.difficulty
+                    }">
+                        ${moduleData.difficulty}
+                    </span>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>What You'll Learn</h4>
+                    <ul>
+                        ${(moduleData.topics || [])
+                          .map((topic) => `<li>${topic.title}</li>`)
+                          .join("")}
+                    </ul>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Prerequisites</h4>
+                    <p>${
+                      moduleData.prerequisites ||
+                      "None - suitable for beginners"
+                    }</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Estimated Time</h4>
+                    <p>${moduleData.estimated_time || "2-4 hours"}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Your Progress</h4>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: ${getModuleProgress(
+                          moduleId
+                        )}%"></div>
+                    </div>
+                    <small class="text-muted">${getModuleProgress(
+                      moduleId
+                    )}% complete</small>
+                </div>
+            </div>
+        `;
+
+      document.getElementById("module-modal").style.display = "flex";
+    } catch (error) {
+      console.error("Failed to load module details:", error);
+      alert("Failed to load module details. Please try again.");
+    }
+  }
+
+  function closeModal() {
+    document.getElementById("module-modal").style.display = "none";
+  }
+
+  function getModuleProgress(moduleId) {
+    // This would typically get progress from user data
+    // For demo purposes, return a random value
+    return Math.floor(Math.random() * 100);
+  }
+
+  // Close modal when clicking outside
+  document
+    .getElementById("module-modal")
+    .addEventListener("click", function (e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+  // Close modal with Escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
+</script>
+{% endblock %}

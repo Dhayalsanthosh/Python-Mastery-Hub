@@ -1,0 +1,231 @@
+# File: monitoring/prometheus/rules/application.yml
+# Prometheus alerting rules for application-level metrics
+
+groups:
+  - name: application.rules
+    interval: 30s
+    rules:
+      # HTTP Error Rate Rules
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service, instance) /
+            sum(rate(http_requests_total[5m])) by (service, instance)
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "High error rate detected on {{ $labels.service }}"
+          description: "Error rate is {{ $value }}% on service {{ $labels.service }} instance {{ $labels.instance }}"
+          runbook_url: "https://runbooks.example.com/high-error-rate"
+
+      - alert: ModerateErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service, instance) /
+            sum(rate(http_requests_total[5m])) by (service, instance)
+          ) * 100 > 2
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Moderate error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value }}% on service {{ $labels.service }} instance {{ $labels.instance }}"
+
+      # Response Time Rules
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 2
+        for: 5m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "High response time on {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value }}s on service {{ $labels.service }}"
+          runbook_url: "https://runbooks.example.com/high-response-time"
+
+      - alert: ModerateResponseTime
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 1
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Moderate response time on {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value }}s on service {{ $labels.service }}"
+
+      # Throughput Rules
+      - alert: LowThroughput
+        expr: |
+          sum(rate(http_requests_total[5m])) by (service) < 10
+        for: 15m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Low throughput on {{ $labels.service }}"
+          description: "Request rate is {{ $value }} requests/second on service {{ $labels.service }}"
+
+      # Database Connection Rules
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: |
+          (
+            sum(database_connections_active) by (service, database) /
+            sum(database_connections_max) by (service, database)
+          ) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "{{ $labels.service }} using {{ $value }}% of database connections to {{ $labels.database }}"
+
+      - alert: DatabaseConnectionsHigh
+        expr: |
+          (
+            sum(database_connections_active) by (service, database) /
+            sum(database_connections_max) by (service, database)
+          ) * 100 > 75
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High database connection usage"
+          description: "{{ $labels.service }} using {{ $value }}% of database connections to {{ $labels.database }}"
+
+      # Queue Depth Rules
+      - alert: HighQueueDepth
+        expr: |
+          sum(queue_depth) by (queue_name, service) > 1000
+        for: 5m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "High queue depth in {{ $labels.queue_name }}"
+          description: "Queue {{ $labels.queue_name }} has {{ $value }} messages pending in service {{ $labels.service }}"
+
+      - alert: ModerateQueueDepth
+        expr: |
+          sum(queue_depth) by (queue_name, service) > 500
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Moderate queue depth in {{ $labels.queue_name }}"
+          description: "Queue {{ $labels.queue_name }} has {{ $value }} messages pending in service {{ $labels.service }}"
+
+      # Cache Hit Rate Rules
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            sum(rate(cache_hits_total[5m])) by (service, cache_type) /
+            (sum(rate(cache_hits_total[5m])) by (service, cache_type) + sum(rate(cache_misses_total[5m])) by (service, cache_type))
+          ) * 100 < 70
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Low cache hit rate in {{ $labels.service }}"
+          description: "Cache hit rate is {{ $value }}% for {{ $labels.cache_type }} in service {{ $labels.service }}"
+
+      # Application Health Rules
+      - alert: ApplicationDown
+        expr: |
+          up{job=~".*api.*|.*app.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Application {{ $labels.job }} is down"
+          description: "Application instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute"
+          runbook_url: "https://runbooks.example.com/application-down"
+
+      # Memory Usage Rules
+      - alert: ApplicationMemoryUsageHigh
+        expr: |
+          (process_resident_memory_bytes / 1024 / 1024) > 1024
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High memory usage in {{ $labels.job }}"
+          description: "Application {{ $labels.job }} on {{ $labels.instance }} is using {{ $value }}MB of memory"
+
+      # CPU Usage Rules
+      - alert: ApplicationCPUUsageHigh
+        expr: |
+          rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High CPU usage in {{ $labels.job }}"
+          description: "Application {{ $labels.job }} on {{ $labels.instance }} is using {{ $value }}% CPU"
+
+      # File Descriptor Rules
+      - alert: FileDescriptorUsageHigh
+        expr: |
+          (process_open_fds / process_max_fds) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "High file descriptor usage in {{ $labels.job }}"
+          description: "Application {{ $labels.job }} on {{ $labels.instance }} is using {{ $value }}% of available file descriptors"
+
+  - name: business.rules
+    interval: 60s
+    rules:
+      # Business Metrics
+      - alert: LowUserRegistrations
+        expr: |
+          sum(increase(user_registrations_total[1h])) < 10
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low user registration rate"
+          description: "Only {{ $value }} users registered in the last hour"
+
+      - alert: HighUserChurnRate
+        expr: |
+          (
+            sum(increase(user_cancellations_total[24h])) /
+            sum(user_active_total)
+          ) * 100 > 5
+        for: 1h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High user churn rate detected"
+          description: "User churn rate is {{ $value }}% in the last 24 hours"
+
+      - alert: PaymentFailureRateHigh
+        expr: |
+          (
+            sum(rate(payment_transactions_total{status="failed"}[5m])) /
+            sum(rate(payment_transactions_total[5m]))
+          ) * 100 > 10
+        for: 10m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is {{ $value }}% in the last 5 minutes"

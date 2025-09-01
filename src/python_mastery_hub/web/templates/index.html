@@ -1,0 +1,704 @@
+<!-- Location: src/python_mastery_hub/web/templates/index.html -->
+
+{% extends "base.html" %} {% block title %}Python Mastery Hub - Master Python
+Programming{% endblock %} {% block meta_description %}Learn Python programming
+with interactive exercises, real-time feedback, and personalized progress
+tracking. Start your coding journey today!{% endblock %} {% block extra_css %}
+<style>
+  .hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 100px 0;
+    margin-top: -70px; /* Offset navbar height */
+  }
+
+  .feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    height: 100%;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    display: block;
+  }
+
+  .testimonial-card {
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .cta-section {
+    background: var(--light-color);
+    padding: 80px 0;
+  }
+
+  .code-demo {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: "Fira Code", monospace;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .code-demo::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: #374151;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .code-demo::after {
+    content: "● ● ●";
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    color: #6b7280;
+    font-size: 12px;
+    z-index: 1;
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-4">Master Python Programming</h1>
+        <p class="lead mb-4">
+          Learn Python through interactive exercises, real-time feedback, and
+          personalized learning paths. Join thousands of developers improving
+          their skills every day.
+        </p>
+        <div class="d-flex gap-3 justify-content-center">
+          {% if user %}
+          <a href="/dashboard" class="btn btn-light btn-lg">
+            <i class="fas fa-chart-line me-2"></i>Continue Learning
+          </a>
+          {% else %}
+          <a href="/register" class="btn btn-light btn-lg">
+            <i class="fas fa-rocket me-2"></i>Start Learning Free
+          </a>
+          <a href="/exercises" class="btn btn-outline-light btn-lg">
+            <i class="fas fa-code me-2"></i>Try Exercises
+          </a>
+          {% endif %}
+        </div>
+        <div class="mt-4">
+          <small class="opacity-75">
+            <i class="fas fa-check me-1"></i>No credit card required
+            <span class="mx-2">•</span>
+            <i class="fas fa-check me-1"></i>Start immediately
+          </small>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="code-demo mt-4 mt-lg-0">
+          <pre
+            class="pt-4 mb-0"
+          ><code class="text-white"># Your first Python program
+def greet(name):
+    return f"Hello, {name}!"
+
+# Interactive learning
+result = greet("World")
+print(result)  # Hello, World!
+
+# Test your understanding
+assert result == "Hello, World!"
+print("✓ Test passed!")</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="h2 fw-bold">Why Choose Python Mastery Hub?</h2>
+      <p class="lead text-muted">
+        Experience the most effective way to learn Python programming
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="card feature-card h-100 text-center p-4">
+          <div class="feature-icon">
+            <i class="fas fa-code"></i>
+          </div>
+          <h5 class="card-title">Interactive Exercises</h5>
+          <p class="card-text">
+            Write real code in your browser with instant feedback and hints. Our
+            smart system adapts to your learning pace.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card feature-card h-100 text-center p-4">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h5 class="card-title">Progress Tracking</h5>
+          <p class="card-text">
+            Monitor your learning journey with detailed analytics, achievements,
+            and personalized recommendations.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card feature-card h-100 text-center p-4">
+          <div class="feature-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h5 class="card-title">Community Learning</h5>
+          <p class="card-text">
+            Connect with fellow learners, share solutions, and get help from our
+            supportive community.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card feature-card h-100 text-center p-4">
+          <div class="feature-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <h5 class="card-title">Structured Curriculum</h5>
+          <p class="card-text">
+            Follow our carefully designed learning path from basics to advanced
+            concepts with hands-on projects.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card feature-card h-100 text-center p-4">
+          <div class="feature-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h5 class="card-title">Learn Anywhere</h5>
+          <p class="card-text">
+            Access your lessons on any device. Continue learning on mobile,
+            tablet, or desktop seamlessly.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card feature-card h-100 text-center p-4">
+          <div class="feature-icon">
+            <i class="fas fa-certificate"></i>
+          </div>
+          <h5 class="card-title">Certificates</h5>
+          <p class="card-text">
+            Earn certificates as you complete modules and showcase your Python
+            skills to employers.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-item">
+          <span class="stat-number">50,000+</span>
+          <span class="text-muted">Active Learners</span>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-item">
+          <span class="stat-number">500+</span>
+          <span class="text-muted">Interactive Exercises</span>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-item">
+          <span class="stat-number">95%</span>
+          <span class="text-muted">Completion Rate</span>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-item">
+          <span class="stat-number">24/7</span>
+          <span class="text-muted">Community Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Learning Path Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h2 class="h2 fw-bold mb-4">Your Learning Journey</h2>
+        <p class="lead mb-4">
+          Our structured curriculum takes you from Python basics to advanced
+          concepts through hands-on practice and real-world projects.
+        </p>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-shrink-0">
+            <div class="badge bg-primary rounded-circle p-2 me-3">1</div>
+          </div>
+          <div>
+            <h6 class="fw-semibold">Fundamentals</h6>
+            <p class="text-muted mb-0">
+              Variables, data types, control structures, and functions
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-shrink-0">
+            <div class="badge bg-primary rounded-circle p-2 me-3">2</div>
+          </div>
+          <div>
+            <h6 class="fw-semibold">Object-Oriented Programming</h6>
+            <p class="text-muted mb-0">
+              Classes, inheritance, polymorphism, and design patterns
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-shrink-0">
+            <div class="badge bg-primary rounded-circle p-2 me-3">3</div>
+          </div>
+          <div>
+            <h6 class="fw-semibold">Advanced Topics</h6>
+            <p class="text-muted mb-0">
+              Web development, data science, and machine learning
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <a href="/modules" class="btn btn-primary">Explore Curriculum</a>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="text-center">
+          <img
+            src="{{ url_for('static', path='images/learning-path.svg') }}"
+            alt="Learning Path"
+            class="img-fluid"
+            style="max-height: 400px"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="h2 fw-bold">What Our Students Say</h2>
+      <p class="lead text-muted">
+        Join thousands of successful Python developers
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card testimonial-card h-100 p-4">
+          <div class="d-flex mb-3">
+            <img
+              src="{{ url_for('static', path='images/testimonial-1.jpg') }}"
+              alt="Sarah Chen"
+              class="rounded-circle me-3"
+              style="width: 50px; height: 50px; object-fit: cover"
+            />
+            <div>
+              <h6 class="mb-0">Sarah Chen</h6>
+              <small class="text-muted">Software Developer</small>
+            </div>
+          </div>
+          <blockquote class="blockquote mb-0">
+            <p class="mb-3">
+              "The interactive exercises made learning Python so much easier. I
+              went from complete beginner to landing my first dev job in 6
+              months!"
+            </p>
+            <div class="text-warning">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </blockquote>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card testimonial-card h-100 p-4">
+          <div class="d-flex mb-3">
+            <img
+              src="{{ url_for('static', path='images/testimonial-2.jpg') }}"
+              alt="Marcus Johnson"
+              class="rounded-circle me-3"
+              style="width: 50px; height: 50px; object-fit: cover"
+            />
+            <div>
+              <h6 class="mb-0">Marcus Johnson</h6>
+              <small class="text-muted">Data Scientist</small>
+            </div>
+          </div>
+          <blockquote class="blockquote mb-0">
+            <p class="mb-3">
+              "The progress tracking kept me motivated throughout my learning
+              journey. The bite-sized lessons fit perfectly into my busy
+              schedule."
+            </p>
+            <div class="text-warning">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </blockquote>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card testimonial-card h-100 p-4">
+          <div class="d-flex mb-3">
+            <img
+              src="{{ url_for('static', path='images/testimonial-3.jpg') }}"
+              alt="Emily Rodriguez"
+              class="rounded-circle me-3"
+              style="width: 50px; height: 50px; object-fit: cover"
+            />
+            <div>
+              <h6 class="mb-0">Emily Rodriguez</h6>
+              <small class="text-muted">Product Manager</small>
+            </div>
+          </div>
+          <blockquote class="blockquote mb-0">
+            <p class="mb-3">
+              "As a non-technical person, I was intimidated by coding. This
+              platform made Python accessible and actually fun to learn!"
+            </p>
+            <div class="text-warning">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container text-center">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h2 class="h2 fw-bold mb-4">Ready to Start Your Python Journey?</h2>
+        <p class="lead mb-4">
+          Join our community of learners and start building your programming
+          skills today. No experience required!
+        </p>
+
+        {% if user %}
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a href="/dashboard" class="btn btn-primary btn-lg">
+            <i class="fas fa-chart-line me-2"></i>Continue Learning
+          </a>
+          <a href="/exercises" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-code me-2"></i>Practice Exercises
+          </a>
+        </div>
+        {% else %}
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a href="/register" class="btn btn-primary btn-lg">
+            <i class="fas fa-rocket me-2"></i>Get Started Free
+          </a>
+          <a href="/login" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+          </a>
+        </div>
+
+        <div class="mt-4">
+          <small class="text-muted">
+            <i class="fas fa-shield-alt me-1"></i>Your data is secure
+            <span class="mx-2">•</span>
+            <i class="fas fa-mobile-alt me-1"></i>Works on all devices
+            <span class="mx-2">•</span>
+            <i class="fas fa-heart me-1"></i>Loved by 50,000+ students
+          </small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="h2 fw-bold">Frequently Asked Questions</h2>
+      <p class="lead text-muted">Everything you need to know to get started</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="accordion" id="faqAccordion">
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button
+                class="accordion-button"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#faq1"
+              >
+                Is Python Mastery Hub suitable for complete beginners?
+              </button>
+            </h3>
+            <div
+              id="faq1"
+              class="accordion-collapse collapse show"
+              data-bs-parent="#faqAccordion"
+            >
+              <div class="accordion-body">
+                Absolutely! Our curriculum is designed for learners of all
+                levels. We start with the very basics and gradually build up to
+                more advanced concepts. No prior programming experience is
+                required.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#faq2"
+              >
+                How long does it take to complete the course?
+              </button>
+            </h3>
+            <div
+              id="faq2"
+              class="accordion-collapse collapse"
+              data-bs-parent="#faqAccordion"
+            >
+              <div class="accordion-body">
+                The time varies depending on your pace and background. Most
+                students complete the fundamentals in 4-6 weeks with 1-2 hours
+                of daily practice. Advanced modules can take an additional 2-3
+                months.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#faq3"
+              >
+                Do I need to install any software?
+              </button>
+            </h3>
+            <div
+              id="faq3"
+              class="accordion-collapse collapse"
+              data-bs-parent="#faqAccordion"
+            >
+              <div class="accordion-body">
+                No installation required! Everything runs in your browser. Our
+                cloud-based environment lets you start coding immediately
+                without any setup hassles.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#faq4"
+              >
+                Is there a certificate upon completion?
+              </button>
+            </h3>
+            <div
+              id="faq4"
+              class="accordion-collapse collapse"
+              data-bs-parent="#faqAccordion"
+            >
+              <div class="accordion-body">
+                Yes! You'll earn certificates for each module you complete.
+                These certificates can be shared on LinkedIn and included in
+                your portfolio to showcase your Python skills to potential
+                employers.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block extra_js %}
+<script>
+  // Animate statistics on scroll
+  function animateStats() {
+    const stats = document.querySelectorAll(".stat-number");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const target = entry.target;
+          const finalNumber = target.textContent.replace(/[^0-9]/g, "");
+
+          if (finalNumber) {
+            animateNumber(target, parseInt(finalNumber), target.textContent);
+          }
+
+          observer.unobserve(target);
+        }
+      });
+    });
+
+    stats.forEach((stat) => observer.observe(stat));
+  }
+
+  function animateNumber(element, target, originalText) {
+    const duration = 2000;
+    const start = 0;
+    const increment = target / (duration / 16);
+    let current = start;
+
+    const timer = setInterval(() => {
+      current += increment;
+
+      if (current >= target) {
+        element.textContent = originalText;
+        clearInterval(timer);
+      } else {
+        const currentInt = Math.floor(current);
+        element.textContent =
+          currentInt.toLocaleString() + originalText.replace(/[0-9,]/g, "");
+      }
+    }, 16);
+  }
+
+  // Typing animation for code demo
+  function typeCode() {
+    const codeElement = document.querySelector(".code-demo code");
+    if (!codeElement) return;
+
+    const originalText = codeElement.textContent;
+    codeElement.textContent = "";
+
+    let i = 0;
+    const typeInterval = setInterval(() => {
+      if (i < originalText.length) {
+        codeElement.textContent += originalText.charAt(i);
+        i++;
+      } else {
+        clearInterval(typeInterval);
+      }
+    }, 50);
+  }
+
+  // Initialize animations when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    animateStats();
+
+    // Start typing animation after a short delay
+    setTimeout(typeCode, 1000);
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener("click", function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute("href"));
+        if (target) {
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      });
+    });
+  });
+
+  // Track user interactions for analytics
+  function trackInteraction(action, category = "homepage") {
+    // This would integrate with your analytics service
+    console.log(`Analytics: ${category} - ${action}`);
+  }
+
+  // Add click tracking to CTA buttons
+  document.addEventListener("DOMContentLoaded", function () {
+    document
+      .querySelectorAll(".btn-primary, .btn-outline-primary")
+      .forEach((button) => {
+        button.addEventListener("click", function () {
+          trackInteraction("cta_click", "conversion");
+        });
+      });
+  });
+</script>
+{% endblock %}

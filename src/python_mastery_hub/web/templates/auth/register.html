@@ -1,0 +1,998 @@
+<!-- Location: src/python_mastery_hub/web/templates/auth/register.html -->
+
+{% extends "base.html" %} {% block title %}Sign Up - Python Mastery Hub{%
+endblock %} {% block meta_description %}Create your free Python Mastery Hub
+account and start learning Python programming today{% endblock %} {% block
+extra_css %}
+<style>
+  .auth-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+
+  .auth-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    max-width: 1000px;
+    width: 100%;
+  }
+
+  .auth-left {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem;
+    text-align: center;
+  }
+
+  .auth-right {
+    padding: 3rem;
+  }
+
+  .form-floating input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  .password-strength {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .password-strength .strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin: 0.25rem 0;
+    transition: all 0.3s ease;
+  }
+
+  .strength-weak {
+    background-color: #ef4444;
+    width: 33%;
+  }
+  .strength-medium {
+    background-color: #f59e0b;
+    width: 66%;
+  }
+  .strength-strong {
+    background-color: #10b981;
+    width: 100%;
+  }
+
+  .password-requirements {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .requirement {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    color: #6b7280;
+  }
+
+  .requirement.met {
+    color: #10b981;
+  }
+
+  .requirement i {
+    width: 16px;
+    margin-right: 0.5rem;
+  }
+
+  .social-btn {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #374151;
+  }
+
+  .social-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+  }
+
+  .divider {
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  .divider span {
+    background: white;
+    padding: 0 1rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #6b7280;
+    cursor: pointer;
+    z-index: 5;
+  }
+
+  .form-floating {
+    position: relative;
+  }
+
+  .step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin: 0 0.5rem;
+    position: relative;
+  }
+
+  .step.active {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .step.completed {
+    background: #10b981;
+    color: white;
+  }
+
+  .step::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60px;
+    height: 2px;
+    background: #e5e7eb;
+  }
+
+  .step:last-child::after {
+    display: none;
+  }
+
+  .step.completed::after {
+    background: #10b981;
+  }
+
+  @media (max-width: 768px) {
+    .auth-left {
+      padding: 2rem 1rem;
+    }
+
+    .auth-right {
+      padding: 2rem 1rem;
+    }
+
+    .auth-container {
+      padding: 1rem;
+    }
+
+    .auth-card {
+      margin: 1rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="row g-0">
+      <!-- Left Side - Branding -->
+      <div class="col-md-5 auth-left d-flex flex-column justify-content-center">
+        <div>
+          <img
+            src="{{ url_for('static', path='images/logo-white.svg') }}"
+            alt="Python Mastery Hub"
+            height="40"
+            class="mb-4"
+          />
+          <h2 class="h3 fw-bold mb-3">Start Your Journey</h2>
+          <p class="mb-4 opacity-90">
+            Join thousands of students mastering Python programming through
+            interactive exercises and hands-on projects.
+          </p>
+
+          <!-- Benefits List -->
+          <div class="text-start">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-check me-3 text-white"></i>
+              <span>500+ Interactive Exercises</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-check me-3 text-white"></i>
+              <span>Personalized Learning Path</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-check me-3 text-white"></i>
+              <span>Real-time Code Feedback</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas fa-check me-3 text-white"></i>
+              <span>Community Support</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <i class="fas fa-check me-3 text-white"></i>
+              <span>Industry Certificates</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side - Registration Form -->
+      <div class="col-md-7 auth-right">
+        <div class="text-center mb-4">
+          <h1 class="h4 fw-bold text-dark">Create Your Account</h1>
+          <p class="text-muted">Start learning Python programming for free</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <div class="step active" id="step1">1</div>
+          <div class="step" id="step2">2</div>
+          <div class="step" id="step3">3</div>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registerForm" novalidate>
+          <!-- Alert Container -->
+          <div id="alertContainer"></div>
+
+          <!-- Step 1: Basic Info -->
+          <div class="form-step" id="formStep1">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="firstName"
+                    placeholder="First Name"
+                    required
+                  />
+                  <label for="firstName">First Name</label>
+                  <div class="invalid-feedback"></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="lastName"
+                    placeholder="Last Name"
+                    required
+                  />
+                  <label for="lastName">Last Name</label>
+                  <div class="invalid-feedback"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-floating mt-3">
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                placeholder="Email Address"
+                required
+              />
+              <label for="email">Email Address</label>
+              <div class="invalid-feedback"></div>
+              <div class="form-text">
+                We'll use this to send you course updates and certificates
+              </div>
+            </div>
+
+            <div class="form-floating mt-3">
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                placeholder="Username"
+                required
+              />
+              <label for="username">Username</label>
+              <div class="invalid-feedback"></div>
+              <div class="form-text">
+                Choose a unique username (3-30 characters, letters, numbers, -
+                and _ only)
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-primary w-100 mt-4"
+              onclick="nextStep(1)"
+            >
+              Continue
+            </button>
+          </div>
+
+          <!-- Step 2: Password & Security -->
+          <div class="form-step d-none" id="formStep2">
+            <div class="form-floating">
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                placeholder="Password"
+                required
+              />
+              <label for="password">Password</label>
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('password')"
+              >
+                <i class="fas fa-eye" id="password-eye"></i>
+              </button>
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <!-- Password Strength Indicator -->
+            <div class="password-strength">
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Password Strength:</span>
+                <span id="strengthText" class="text-muted">Weak</span>
+              </div>
+              <div class="strength-bar" id="strengthBar"></div>
+            </div>
+
+            <!-- Password Requirements -->
+            <div class="password-requirements">
+              <div class="requirement" id="req-length">
+                <i class="fas fa-times"></i>
+                At least 8 characters
+              </div>
+              <div class="requirement" id="req-uppercase">
+                <i class="fas fa-times"></i>
+                One uppercase letter
+              </div>
+              <div class="requirement" id="req-lowercase">
+                <i class="fas fa-times"></i>
+                One lowercase letter
+              </div>
+              <div class="requirement" id="req-number">
+                <i class="fas fa-times"></i>
+                One number
+              </div>
+            </div>
+
+            <div class="form-floating mt-3">
+              <input
+                type="password"
+                class="form-control"
+                id="confirmPassword"
+                placeholder="Confirm Password"
+                required
+              />
+              <label for="confirmPassword">Confirm Password</label>
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('confirmPassword')"
+              >
+                <i class="fas fa-eye" id="confirmPassword-eye"></i>
+              </button>
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+              <button
+                type="button"
+                class="btn btn-outline-secondary flex-fill"
+                onclick="prevStep(2)"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary flex-fill"
+                onclick="nextStep(2)"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Preferences & Terms -->
+          <div class="form-step d-none" id="formStep3">
+            <!-- Learning Preferences -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold"
+                >What's your programming experience?</label
+              >
+              <div class="row g-2">
+                <div class="col-12">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="experience"
+                      id="exp-beginner"
+                      value="beginner"
+                      checked
+                    />
+                    <label class="form-check-label" for="exp-beginner">
+                      <strong>Complete Beginner</strong> - I've never programmed
+                      before
+                    </label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="experience"
+                      id="exp-some"
+                      value="some"
+                    />
+                    <label class="form-check-label" for="exp-some">
+                      <strong>Some Experience</strong> - I know basic
+                      programming concepts
+                    </label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="experience"
+                      id="exp-experienced"
+                      value="experienced"
+                    />
+                    <label class="form-check-label" for="exp-experienced">
+                      <strong>Experienced</strong> - I know other programming
+                      languages
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Learning Goals -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold"
+                >What's your learning goal?</label
+              >
+              <select class="form-select" id="learningGoal">
+                <option value="">Select your primary goal</option>
+                <option value="career">
+                  Career change to software development
+                </option>
+                <option value="skills">Improve current job skills</option>
+                <option value="hobby">Personal interest/hobby</option>
+                <option value="school">Academic requirements</option>
+                <option value="business">Build my own project/business</option>
+              </select>
+            </div>
+
+            <!-- Newsletter & Terms -->
+            <div class="mb-4">
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="newsletter"
+                />
+                <label class="form-check-label" for="newsletter">
+                  Send me learning tips and course updates via email
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="terms"
+                  required
+                />
+                <label class="form-check-label" for="terms">
+                  I agree to the
+                  <a href="/terms" target="_blank">Terms of Service</a> and
+                  <a href="/privacy" target="_blank">Privacy Policy</a>
+                </label>
+                <div class="invalid-feedback"></div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-secondary flex-fill"
+                onclick="prevStep(3)"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary flex-fill"
+                id="submitBtn"
+              >
+                <span class="btn-text">Create Account</span>
+                <span
+                  class="spinner-border spinner-border-sm d-none"
+                  role="status"
+                >
+                  <span class="visually-hidden">Loading...</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Social Registration -->
+        <div class="divider">
+          <span>or sign up with</span>
+        </div>
+
+        <div class="row g-2 mb-4">
+          <div class="col-6">
+            <a
+              href="/auth/google"
+              class="social-btn d-flex align-items-center justify-content-center w-100"
+            >
+              <i class="fab fa-google me-2"></i>
+              Google
+            </a>
+          </div>
+          <div class="col-6">
+            <a
+              href="/auth/github"
+              class="social-btn d-flex align-items-center justify-content-center w-100"
+            >
+              <i class="fab fa-github me-2"></i>
+              GitHub
+            </a>
+          </div>
+        </div>
+
+        <!-- Sign In Link -->
+        <div class="text-center">
+          <p class="text-muted mb-0">
+            Already have an account?
+            <a href="/login" class="text-decoration-none fw-semibold">
+              Sign in here
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let currentStep = 1;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("registerForm");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+
+    // Form submission
+    form.addEventListener("submit", handleSubmit);
+
+    // Password strength checking
+    passwordInput.addEventListener("input", checkPasswordStrength);
+    confirmPasswordInput.addEventListener("input", checkPasswordMatch);
+
+    // Real-time validation
+    document.getElementById("email").addEventListener("blur", validateEmail);
+    document
+      .getElementById("username")
+      .addEventListener("blur", validateUsername);
+    document
+      .getElementById("firstName")
+      .addEventListener("blur", validateFirstName);
+    document
+      .getElementById("lastName")
+      .addEventListener("blur", validateLastName);
+  });
+
+  function nextStep(step) {
+    if (step === 1 && !validateStep1()) return;
+    if (step === 2 && !validateStep2()) return;
+
+    currentStep++;
+    updateStepDisplay();
+  }
+
+  function prevStep(step) {
+    currentStep--;
+    updateStepDisplay();
+  }
+
+  function updateStepDisplay() {
+    // Hide all steps
+    document.querySelectorAll(".form-step").forEach((step) => {
+      step.classList.add("d-none");
+    });
+
+    // Show current step
+    document
+      .getElementById(`formStep${currentStep}`)
+      .classList.remove("d-none");
+
+    // Update step indicators
+    for (let i = 1; i <= 3; i++) {
+      const stepEl = document.getElementById(`step${i}`);
+      stepEl.classList.remove("active", "completed");
+
+      if (i < currentStep) {
+        stepEl.classList.add("completed");
+      } else if (i === currentStep) {
+        stepEl.classList.add("active");
+      }
+    }
+  }
+
+  function validateStep1() {
+    const isFirstNameValid = validateFirstName();
+    const isLastNameValid = validateLastName();
+    const isEmailValid = validateEmail();
+    const isUsernameValid = validateUsername();
+
+    return (
+      isFirstNameValid && isLastNameValid && isEmailValid && isUsernameValid
+    );
+  }
+
+  function validateStep2() {
+    const isPasswordValid = validatePassword();
+    const isConfirmValid = validateConfirmPassword();
+
+    return isPasswordValid && isConfirmValid;
+  }
+
+  function validateFirstName() {
+    const input = document.getElementById("firstName");
+    const value = input.value.trim();
+
+    if (!value) {
+      setFieldError(input, "First name is required");
+      return false;
+    }
+
+    if (value.length < 2) {
+      setFieldError(input, "First name must be at least 2 characters");
+      return false;
+    }
+
+    clearFieldError(input);
+    return true;
+  }
+
+  function validateLastName() {
+    const input = document.getElementById("lastName");
+    const value = input.value.trim();
+
+    if (!value) {
+      setFieldError(input, "Last name is required");
+      return false;
+    }
+
+    if (value.length < 2) {
+      setFieldError(input, "Last name must be at least 2 characters");
+      return false;
+    }
+
+    clearFieldError(input);
+    return true;
+  }
+
+  function validateEmail() {
+    const input = document.getElementById("email");
+    const value = input.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!value) {
+      setFieldError(input, "Email is required");
+      return false;
+    }
+
+    if (!emailRegex.test(value)) {
+      setFieldError(input, "Please enter a valid email address");
+      return false;
+    }
+
+    clearFieldError(input);
+    return true;
+  }
+
+  function validateUsername() {
+    const input = document.getElementById("username");
+    const value = input.value.trim();
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,30}$/;
+
+    if (!value) {
+      setFieldError(input, "Username is required");
+      return false;
+    }
+
+    if (!usernameRegex.test(value)) {
+      setFieldError(
+        input,
+        "Username must be 3-30 characters, letters, numbers, - and _ only"
+      );
+      return false;
+    }
+
+    clearFieldError(input);
+    return true;
+  }
+
+  function validatePassword() {
+    const input = document.getElementById("password");
+    const value = input.value;
+
+    if (!value) {
+      setFieldError(input, "Password is required");
+      return false;
+    }
+
+    const strength = getPasswordStrength(value);
+    if (strength.score < 3) {
+      setFieldError(
+        input,
+        "Password is too weak. Please follow the requirements."
+      );
+      return false;
+    }
+
+    clearFieldError(input);
+    return true;
+  }
+
+  function validateConfirmPassword() {
+    const passwordInput = document.getElementById("password");
+    const confirmInput = document.getElementById("confirmPassword");
+
+    if (!confirmInput.value) {
+      setFieldError(confirmInput, "Please confirm your password");
+      return false;
+    }
+
+    if (passwordInput.value !== confirmInput.value) {
+      setFieldError(confirmInput, "Passwords do not match");
+      return false;
+    }
+
+    clearFieldError(confirmInput);
+    return true;
+  }
+
+  function checkPasswordStrength() {
+    const password = document.getElementById("password").value;
+    const strength = getPasswordStrength(password);
+
+    // Update strength bar
+    const strengthBar = document.getElementById("strengthBar");
+    const strengthText = document.getElementById("strengthText");
+
+    strengthBar.className = "strength-bar";
+
+    if (strength.score >= 4) {
+      strengthBar.classList.add("strength-strong");
+      strengthText.textContent = "Strong";
+      strengthText.className = "text-success";
+    } else if (strength.score >= 3) {
+      strengthBar.classList.add("strength-medium");
+      strengthText.textContent = "Medium";
+      strengthText.className = "text-warning";
+    } else {
+      strengthBar.classList.add("strength-weak");
+      strengthText.textContent = "Weak";
+      strengthText.className = "text-danger";
+    }
+
+    // Update requirements
+    updateRequirement("req-length", password.length >= 8);
+    updateRequirement("req-uppercase", /[A-Z]/.test(password));
+    updateRequirement("req-lowercase", /[a-z]/.test(password));
+    updateRequirement("req-number", /\d/.test(password));
+  }
+
+  function checkPasswordMatch() {
+    validateConfirmPassword();
+  }
+
+  function getPasswordStrength(password) {
+    let score = 0;
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+
+    Object.values(checks).forEach((check) => {
+      if (check) score++;
+    });
+
+    return { score, checks };
+  }
+
+  function updateRequirement(id, met) {
+    const requirement = document.getElementById(id);
+    const icon = requirement.querySelector("i");
+
+    if (met) {
+      requirement.classList.add("met");
+      icon.className = "fas fa-check";
+    } else {
+      requirement.classList.remove("met");
+      icon.className = "fas fa-times";
+    }
+  }
+
+  function togglePassword(fieldId) {
+    const input = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + "-eye");
+
+    if (input.type === "password") {
+      input.type = "text";
+      icon.className = "fas fa-eye-slash";
+    } else {
+      input.type = "password";
+      icon.className = "fas fa-eye";
+    }
+  }
+
+  function setFieldError(field, message) {
+    field.classList.add("is-invalid");
+    const feedback = field.parentNode.querySelector(".invalid-feedback");
+    if (feedback) {
+      feedback.textContent = message;
+    }
+  }
+
+  function clearFieldError(field) {
+    field.classList.remove("is-invalid");
+    field.classList.add("is-valid");
+  }
+
+  function showAlert(message, type = "danger") {
+    const alertContainer = document.getElementById("alertContainer");
+    const alert = document.createElement("div");
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    alertContainer.innerHTML = "";
+    alertContainer.appendChild(alert);
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    // Validate final step
+    if (!validateStep3()) return;
+
+    const submitBtn = document.getElementById("submitBtn");
+    const btnText = submitBtn.querySelector(".btn-text");
+    const spinner = submitBtn.querySelector(".spinner-border");
+
+    // Show loading state
+    btnText.classList.add("d-none");
+    spinner.classList.remove("d-none");
+    submitBtn.disabled = true;
+
+    try {
+      const formData = {
+        firstName: document.getElementById("firstName").value.trim(),
+        lastName: document.getElementById("lastName").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value,
+        experience: document.querySelector('input[name="experience"]:checked')
+          .value,
+        learningGoal: document.getElementById("learningGoal").value,
+        newsletter: document.getElementById("newsletter").checked,
+        terms: document.getElementById("terms").checked,
+      };
+
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showAlert(
+          "Account created successfully! Redirecting to dashboard...",
+          "success"
+        );
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2000);
+      } else {
+        throw new Error(result.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      showAlert(
+        error.message ||
+          "An error occurred during registration. Please try again."
+      );
+    } finally {
+      // Reset button state
+      btnText.classList.remove("d-none");
+      spinner.classList.add("d-none");
+      submitBtn.disabled = false;
+    }
+  }
+
+  function validateStep3() {
+    const termsCheckbox = document.getElementById("terms");
+
+    if (!termsCheckbox.checked) {
+      setFieldError(termsCheckbox, "You must agree to the Terms of Service");
+      return false;
+    }
+
+    clearFieldError(termsCheckbox);
+    return true;
+  }
+</script>
+{% endblock %}

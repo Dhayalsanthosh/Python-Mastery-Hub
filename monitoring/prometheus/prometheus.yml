@@ -1,0 +1,164 @@
+# File: monitoring/prometheus/prometheus.yml
+# Prometheus main configuration file for service discovery and scraping
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: "production"
+    region: "us-west-2"
+
+rule_files:
+  - "rules/application.yml"
+  - "rules/infrastructure.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+    scrape_interval: 30s
+    metrics_path: "/metrics"
+
+  # Node Exporter for system metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets:
+          - "node-exporter:9100"
+          - "node-exporter-2:9100"
+          - "node-exporter-3:9100"
+    scrape_interval: 15s
+    metrics_path: "/metrics"
+
+  # Application services
+  - job_name: "api-service"
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - production
+            - staging
+    relabel_configs:
+      - source_labels:
+          [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels:
+          [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_name
+
+  # Database monitoring
+  - job_name: "postgres-exporter"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    scrape_interval: 30s
+
+  - job_name: "redis-exporter"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    scrape_interval: 30s
+
+  # Message queue monitoring
+  - job_name: "rabbitmq-exporter"
+    static_configs:
+      - targets: ["rabbitmq-exporter:9419"]
+    scrape_interval: 30s
+
+  # Load balancer monitoring
+  - job_name: "nginx-exporter"
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
+    scrape_interval: 30s
+
+  # Kubernetes cluster monitoring
+  - job_name: "kube-state-metrics"
+    static_configs:
+      - targets: ["kube-state-metrics:8080"]
+    scrape_interval: 30s
+
+  - job_name: "kubelet"
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+
+  # cAdvisor for container metrics
+  - job_name: "cadvisor"
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    metrics_path: /metrics/cadvisor
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+
+  # Blackbox exporter for endpoint monitoring
+  - job_name: "blackbox-http"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://api.example.com/health
+          - https://app.example.com/health
+          - https://admin.example.com/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Application-specific metrics
+  - job_name: "custom-app-metrics"
+    file_sd_configs:
+      - files:
+          - "/etc/prometheus/targets/*.json"
+        refresh_interval: 5m
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "https://prometheus-remote-storage.example.com/api/v1/write"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 15d
+    retention.size: 50GB
+    path: /prometheus/data

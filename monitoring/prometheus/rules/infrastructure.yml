@@ -1,0 +1,322 @@
+# File: monitoring/prometheus/rules/infrastructure.yml
+# Prometheus alerting rules for infrastructure-level metrics
+
+groups:
+  - name: infrastructure.rules
+    interval: 30s
+    rules:
+      # System Load Rules
+      - alert: HighSystemLoad
+        expr: |
+          node_load1 / count(node_cpu_seconds_total{mode="idle"}) by (instance) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High system load on {{ $labels.instance }}"
+          description: "System load is {{ $value }} on instance {{ $labels.instance }}"
+          runbook_url: "https://runbooks.example.com/high-system-load"
+
+      - alert: ModerateSystemLoad
+        expr: |
+          node_load1 / count(node_cpu_seconds_total{mode="idle"}) by (instance) > 0.6
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Moderate system load on {{ $labels.instance }}"
+          description: "System load is {{ $value }} on instance {{ $labels.instance }}"
+
+      # CPU Usage Rules
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% on instance {{ $labels.instance }}"
+          runbook_url: "https://runbooks.example.com/high-cpu-usage"
+
+      - alert: ModerateCPUUsage
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100) > 75
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Moderate CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% on instance {{ $labels.instance }}"
+
+      # Memory Usage Rules
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            1 - (
+              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+            )
+          ) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}% on instance {{ $labels.instance }}"
+          runbook_url: "https://runbooks.example.com/high-memory-usage"
+
+      - alert: ModerateMemoryUsage
+        expr: |
+          (
+            1 - (
+              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+            )
+          ) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Moderate memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}% on instance {{ $labels.instance }}"
+
+      # Disk Usage Rules
+      - alert: HighDiskUsage
+        expr: |
+          (
+            1 - (
+              node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} /
+              node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"}
+            )
+          ) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value }}% on device {{ $labels.device }} ({{ $labels.mountpoint }}) on instance {{ $labels.instance }}"
+          runbook_url: "https://runbooks.example.com/high-disk-usage"
+
+      - alert: ModerateDiskUsage
+        expr: |
+          (
+            1 - (
+              node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} /
+              node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"}
+            )
+          ) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Moderate disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value }}% on device {{ $labels.device }} ({{ $labels.mountpoint }}) on instance {{ $labels.instance }}"
+
+      # Disk I/O Rules
+      - alert: HighDiskIOWait
+        expr: |
+          avg(rate(node_cpu_seconds_total{mode="iowait"}[5m])) by (instance) * 100 > 20
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High disk I/O wait on {{ $labels.instance }}"
+          description: "Disk I/O wait is {{ $value }}% on instance {{ $labels.instance }}"
+
+      - alert: HighDiskReadLatency
+        expr: |
+          rate(node_disk_read_time_seconds_total[5m]) / rate(node_disk_reads_completed_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High disk read latency on {{ $labels.instance }}"
+          description: "Disk read latency is {{ $value }}s on device {{ $labels.device }} on instance {{ $labels.instance }}"
+
+      # Network Rules
+      - alert: HighNetworkReceiveErrors
+        expr: |
+          rate(node_network_receive_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High network receive errors on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is receiving {{ $value }} errors/second on instance {{ $labels.instance }}"
+
+      - alert: HighNetworkTransmitErrors
+        expr: |
+          rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High network transmit errors on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is transmitting {{ $value }} errors/second on instance {{ $labels.instance }}"
+
+      # Node Health Rules
+      - alert: NodeDown
+        expr: |
+          up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Node {{ $labels.instance }} is down"
+          description: "Node exporter on {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://runbooks.example.com/node-down"
+
+      - alert: NodeHighBootTime
+        expr: |
+          time() - node_boot_time_seconds < 600
+        for: 0m
+        labels:
+          severity: info
+          category: infrastructure
+        annotations:
+          summary: "Node {{ $labels.instance }} recently rebooted"
+          description: "Node {{ $labels.instance }} rebooted {{ $value }} seconds ago"
+
+      # File Descriptor Rules
+      - alert: HighFileDescriptorUsage
+        expr: |
+          (
+            node_filefd_allocated / node_filefd_maximum
+          ) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High file descriptor usage on {{ $labels.instance }}"
+          description: "File descriptor usage is {{ $value }}% on instance {{ $labels.instance }}"
+
+      # Process Rules
+      - alert: HighNumberOfProcesses
+        expr: |
+          node_procs_running > 300
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High number of running processes on {{ $labels.instance }}"
+          description: "{{ $value }} processes are running on instance {{ $labels.instance }}"
+
+      # Swap Usage Rules
+      - alert: HighSwapUsage
+        expr: |
+          (
+            1 - (
+              node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes
+            )
+          ) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High swap usage on {{ $labels.instance }}"
+          description: "Swap usage is {{ $value }}% on instance {{ $labels.instance }}"
+
+  - name: kubernetes.rules
+    interval: 30s
+    rules:
+      # Kubernetes Pod Rules
+      - alert: PodCrashLooping
+        expr: |
+          increase(kube_pod_container_status_restarts_total[1h]) > 5
+        for: 0m
+        labels:
+          severity: critical
+          category: kubernetes
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash looping"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last hour"
+          runbook_url: "https://runbooks.example.com/pod-crash-looping"
+
+      - alert: PodNotReady
+        expr: |
+          kube_pod_status_ready{condition="false"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "Pod {{ $labels.pod }} not ready"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready for more than 5 minutes"
+
+      # Kubernetes Node Rules
+      - alert: KubernetesNodeNotReady
+        expr: |
+          kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: kubernetes
+        annotations:
+          summary: "Kubernetes node {{ $labels.node }} not ready"
+          description: "Kubernetes node {{ $labels.node }} has been not ready for more than 5 minutes"
+          runbook_url: "https://runbooks.example.com/node-not-ready"
+
+      - alert: KubernetesNodeHighPodCount
+        expr: |
+          (
+            kube_node_status_allocatable_pods - kube_node_status_capacity_pods
+          ) / kube_node_status_capacity_pods * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "High pod count on node {{ $labels.node }}"
+          description: "Node {{ $labels.node }} is running {{ $value }}% of its pod capacity"
+
+      # Kubernetes Deployment Rules
+      - alert: DeploymentReplicasUnavailable
+        expr: |
+          kube_deployment_status_replicas_unavailable > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "Deployment {{ $labels.deployment }} has unavailable replicas"
+          description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has {{ $value }} unavailable replicas"
+
+      # Kubernetes Resource Usage Rules
+      - alert: HighCPUUsageInPod
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{container!="POD",container!=""}[5m])) by (pod, namespace) /
+          sum(kube_pod_container_resource_limits_cpu_cores) by (pod, namespace) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "High CPU usage in pod {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using {{ $value }}% of its CPU limit"
+
+      - alert: HighMemoryUsageInPod
+        expr: |
+          sum(container_memory_working_set_bytes{container!="POD",container!=""}) by (pod, namespace) /
+          sum(kube_pod_container_resource_limits_memory_bytes) by (pod, namespace) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "High memory usage in pod {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using {{ $value }}% of its memory limit"
